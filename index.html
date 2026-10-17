@@ -257,7 +257,7 @@ img{max-width:100%}
               <li><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
               <li><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
             </ul>
-            <p class="note">跳ね返す虫がいる面は、ボールが遅めです（1匹で約1割、2匹で2割）。</p>
+            <p class="note">跳ね返す虫がいる面は、ボールが4分の1ほど遅くなります。</p>
             <p class="sub">ボーナス</p>
             <ul class="notes">
               <li>コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
@@ -303,7 +303,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
-// bugs: [速さ, ...]  タイルの下を斜めに漂う虫（1つで1匹。負の値は左へ動き出す）
+// bug: 速さ  タイルの下を斜めに漂う虫（1面に1匹まで。負の値は左へ動き出す）
 // thrower: true  上を歩いて空いたマスにタイルを投げ込む虫（動く行・動く列のマスには投げない）
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -336,16 +336,16 @@ const STAGES = [
    move: {0: 75, 1: -75, 7: 85}, vmove: {2: 55, 5: -55}, vband: [2, 6]},
   {rows: ['3*3333*3','33333...','...33333','3.3.3.3.','3.3.3.3.','........','.3.3.3.3','.3.3.3.3','33333333'],
    move: {1: 85, 2: -85}, vmove: {0: 50, 1: -50, 2: 50, 3: -50, 4: 50, 5: -50, 6: 50, 7: -50}, vband: [3, 7]},
-  {rows: ['3.3333.3','22222222','2.2222.2','11111111','1.1111.1','22222222'], bugs: [55]},
-  {rows: ['33333333','3*3333*3','22222222','2.2..2.2','11111111','..1111..'], bugs: [60, -60]},
+  {rows: ['3.3333.3','22222222','2.2222.2','11111111','1.1111.1','22222222'], bug: 55},
+  {rows: ['33333333','3*3333*3','22222222','2.2..2.2','11111111','..1111..'], bug: 60},
   {rows: ['33.33.33','2..22..2','2..22..2','11111111','1.1..1.1','22222222'], thrower: true},
   {rows: ['3333....','32222223','....3333','3.3333.3','2222....','22222222'], move: {0: 60, 2: -60, 4: 70}, thrower: true},
-  {rows: ['33333333','2.2..2.2','33.33.33','2.2..2.2','11111111','1.1..1.1'], bugs: [60], thrower: true},
-  {rows: ['3333....','3*3333*3','....3333','22222222','2222....','11111111'], move: {0: 70, 2: -70, 4: 80}, bugs: [60, -70]},
+  {rows: ['33333333','2.2..2.2','33.33.33','2.2..2.2','11111111','1.1..1.1'], bug: 60, thrower: true},
+  {rows: ['3333....','3*3333*3','....3333','22222222','2222....','11111111'], move: {0: 70, 2: -70, 4: 80}, bug: -70},
   {rows: ['3*3333*3','3.3.3.3.','3.3.3.3.','........','.3.3.3.3','.2.2.2.2','33333333'],
    vmove: {0: 45, 2: -45, 4: 45, 6: -45}, vband: [1, 5], thrower: true},
   {rows: ['3333....','22322322','3*.33.*3','33.33.33','........','....3333','11111111'],
-   move: {0: 75, 5: -75}, vmove: {2: 50, 5: -50}, vband: [1, 4], bugs: [65, -65], thrower: true},
+   move: {0: 75, 5: -75}, vmove: {2: 50, 5: -50}, vband: [1, 4], bug: 65, thrower: true},
 ];
 
 const ITEMS = {
@@ -386,9 +386,9 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
 // 速さは16面で止める（その先は仕掛けで難しくする）
 const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
-// 跳ね返す虫がいる面は、虫の数に応じてボールを遅くする（1匹で12%、2匹で20%）
-const BUG_SLOW = [1, 0.88, 0.8];
-const bugSlow = n => BUG_SLOW[Math.min((STAGES[patternNo(n) - 1].bugs || []).length, BUG_SLOW.length - 1)];
+// 跳ね返す虫がいる面は、ボールを25%遅くする
+const BUG_SLOW = 0.75;
+const bugSlow = n => STAGES[patternNo(n) - 1].bug ? BUG_SLOW : 1;
 const stageSpeed = n => baseSpeed(n) * bugSlow(n);
 const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
@@ -530,14 +530,13 @@ function buildStage(n){
   if (def.vmove) {
     for (const [c, v] of Object.entries(def.vmove)) S.colMove[c] = {v: Math.abs(v), dir: v < 0 ? -1 : 1, off: 0};
   }
-  // 虫はいちばん下の行より少し下から、パドルの少し上までを漂う
-  S.bugZone = {top: BRICK_TOP + def.rows.length * ROW_STEP + BUG_R + 2 * BALL_R + 4, bottom: PADDLE_Y - 72};
-  const bugs = def.bugs || [];
-  S.bugs = bugs.map((v, i) => ({
-    x: W * (i + 1) / (bugs.length + 1),
-    y: S.bugZone.top + (S.bugZone.bottom - S.bugZone.top) * (i % 2 ? 0.65 : 0.35),
-    vx: v * 0.8, vy: Math.abs(v) * 0.6 * (i % 2 ? -1 : 1), stunT: 0, step: Math.random() * 6
-  }));
+  // 虫はいちばん下の行より少し下を漂う。パドルの手前で急に跳ね返されないよう、下はパドルから190上までにする
+  S.bugZone = {top: BRICK_TOP + def.rows.length * ROW_STEP + BUG_R + 2 * BALL_R + 4, bottom: PADDLE_Y - 190};
+  S.bugs = def.bug ? [{
+    x: W / 2,
+    y: S.bugZone.top + (S.bugZone.bottom - S.bugZone.top) * 0.35,
+    vx: def.bug * 0.8, vy: Math.abs(def.bug) * 0.6, stunT: 0, step: Math.random() * 6
+  }] : [];
   S.thrower = def.thrower
     ? {x: W / 2, dir: Math.random() < 0.5 ? -1 : 1, stock: THROW_STOCK, cool: 3, windup: 0, stunT: 0, leaving: false, step: 0}
     : null;
@@ -600,18 +599,6 @@ function moveBugs(dt){
     if (g.y < z.top) { g.y = z.top; g.vy = Math.abs(g.vy); hit = true; }
     else if (g.y > z.bottom) { g.y = z.bottom; g.vy = -Math.abs(g.vy); hit = true; }
     if (hit) bounceBug(g);
-  }
-  // 2匹が重なったら離して、ぶつかった向きに跳ね返す
-  for (let i = 0; i < S.bugs.length; i++) {
-    for (let j = i + 1; j < S.bugs.length; j++) {
-      const a = S.bugs[i], b = S.bugs[j];
-      const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
-      if (d >= BUG_R * 2 || d === 0) continue;
-      const nx = dx / d, ny = dy / d, push = (BUG_R * 2 - d) / 2;
-      a.x -= nx * push; a.y -= ny * push; b.x += nx * push; b.y += ny * push;
-      if (a.vx * nx + a.vy * ny > 0) { const k = a.vx * nx + a.vy * ny; a.vx -= 2 * k * nx; a.vy -= 2 * k * ny; }
-      if (b.vx * nx + b.vy * ny < 0) { const k = b.vx * nx + b.vy * ny; b.vx -= 2 * k * nx; b.vy -= 2 * k * ny; }
-    }
   }
 }
 function throwTarget(){
@@ -791,11 +778,11 @@ function stageClear(){
     notes.push('全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。');
   } else {
     if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
-    if (first('bugs')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
+    if (first('bug')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
     if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
     if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
-    if (nextSlow < nowSlow) notes.push(nowSlow < 1 ? '虫が増えるぶん、ボールはさらに遅くなります。' : '虫がいるぶん、ボールは遅めです。');
+    if (nextSlow < nowSlow) notes.push('虫がいるぶん、ボールは遅めです。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
       notes.push(nowSlow === 1 ? '次のステージはボールが少し速くなります。' : nextSlow === 1 ? 'ボールの速さは元に戻ります。' : 'ボールは少し速くなります。');
     }
@@ -915,7 +902,7 @@ for (let n = 1; n <= STAGES.length; n++) {
   const mark = document.createElement('span'); mark.className = 'st-mark';
   b.append(num, mark);
   const def = STAGES[n - 1];
-  const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.bugs || def.thrower ? '虫' : '');
+  const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.bug || def.thrower ? '虫' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -932,7 +919,7 @@ function renderPicker(){
     b.querySelector('.st-mark').textContent = done ? '済' : '';
     const def = STAGES[n - 1];
     const moves = def.move && def.vmove ? '（タイルが左右と上下に動く）' : def.move ? '（タイルが左右に動く）' : def.vmove ? '（タイルが上下に動く）' : '';
-    const bugs = def.bugs && def.thrower ? '（虫が2種類出る）' : def.bugs ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
+    const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
     b.setAttribute('aria-label', 'ステージ' + n + moves + bugs + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) ovBtn.textContent = 'ステージ ' + S.pick + ' から始める';
