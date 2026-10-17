@@ -29,6 +29,7 @@
   --t-wakakusa:#68a052;
   --t-life:#c04a7c;
   --t-hard:#23394b;
+  --t-bomb:#a8262e;
   --bad:#4b3a4f;
   --warn:#c4472f;
   --on-tile:#ffffff;
@@ -42,7 +43,7 @@
     --bg:#0e161a; --board:#16232a; --grout:#1f2f37; --ink:#e2eaed; --muted:#8ea2ab;
     --panel:#18262d; --line:#2b3d46; --veil:rgba(14,22,26,.62); --shadow:rgba(0,0,0,.4);
     --paddle:#6aaedb; --on-paddle:#0e161a; --ball:#eef3f2;
-    --t-ai:#4b8fc6; --t-asagi:#4cb3b4; --t-yamabuki:#e6b546; --t-sango:#e2775d; --t-wakakusa:#7fb866; --t-life:#d9689a; --t-hard:#455d71;
+    --t-ai:#4b8fc6; --t-asagi:#4cb3b4; --t-yamabuki:#e6b546; --t-sango:#e2775d; --t-wakakusa:#7fb866; --t-life:#d9689a; --t-hard:#455d71; --t-bomb:#c93a44;
     --bad:#7a5f80; --warn:#ef7b5f;
     color-scheme:dark;
   }
@@ -51,7 +52,7 @@
   --bg:#0e161a; --board:#16232a; --grout:#1f2f37; --ink:#e2eaed; --muted:#8ea2ab;
   --panel:#18262d; --line:#2b3d46; --veil:rgba(14,22,26,.62); --shadow:rgba(0,0,0,.4);
   --paddle:#6aaedb; --on-paddle:#0e161a; --ball:#eef3f2;
-  --t-ai:#4b8fc6; --t-asagi:#4cb3b4; --t-yamabuki:#e6b546; --t-sango:#e2775d; --t-wakakusa:#7fb866; --t-life:#d9689a; --t-hard:#455d71;
+  --t-ai:#4b8fc6; --t-asagi:#4cb3b4; --t-yamabuki:#e6b546; --t-sango:#e2775d; --t-wakakusa:#7fb866; --t-life:#d9689a; --t-hard:#455d71; --t-bomb:#c93a44;
   --bad:#7a5f80; --warn:#ef7b5f;
   color-scheme:dark;
 }
@@ -114,16 +115,16 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .sub{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.06em;color:var(--muted)}
 .section{display:flex;flex-direction:column;gap:6px}
 
-.stages{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
 .st{
-  position:relative;height:34px;border-radius:5px;cursor:pointer;
+  position:relative;height:40px;padding:11px 0 0;border-radius:5px;cursor:pointer;
   font-family:var(--f-num);font-weight:600;font-size:.95rem;font-variant-numeric:tabular-nums;
   background:var(--board);color:var(--ink);border:1px solid var(--line);
 }
 .st[aria-pressed="true"]{background:var(--paddle);border-color:var(--paddle);color:var(--on-paddle)}
 .st-mark,.st-move{position:absolute;font-family:var(--f-body);font-size:.6rem;font-weight:700;color:var(--muted);line-height:1}
 .st-mark{top:3px;right:4px}
-.st-move{bottom:3px;left:4px}
+.st-move{top:3px;left:4px}
 .st[aria-pressed="true"] .st-mark,.st[aria-pressed="true"] .st-move{color:var(--on-paddle)}
 .note{margin:0;font-size:.72rem;color:var(--muted)}
 
@@ -140,6 +141,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.slow{background:var(--t-asagi)}
 .cap.guard{background:var(--t-yamabuki);color:var(--on-yamabuki)}
 .cap.life{background:var(--t-life)}
+.cap.bomb{background:var(--t-bomb);border-radius:3px}
 .cap.fuku{background:linear-gradient(#f6dc78,#b8860b);color:#3d2b00}
 .cap.bad{background:var(--bad);outline:1.5px dashed var(--warn);outline-offset:1px}
 .notes{margin:0;padding-left:1.1em;font-size:.8rem;line-height:1.6;display:flex;flex-direction:column;gap:4px}
@@ -185,7 +187,7 @@ img{max-width:100%}
           <div class="section" id="picker" hidden>
             <p class="sub">ステージ（数字が大きいほど難しい）</p>
             <div class="stages" id="stages"></div>
-            <p class="note">↔ の付いた面はタイルの列が左右に動きます。</p>
+            <p class="note">↔ は左右、↕ は上下にタイルが動く面です。</p>
           </div>
 
           <div class="section" id="help" hidden>
@@ -207,6 +209,10 @@ img{max-width:100%}
               <li><span class="cap bad">縮</span>パドルが10秒間せまくなる</li>
               <li><span class="cap bad">速</span>ボールが10秒間速くなる</li>
               <li><span class="cap bad">厄</span>ボール -1（残り1のときは減らない）</li>
+            </ul>
+            <p class="sub">仕掛けのあるタイル</p>
+            <ul class="items one">
+              <li><span class="cap bomb">爆</span>割ると、まわり8マスのタイルも硬さに関係なく割れる</li>
             </ul>
             <p class="sub">ボーナス</p>
             <ul class="notes">
@@ -233,7 +239,7 @@ img{max-width:100%}
 const W = 400, H = 600;
 const COLS = 8, SIDE = 12, GAP = 4, BRICK_TOP = 64, BRICK_H = 22;
 const BRICK_W = (W - SIDE * 2 - GAP * (COLS - 1)) / COLS;
-const CELL = BRICK_W + GAP;
+const CELL = BRICK_W + GAP, ROW_STEP = BRICK_H + GAP;
 const PADDLE_Y = H - 44, PADDLE_H = 12, BALL_R = 6.5, GUARD_Y = H - 14;
 const ITEM_W = 30, ITEM_H = 16, MAX_BALLS = 8;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
@@ -242,8 +248,10 @@ const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
 
-// 1: 1回で割れる  2: 2回  3: 3回  .: 空き
+// 1: 1回で割れる  2: 2回  3: 3回  *: 爆弾（まわり8マスも割れる）  .: 空き
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
+// vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
+// move の行は vband の外に置く（重ならないように）
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
   {rows: ['22222222','11111111','11111111','11111111','11111111']},
@@ -261,6 +269,20 @@ const STAGES = [
   {rows: ['..3333..','.322223.','32111123','32111123','.322223.','..3333..','11111111'], move: {0: 55, 1: -40, 4: 40, 5: -55}},
   {rows: ['33....33','22222222','..3333..','22222222','33....33','11111111','..2222..'], move: {2: 80, 6: -80}},
   {rows: ['3333....','22222222','....3333','33333333','2222....','11111111','....2222'], move: {0: 90, 2: -90, 4: 100, 6: -100}},
+  {rows: ['22322.22','22322.22','11.11.11','33.33.33','22.22.22','11.11311','22.22322'], vmove: {2: 45, 5: -45}},
+  {rows: ['2333333.','23*33*3.','.333333.','.333333.','.22*2223','.3333333'], vmove: {0: 40, 7: -40}},
+  {rows: ['3.3.3.3.','3.3.3.3.','3.3.3.3.','2.2.2.2.','.2.2.2.2','.3.3.3.3','.3.3.3.3','.3.3.3.3'],
+   vmove: {0: 40, 1: -40, 2: 40, 3: -40, 4: 40, 5: -40, 6: 40, 7: -40}},
+  {rows: ['3333....','22322.22','22322.22','11.11.11','22.22.22','22.22322','22.22322','....3333'],
+   move: {0: 60, 7: -60}, vmove: {2: 45, 5: -45}, vband: [1, 6]},
+  {rows: ['33333333','33222233','.*...*..','22222222','33222233','.3.33.3.','........','........'],
+   move: {2: 70}, vmove: {1: 40, 3: 30, 4: 30, 6: 40}, vband: [5, 7]},
+  {rows: ['3*3333*3','33333333','3.3.3.3.','3.3.3.3.','........','........','.3.3.3.3','.3.3.3.3','33.33.33'],
+   vmove: {0: 45, 1: -45, 2: 45, 3: -45, 4: 45, 5: -45, 6: 45, 7: -45}, vband: [2, 7]},
+  {rows: ['3333....','....3333','22322.22','2*322.*2','33.33.33','22.22322','22.22322','3333....'],
+   move: {0: 75, 1: -75, 7: 85}, vmove: {2: 55, 5: -55}, vband: [2, 6]},
+  {rows: ['3*3333*3','33333...','...33333','3.3.3.3.','3.3.3.3.','........','.3.3.3.3','.3.3.3.3','33333333'],
+   move: {1: 85, 2: -85}, vmove: {0: 50, 1: -50, 2: 50, 3: -50, 4: 50, 5: -50, 6: 50, 7: -50}, vband: [3, 7]},
 ];
 
 const ITEMS = {
@@ -296,7 +318,8 @@ const store = {
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
-const baseSpeed = n => Math.min(280 + (n - 1) * 14, 500);
+// 速さは16面で止める（その先は仕掛けで難しくする）
+const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
 const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
@@ -305,7 +328,7 @@ const S = {
   mode: 'title', prevMode: 'ready', time: 0,
   score: 0, best: 0, stage: 1, pick: 1, lives: 3, combo: 0, maxCombo: 0,
   cleared: new Set(),
-  bricks: [], rowMove: {}, particles: [], pops: [], items: [], banners: [],
+  bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   balls: [], speed: 280,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
   paddle: {x: W / 2, w: 88}
@@ -317,7 +340,7 @@ const C = {};
 function readColors(){
   const cs = getComputedStyle(document.documentElement);
   ['board','grout','ink','muted','panel','line','paddle','ball','on-tile','on-yamabuki','bad','warn',
-   't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard']
+   't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard','t-bomb']
     .forEach(k => { C[k] = cs.getPropertyValue('--' + k).trim(); });
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
@@ -358,6 +381,7 @@ function sfx(name, arg){
       break;
     }
     case 'gold':   tone(1500, 0.25, 'sine', 0.07, 2600); break;
+    case 'bomb':   tone(150, 0.28, 'sawtooth', 0.06, 45); tone(95, 0.32, 'square', 0.035, 40, 0.02); break;
     case 'fuku':   [784, 988, 1175, 1568, 1976].forEach((f, i) => tone(f, 0.12, 'triangle', 0.06, null, i * 0.07)); break;
     case 'lose':   tone(320, 0.45, 'sawtooth', 0.045, 70); break;
     case 'clear':  [660, 880, 1100, 1320].forEach((f, i) => tone(f, 0.13, 'triangle', 0.06, null, i * 0.09)); break;
@@ -399,23 +423,29 @@ function buildStage(n){
   def.rows.forEach((row, r) => {
     [...row].forEach((ch, c) => {
       if (ch === '.') return;
-      const hp = +ch;
-      const bx = SIDE + c * CELL;
+      const bomb = ch === '*';
+      const hp = bomb ? 1 : +ch;
+      const bx = SIDE + c * CELL, by = BRICK_TOP + r * ROW_STEP;
       list.push({
-        baseX: bx, x: bx, y: BRICK_TOP + r * (BRICK_H + GAP),
+        baseX: bx, x: bx, baseY: by, y: by,
         w: BRICK_W, h: BRICK_H, hp, max: hp, row: r, col: c,
-        color: ROW_COLORS[r % ROW_COLORS.length], cracks: [], flash: 0, gold: false
+        color: ROW_COLORS[r % ROW_COLORS.length], cracks: [], flash: 0, gold: false, bomb
       });
     });
   });
   // 金のタイル：3回に1回くらい、どこか1枚
   if (Math.random() < 0.35) {
-    const cands = list.filter(b => b.max <= 2);
+    const cands = list.filter(b => b.max <= 2 && !b.bomb);
     if (cands.length) cands[Math.floor(Math.random() * cands.length)].gold = true;
   }
   S.rowMove = {};
   if (def.move) {
     for (const [r, v] of Object.entries(def.move)) S.rowMove[r] = {v: Math.abs(v), dir: v < 0 ? -1 : 1, off: 0};
+  }
+  S.colMove = {};
+  S.vband = def.vband || [0, def.rows.length - 1];
+  if (def.vmove) {
+    for (const [c, v] of Object.entries(def.vmove)) S.colMove[c] = {v: Math.abs(v), dir: v < 0 ? -1 : 1, off: 0};
   }
   return list;
 }
@@ -435,6 +465,25 @@ function moveRows(dt){
     if (m.off < lo) { m.off = lo; m.dir = 1; }
     else if (m.off > hi) { m.off = hi; m.dir = -1; }
     for (const b of S.bricks) if (b.row === r) b.x = b.baseX + m.off;
+  }
+}
+function moveCols(dt){
+  const [top, bottom] = S.vband;
+  const inCol = (b, c) => b.col === c && b.row >= top && b.row <= bottom;
+  for (const [key, m] of Object.entries(S.colMove)) {
+    const c = +key;
+    let minR = 99, maxR = -1;
+    for (const b of S.bricks) {
+      if (!inCol(b, c) || b.hp <= 0) continue;
+      if (b.row < minR) minR = b.row;
+      if (b.row > maxR) maxR = b.row;
+    }
+    if (maxR < 0) continue;
+    const lo = (top - minR) * ROW_STEP, hi = (bottom - maxR) * ROW_STEP;
+    m.off += m.dir * m.v * dt;
+    if (m.off < lo) { m.off = lo; m.dir = 1; }
+    else if (m.off > hi) { m.off = hi; m.dir = -1; }
+    for (const b of S.bricks) if (inCol(b, c)) b.y = b.baseY + m.off;
   }
 }
 function clearEffects(){
@@ -460,7 +509,7 @@ function loadStage(n){
   S.stage = n;
   S.bricks = buildStage(n);
   S.paddle.x = W / 2;
-  S.particles = []; S.pops = []; S.banners = [];
+  S.particles = []; S.pops = []; S.banners = []; S.blasts = [];
   clearEffects();
   resetBall();
 }
@@ -529,11 +578,13 @@ function stageClear(){
   saveBest();
   sfx('clear');
   const lastOne = S.stage % STAGES.length === 0;
+  const nowDef = STAGES[patternNo(S.stage) - 1], nextDef = STAGES[patternNo(S.stage + 1) - 1];
+  const note = lastOne ? '全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。'
+    : baseSpeed(S.stage + 1) > baseSpeed(S.stage) ? '次のステージはボールが少し速くなります。'
+    : nextDef.vmove && !nowDef.vmove ? '次のステージから、タイルが上下にも動きます。' : '';
   showOverlay({
     title: 'ステージ ' + S.stage + ' クリア',
-    text: 'クリアボーナス +' + fmt(bonus) + '\n' + (lastOne
-      ? '全' + STAGES.length + 'ステージを回りました。この先は同じ配置でボールが速くなります。'
-      : '次のステージはボールが少し速くなります。'),
+    text: 'クリアボーナス +' + fmt(bonus) + (note ? '\n' + note : ''),
     btn: 'ステージ ' + (S.stage + 1) + ' へ',
     primary: () => { S.stage++; startStage(); },
     btn2: 'ステージを選ぶ',
@@ -611,8 +662,10 @@ for (let n = 1; n <= STAGES.length; n++) {
   const num = document.createElement('span'); num.textContent = String(n);
   const mark = document.createElement('span'); mark.className = 'st-mark';
   b.append(num, mark);
-  if (STAGES[n - 1].move) {
-    const mv = document.createElement('span'); mv.className = 'st-move'; mv.textContent = '↔';
+  const def = STAGES[n - 1];
+  if (def.move || def.vmove) {
+    const mv = document.createElement('span'); mv.className = 'st-move';
+    mv.textContent = (def.move ? '↔' : '') + (def.vmove ? '↕' : '');
     b.append(mv);
   }
   b.addEventListener('click', () => { ensureAudio(); setPick(n); });
@@ -624,7 +677,9 @@ function renderPicker(){
     const done = S.cleared.has(n);
     b.setAttribute('aria-pressed', n === S.pick ? 'true' : 'false');
     b.querySelector('.st-mark').textContent = done ? '済' : '';
-    b.setAttribute('aria-label', 'ステージ' + n + (STAGES[n - 1].move ? '（タイルが動く）' : '') + (done ? '（クリア済み）' : ''));
+    const def = STAGES[n - 1];
+    const moves = def.move && def.vmove ? '（タイルが左右と上下に動く）' : def.move ? '（タイルが左右に動く）' : def.vmove ? '（タイルが上下に動く）' : '';
+    b.setAttribute('aria-label', 'ステージ' + n + moves + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) ovBtn.textContent = 'ステージ ' + S.pick + ' から始める';
 }
@@ -806,9 +861,12 @@ function addCrack(br){
   }
   br.cracks.push(pts);
 }
+function tileColor(br){
+  return br.gold ? GOLD.bottom : br.bomb ? C['t-bomb'] : br.max === 3 ? C['t-hard'] : C[br.color];
+}
 function shatter(br){
   if (reduceMotion.matches) return;
-  const col = br.gold ? GOLD.bottom : br.max === 3 ? C['t-hard'] : C[br.color];
+  const col = tileColor(br);
   const n = br.gold ? 16 : 8;
   for (let i = 0; i < n; i++) {
     S.particles.push({
@@ -854,8 +912,21 @@ function damage(br, full){
     sfx('combo', S.combo);
   }
 
-  if (!S.bricks.some(x => x.hp > 0)) stageClear();
+  if (br.bomb) explode(br);
+  // 連鎖の途中で割り切ることもあるので、クリアは1回だけ
+  if (S.mode === 'play' && !S.bricks.some(x => x.hp > 0)) stageClear();
   ui();
+}
+function explode(br){
+  sfx('bomb');
+  if (!reduceMotion.matches) S.blasts.push({x: br.x + br.w / 2, y: br.y + br.h / 2, t: 0});
+  // 今の位置でまわり1マス分に重なるタイルを割る（動く列でも当たった場所で効く）
+  const mx = BRICK_W / 2 + GAP, my = BRICK_H / 2 + GAP;
+  for (const b of S.bricks) {
+    if (b.hp <= 0) continue;
+    if (b.x + b.w > br.x - mx && b.x < br.x + br.w + mx &&
+        b.y + b.h > br.y - my && b.y < br.y + br.h + my) damage(b, true);
+  }
 }
 function hitBricks(b){
   for (const br of S.bricks) {
@@ -939,7 +1010,7 @@ function update(dt){
     const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
     movePaddle(p.x + dir * 560 * dt);
   }
-  if (S.mode === 'play' || S.mode === 'ready' || S.mode === 'title') moveRows(dt);
+  if (S.mode === 'play' || S.mode === 'ready' || S.mode === 'title') { moveRows(dt); moveCols(dt); }
   if (S.mode === 'ready') placeBall();
   else if (S.mode === 'play') {
     physics(dt);
@@ -950,6 +1021,7 @@ function update(dt){
   S.particles = S.particles.filter(q => (q.life -= dt) > 0);
   for (const q of S.particles) { q.vy += 900 * dt; q.x += q.vx * dt; q.y += q.vy * dt; q.rot += q.vr * dt; }
   S.pops = S.pops.filter(q => (q.t += dt) < 0.9);
+  S.blasts = S.blasts.filter(q => (q.t += dt) < 0.35);
   if (S.banners.length) {
     S.banners[0].t += dt;
     if (S.banners[0].t > 1.2) S.banners.shift();
@@ -975,7 +1047,7 @@ function goldFill(y, h){
 function drawTile(br){
   const {x, y, w, h} = br;
   rr(x, y, w, h, 3);
-  ctx.fillStyle = br.gold ? goldFill(y, h) : br.max === 3 ? C['t-hard'] : C[br.color];
+  ctx.fillStyle = br.gold ? goldFill(y, h) : tileColor(br);
   ctx.fill();
   ctx.fillStyle = 'rgba(0,0,0,.16)';
   ctx.fillRect(x + 3, y + h - 3, w - 6, 2);
@@ -1002,6 +1074,19 @@ function drawTile(br){
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('金', x + w / 2, y + h / 2 + 1);
+  } else if (br.bomb) {
+    ctx.fillStyle = C['on-tile'];
+    ctx.font = '700 12px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('爆', x + w / 2, y + h / 2 + 1);
+    // 右上で導火線の火花がちらつく
+    if (reduceMotion.matches || Math.sin(S.time * 11 + br.col * 2) > -0.4) {
+      ctx.beginPath();
+      ctx.arc(x + w - 6, y + 5.5, 2.2, 0, Math.PI * 2);
+      ctx.fillStyle = C['t-yamabuki'];
+      ctx.fill();
+    }
   } else {
     if (br.max >= 2) {
       ctx.strokeStyle = 'rgba(255,255,255,.55)';
@@ -1144,6 +1229,18 @@ function draw(){
   }
 
   for (const br of S.bricks) if (br.hp > 0) drawTile(br);
+
+  // 爆発の輪
+  for (const q of S.blasts) {
+    const k = q.t / 0.35;
+    ctx.beginPath();
+    ctx.arc(q.x, q.y, 10 + k * 46, 0, Math.PI * 2);
+    ctx.globalAlpha = 1 - k;
+    ctx.lineWidth = 4 - k * 2;
+    ctx.strokeStyle = C['t-bomb'];
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
 
   if (S.guard) {
     rr(6, GUARD_Y, W - 12, 5, 2.5);
