@@ -134,6 +134,11 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .st[aria-pressed="true"] .st-mark,.st[aria-pressed="true"] .st-move{color:var(--on-paddle)}
 .note{margin:0;font-size:.72rem;color:var(--muted)}
 
+.seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg-btn{font:inherit;font-size:.8rem;font-weight:700;line-height:1.3;padding:8px 6px;border:0;background:var(--board);color:var(--ink);cursor:pointer}
+.seg-btn + .seg-btn{border-left:1px solid var(--line)}
+.seg-btn[aria-pressed="true"]{background:var(--paddle);color:var(--on-paddle)}
+
 .items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .items.one{grid-template-columns:1fr}
 .items li{display:flex;align-items:center;gap:7px;font-size:.8rem;line-height:1.35;min-width:0}
@@ -194,6 +199,14 @@ img{max-width:100%}
           <h2 id="ovTitle"></h2>
           <p class="text" id="ovText"></p>
 
+          <div class="section" id="controlSec" hidden>
+            <p class="sub">スマホでの操作</p>
+            <div class="seg" id="controlSeg" role="group" aria-label="スマホでの操作">
+              <button class="seg-btn" type="button" data-control="puni">起点から動かす</button>
+              <button class="seg-btn" type="button" data-control="direct">指の位置に合わせる</button>
+            </div>
+          </div>
+
           <div class="section" id="picker" hidden>
             <p class="sub">ステージ（数字が大きいほど難しい）</p>
             <div class="stages" id="stages"></div>
@@ -235,6 +248,7 @@ img{max-width:100%}
               <li><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
               <li><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
             </ul>
+            <p class="note">跳ね返す虫がいる面は、ボールが遅めです（1匹で約1割、2匹で2割）。</p>
             <p class="sub">ボーナス</p>
             <ul class="notes">
               <li>コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
@@ -270,6 +284,9 @@ const POINTS = {1: 10, 2: 30, 3: 60};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
+const CONTROL_KEY = 'tile-kuzushi-control';
+// 起点から動かす操作：ずらす量は画面上の px で測る（盤面の大きさに左右されないように）
+const STICK_DEAD = 4, STICK_FULL = 44, STICK_MAX = 720;
 
 // 1: 1回で割れる  2: 2回  3: 3回  *: 爆弾（まわり8マスも割れる）  .: 空き
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
@@ -341,6 +358,7 @@ const canvas = $('cv'), ctx = canvas.getContext('2d');
 const wrapEl = $('wrap'), boardEl = $('board'), cardEl = $('card');
 const overlay = $('overlay'), ovEyebrow = $('ovEyebrow'), ovTitle = $('ovTitle'), ovText = $('ovText');
 const ovBtn = $('ovBtn'), ovBtn2 = $('ovBtn2'), pickerEl = $('picker'), helpEl = $('help'), stagesEl = $('stages');
+const controlSec = $('controlSec'), controlSeg = $('controlSeg');
 const hint = $('hint');
 const elScore = $('score'), elBest = $('best'), elStage = $('stage'), elLives = $('lives');
 const btnPause = $('pauseBtn'), btnSound = $('soundBtn');
@@ -357,6 +375,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
 // 速さは16面で止める（その先は仕掛けで難しくする）
 const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
+// 跳ね返す虫がいる面は、虫の数に応じてボールを遅くする（1匹で12%、2匹で20%）
+const BUG_SLOW = [1, 0.88, 0.8];
+const bugSlow = n => BUG_SLOW[Math.min((STAGES[patternNo(n) - 1].bugs || []).length, BUG_SLOW.length - 1)];
+const stageSpeed = n => baseSpeed(n) * bugSlow(n);
 const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
@@ -373,6 +395,8 @@ const S = {
   paddle: {x: W / 2, w: 88}
 };
 let onPrimary = null, onSecondary = null;
+// スマホでの操作：'puni' は起点から動かす、'direct' は指の位置に合わせる
+let control = 'puni';
 
 /* ---------- 色 ---------- */
 const C = {};
@@ -671,7 +695,7 @@ function placeBall(){
 function resetBall(){
   S.mode = 'ready';
   S.combo = 0;
-  S.speed = baseSpeed(S.stage);
+  S.speed = stageSpeed(S.stage);
   S.balls = [{x: S.paddle.x, y: 0, vx: 0, vy: 0}];
   placeBall();
 }
@@ -749,15 +773,23 @@ function stageClear(){
   sfx('clear');
   const lastOne = S.stage % STAGES.length === 0;
   const nextNo = patternNo(S.stage + 1), nextDef = STAGES[nextNo - 1];
-  // その仕掛けが次の面で初めて出るときだけ知らせる
+  // 仕掛けはその面で初めて出るときだけ知らせる。ボールの速さが変わるときはあわせて知らせる
   const first = key => nextDef[key] && !STAGES.slice(0, nextNo - 1).some(d => d[key]);
-  const newItems = Object.values(ITEMS).some(d => d.from === nextNo) ? '新しいアイテムも落ちてくるようになります。' : '';
-  const note = lastOne ? '全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。'
-    : baseSpeed(S.stage + 1) > baseSpeed(S.stage) ? '次のステージはボールが少し速くなります。'
-    : first('vmove') ? '次のステージから、タイルが上下にも動きます。'
-    : first('bugs') ? '次のステージから、ボールを跳ね返す虫が出てきます。' + newItems
-    : first('thrower') ? '次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。'
-    : newItems;
+  const notes = [];
+  if (lastOne) {
+    notes.push('全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。');
+  } else {
+    if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
+    if (first('bugs')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
+    if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
+    if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
+    const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
+    if (nextSlow < nowSlow) notes.push(nowSlow < 1 ? '虫が増えるぶん、ボールはさらに遅くなります。' : '虫がいるぶん、ボールは遅めです。');
+    else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
+      notes.push(nowSlow === 1 ? '次のステージはボールが少し速くなります。' : nextSlow === 1 ? 'ボールの速さは元に戻ります。' : 'ボールは少し速くなります。');
+    }
+  }
+  const note = notes.join('');
   showOverlay({
     title: 'ステージ ' + S.stage + ' クリア',
     text: 'クリアボーナス +' + fmt(bonus) + (note ? '\n' + note : ''),
@@ -777,6 +809,7 @@ function showOverlay(o){
   ovText.textContent = o.text || '';
   ovText.hidden = !o.text;
   pickerEl.hidden = !o.picker;
+  controlSec.hidden = !o.control;
   helpEl.hidden = !o.help;
   ovBtn.textContent = o.btn;
   onPrimary = o.primary || null;
@@ -792,12 +825,33 @@ function hideOverlay(){ overlay.hidden = true; }
 ovBtn.addEventListener('click', () => { ensureAudio(); if (onPrimary) onPrimary(); });
 ovBtn2.addEventListener('click', () => { ensureAudio(); if (onSecondary) onSecondary(); });
 
+function titleText(){
+  if (!coarse) return 'マウスか ← → でパドルを動かし、クリックかスペースで発射。P で一時停止。';
+  return control === 'puni'
+    ? '指を置いたところから左右にずらすと、その向きにパドルが動きます。大きくずらすほど速く動きます。指を離すとボールが出ます。'
+    : '指で左右になぞるとパドルが動き、指を離すとボールが出ます。';
+}
+function renderControl(){
+  for (const b of controlSeg.children) b.setAttribute('aria-pressed', b.dataset.control === control ? 'true' : 'false');
+}
+function setControl(v){
+  control = v;
+  store.set(CONTROL_KEY, v);
+  renderControl();
+  if (S.mode === 'title' && !pickerEl.hidden) ovText.textContent = titleText();
+}
+for (const b of controlSeg.children) {
+  b.addEventListener('click', e => {
+    ensureAudio();
+    setControl(b.dataset.control);
+    if (e.detail > 0) b.blur();
+  });
+}
 function showTitle(){
   showOverlay({
     title: 'タイル崩し',
-    text: coarse
-      ? '指で左右になぞるとパドルが動き、指を離すとボールが出ます。'
-      : 'マウスか ← → でパドルを動かし、クリックかスペースで発射。P で一時停止。',
+    text: titleText(),
+    control: coarse,
     picker: true,
     btn: 'ステージ ' + S.pick + ' から始める',
     primary: () => startGame(S.pick),
@@ -916,24 +970,53 @@ function toLogicalX(clientX){
   const r = canvas.getBoundingClientRect();
   return (clientX - r.left) / r.width * W;
 }
-let dragging = false;
+function toLogicalY(clientY){
+  const r = canvas.getBoundingClientRect();
+  return (clientY - r.top) / r.height * H;
+}
+// 起点から動かす操作の状態（盤面の座標で持つ）
+const stick = {on: false, ox: 0, oy: 0, x: 0};
+function stickSpeed(){
+  if (!stick.on) return 0;
+  const d = (stick.x - stick.ox) * scale;
+  // 少しずらしたときは細かく、大きくずらしたときは一気に速くなるよう、ゆるやかに立ち上げる
+  const k = clamp((Math.abs(d) - STICK_DEAD) / (STICK_FULL - STICK_DEAD), 0, 1);
+  return Math.sign(d) * STICK_MAX * Math.pow(k, 1.5);
+}
+// 指は最初に触れた1本だけを追う
+let dragging = false, dragId = null;
 canvas.addEventListener('pointerdown', e => {
   ensureAudio();
-  dragging = true;
-  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
-  if (S.mode === 'play' || S.mode === 'ready') movePaddle(toLogicalX(e.clientX));
   e.preventDefault();
+  if (dragging && e.pointerType !== 'mouse') return;
+  dragging = true;
+  dragId = e.pointerId;
+  try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+  if (control === 'puni' && e.pointerType !== 'mouse') {
+    stick.on = true;
+    stick.ox = stick.x = toLogicalX(e.clientX);
+    stick.oy = toLogicalY(e.clientY);
+  } else if (S.mode === 'play' || S.mode === 'ready') {
+    movePaddle(toLogicalX(e.clientX));
+  }
 });
 canvas.addEventListener('pointermove', e => {
+  if (dragging && e.pointerId !== dragId) return;
+  if (stick.on) { stick.x = toLogicalX(e.clientX); return; }
   if (S.mode !== 'play' && S.mode !== 'ready') return;
   if (e.pointerType === 'mouse' || dragging) movePaddle(toLogicalX(e.clientX));
 });
-canvas.addEventListener('pointerup', () => {
-  if (dragging && S.mode === 'ready') launch();
-  else if (dragging && S.mode === 'play') releaseAll();
+function endDrag(e, fire){
+  if (!dragging || e.pointerId !== dragId) return;
+  if (fire && S.mode === 'ready') launch();
+  else if (fire && S.mode === 'play') releaseAll();
   dragging = false;
-});
-canvas.addEventListener('pointercancel', () => { dragging = false; });
+  dragId = null;
+  stick.on = false;
+}
+canvas.addEventListener('pointerup', e => endDrag(e, true));
+canvas.addEventListener('pointercancel', e => endDrag(e, false));
+canvas.addEventListener('lostpointercapture', e => endDrag(e, false));
 
 window.addEventListener('keydown', e => {
   const onButton = e.target instanceof Element && e.target.closest('button');
@@ -1134,7 +1217,7 @@ function hitBricks(b){
       if (b.y < br.y + br.h / 2) { b.vy = -Math.abs(b.vy); b.y = br.y - BALL_R; }
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + BALL_R; }
     }
-    S.speed = Math.min(S.speed + 1.5, baseSpeed(S.stage) + 90);
+    S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
     normalizeBall(b);
     damage(br, false);
     return true;
@@ -1291,7 +1374,7 @@ function update(dt){
   p.w += (target - p.w) * Math.min(1, dt * 10);
   if (S.mode === 'play' || S.mode === 'ready') {
     const dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0);
-    movePaddle(p.x + dir * 560 * dt);
+    movePaddle(p.x + (dir * 560 + stickSpeed()) * dt);
   }
   // 時止め中は、動くタイルも虫も止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title') && S.stopT <= 0) {
@@ -1522,6 +1605,27 @@ function drawBug(x, y, o){
   }
   ctx.restore();
 }
+function drawStick(){
+  if (!stick.on || (S.mode !== 'play' && S.mode !== 'ready')) return;
+  // 起点の輪と、今ずらしている位置の点（点は輪の外に出さない）
+  const r = STICK_FULL / scale;
+  const kx = stick.ox + clamp(stick.x - stick.ox, -r, r);
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = C.ink;
+  ctx.beginPath();
+  ctx.arc(stick.ox, stick.oy, r, 0, Math.PI * 2);
+  ctx.moveTo(stick.ox - r, stick.oy);
+  ctx.lineTo(stick.ox + r, stick.oy);
+  ctx.stroke();
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = C.paddle;
+  ctx.beginPath();
+  ctx.arc(kx, stick.oy, 10, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+}
 function drawThrower(){
   for (const f of S.flying) {
     const k = f.t;
@@ -1654,6 +1758,8 @@ function draw(){
     ctx.globalAlpha = 1;
   }
 
+  drawStick();
+
   for (const g of S.bugs) drawBug(g.x, g.y, {step: g.step, stun: g.stunT});
 
   if (S.lasers.length) {
@@ -1758,6 +1864,8 @@ function start(data){
   S.best = +(store.get(BEST_KEY) || 0) || 0;
   const sv = store.get(SOUND_KEY);
   soundOn = sv === null ? true : sv === '1';
+  control = store.get(CONTROL_KEY) === 'direct' ? 'direct' : 'puni';
+  renderControl();
   const pk = +(store.get(PICK_KEY) || 1);
   S.pick = pk >= 1 && pk <= STAGES.length ? pk : 1;
   (store.get(CLEARED_KEY) || '').split(',').forEach(v => { const n = +v; if (n >= 1 && n <= STAGES.length) S.cleared.add(n); });
