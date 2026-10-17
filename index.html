@@ -235,6 +235,7 @@ img{max-width:100%}
               <li><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
               <li><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
             </ul>
+            <p class="note">跳ね返す虫がいる面は、ボールが遅めです（1匹で約1割、2匹で2割）。</p>
             <p class="sub">ボーナス</p>
             <ul class="notes">
               <li>コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
@@ -357,6 +358,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
 // 速さは16面で止める（その先は仕掛けで難しくする）
 const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
+// 跳ね返す虫がいる面は、虫の数に応じてボールを遅くする（1匹で12%、2匹で20%）
+const BUG_SLOW = [1, 0.88, 0.8];
+const bugSlow = n => BUG_SLOW[Math.min((STAGES[patternNo(n) - 1].bugs || []).length, BUG_SLOW.length - 1)];
+const stageSpeed = n => baseSpeed(n) * bugSlow(n);
 const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
@@ -671,7 +676,7 @@ function placeBall(){
 function resetBall(){
   S.mode = 'ready';
   S.combo = 0;
-  S.speed = baseSpeed(S.stage);
+  S.speed = stageSpeed(S.stage);
   S.balls = [{x: S.paddle.x, y: 0, vx: 0, vy: 0}];
   placeBall();
 }
@@ -749,15 +754,23 @@ function stageClear(){
   sfx('clear');
   const lastOne = S.stage % STAGES.length === 0;
   const nextNo = patternNo(S.stage + 1), nextDef = STAGES[nextNo - 1];
-  // その仕掛けが次の面で初めて出るときだけ知らせる
+  // 仕掛けはその面で初めて出るときだけ知らせる。ボールの速さが変わるときはあわせて知らせる
   const first = key => nextDef[key] && !STAGES.slice(0, nextNo - 1).some(d => d[key]);
-  const newItems = Object.values(ITEMS).some(d => d.from === nextNo) ? '新しいアイテムも落ちてくるようになります。' : '';
-  const note = lastOne ? '全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。'
-    : baseSpeed(S.stage + 1) > baseSpeed(S.stage) ? '次のステージはボールが少し速くなります。'
-    : first('vmove') ? '次のステージから、タイルが上下にも動きます。'
-    : first('bugs') ? '次のステージから、ボールを跳ね返す虫が出てきます。' + newItems
-    : first('thrower') ? '次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。'
-    : newItems;
+  const notes = [];
+  if (lastOne) {
+    notes.push('全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。');
+  } else {
+    if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
+    if (first('bugs')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
+    if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
+    if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
+    const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
+    if (nextSlow < nowSlow) notes.push(nowSlow < 1 ? '虫が増えるぶん、ボールはさらに遅くなります。' : '虫がいるぶん、ボールは遅めです。');
+    else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
+      notes.push(nowSlow === 1 ? '次のステージはボールが少し速くなります。' : nextSlow === 1 ? 'ボールの速さは元に戻ります。' : 'ボールは少し速くなります。');
+    }
+  }
+  const note = notes.join('');
   showOverlay({
     title: 'ステージ ' + S.stage + ' クリア',
     text: 'クリアボーナス +' + fmt(bonus) + (note ? '\n' + note : ''),
@@ -1134,7 +1147,7 @@ function hitBricks(b){
       if (b.y < br.y + br.h / 2) { b.vy = -Math.abs(b.vy); b.y = br.y - BALL_R; }
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + BALL_R; }
     }
-    S.speed = Math.min(S.speed + 1.5, baseSpeed(S.stage) + 90);
+    S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
     normalizeBall(b);
     damage(br, false);
     return true;
