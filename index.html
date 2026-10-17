@@ -138,6 +138,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .seg-btn{font:inherit;font-size:.8rem;font-weight:700;line-height:1.3;padding:8px 6px;border:0;background:var(--board);color:var(--ink);cursor:pointer}
 .seg-btn + .seg-btn{border-left:1px solid var(--line)}
 .seg-btn[aria-pressed="true"]{background:var(--paddle);color:var(--on-paddle)}
+.seg.three{grid-template-columns:repeat(3,1fr)}
 
 .items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .items.one{grid-template-columns:1fr}
@@ -204,6 +205,14 @@ img{max-width:100%}
             <div class="seg" id="controlSeg" role="group" aria-label="スマホでの操作">
               <button class="seg-btn" type="button" data-control="puni">起点から動かす</button>
               <button class="seg-btn" type="button" data-control="direct">指の位置に合わせる</button>
+            </div>
+            <div class="section" id="paceBox">
+              <p class="sub">起点から動かすときの速さ</p>
+              <div class="seg three" id="paceSeg" role="group" aria-label="起点から動かすときの速さ">
+                <button class="seg-btn" type="button" data-pace="slow">遅め</button>
+                <button class="seg-btn" type="button" data-pace="normal">ふつう</button>
+                <button class="seg-btn" type="button" data-pace="fast">速め</button>
+              </div>
             </div>
           </div>
 
@@ -284,9 +293,11 @@ const POINTS = {1: 10, 2: 30, 3: 60};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
-const CONTROL_KEY = 'tile-kuzushi-control';
+const CONTROL_KEY = 'tile-kuzushi-control', PACE_KEY = 'tile-kuzushi-pace';
 // 起点から動かす操作：ずらす量は画面上の px で測る（盤面の大きさに左右されないように）
-const STICK_DEAD = 4, STICK_FULL = 44, STICK_MAX = 720;
+// 動き始めの速さは STICK_GAIN の曲線で決め、いちばん速いときは選んだ速さで頭打ちにする
+const STICK_DEAD = 4, STICK_FULL = 44, STICK_GAIN = 720;
+const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 
 // 1: 1回で割れる  2: 2回  3: 3回  *: 爆弾（まわり8マスも割れる）  .: 空き
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
@@ -358,7 +369,7 @@ const canvas = $('cv'), ctx = canvas.getContext('2d');
 const wrapEl = $('wrap'), boardEl = $('board'), cardEl = $('card');
 const overlay = $('overlay'), ovEyebrow = $('ovEyebrow'), ovTitle = $('ovTitle'), ovText = $('ovText');
 const ovBtn = $('ovBtn'), ovBtn2 = $('ovBtn2'), pickerEl = $('picker'), helpEl = $('help'), stagesEl = $('stages');
-const controlSec = $('controlSec'), controlSeg = $('controlSeg');
+const controlSec = $('controlSec'), controlSeg = $('controlSeg'), paceBox = $('paceBox'), paceSeg = $('paceSeg');
 const hint = $('hint');
 const elScore = $('score'), elBest = $('best'), elStage = $('stage'), elLives = $('lives');
 const btnPause = $('pauseBtn'), btnSound = $('soundBtn');
@@ -396,7 +407,7 @@ const S = {
 };
 let onPrimary = null, onSecondary = null;
 // スマホでの操作：'puni' は起点から動かす、'direct' は指の位置に合わせる
-let control = 'puni';
+let control = 'puni', pace = 'normal';
 
 /* ---------- 色 ---------- */
 const C = {};
@@ -833,6 +844,8 @@ function titleText(){
 }
 function renderControl(){
   for (const b of controlSeg.children) b.setAttribute('aria-pressed', b.dataset.control === control ? 'true' : 'false');
+  for (const b of paceSeg.children) b.setAttribute('aria-pressed', b.dataset.pace === pace ? 'true' : 'false');
+  paceBox.hidden = control !== 'puni';
 }
 function setControl(v){
   control = v;
@@ -844,6 +857,15 @@ for (const b of controlSeg.children) {
   b.addEventListener('click', e => {
     ensureAudio();
     setControl(b.dataset.control);
+    if (e.detail > 0) b.blur();
+  });
+}
+for (const b of paceSeg.children) {
+  b.addEventListener('click', e => {
+    ensureAudio();
+    pace = b.dataset.pace;
+    store.set(PACE_KEY, pace);
+    renderControl();
     if (e.detail > 0) b.blur();
   });
 }
@@ -979,10 +1001,12 @@ const stick = {on: false, ox: 0, oy: 0, x: 0};
 function stickSpeed(){
   if (!stick.on) return 0;
   const d = (stick.x - stick.ox) * scale;
-  // 少しずらしたときは細かく、大きくずらしたときは一気に速くなるよう、ゆるやかに立ち上げる
+  // 少しずらしたときは細かく、大きくずらすほど速くなるよう、ゆるやかに立ち上げる
   const k = clamp((Math.abs(d) - STICK_DEAD) / (STICK_FULL - STICK_DEAD), 0, 1);
-  return Math.sign(d) * STICK_MAX * Math.pow(k, 1.5);
+  return Math.sign(d) * Math.min(STICK_GAIN * Math.pow(k, 1.5), STICK_PACE[pace]);
 }
+// いちばん速くなるずらし量（画面上の px）。起点の輪の大きさに使う
+const stickReach = () => STICK_DEAD + (STICK_FULL - STICK_DEAD) * Math.pow(STICK_PACE[pace] / STICK_GAIN, 1 / 1.5);
 // 指は最初に触れた1本だけを追う
 let dragging = false, dragId = null;
 canvas.addEventListener('pointerdown', e => {
@@ -1608,7 +1632,7 @@ function drawBug(x, y, o){
 function drawStick(){
   if (!stick.on || (S.mode !== 'play' && S.mode !== 'ready')) return;
   // 起点の輪と、今ずらしている位置の点（点は輪の外に出さない）
-  const r = STICK_FULL / scale;
+  const r = stickReach() / scale;
   const kx = stick.ox + clamp(stick.x - stick.ox, -r, r);
   ctx.save();
   ctx.globalAlpha = 0.3;
@@ -1865,6 +1889,8 @@ function start(data){
   const sv = store.get(SOUND_KEY);
   soundOn = sv === null ? true : sv === '1';
   control = store.get(CONTROL_KEY) === 'direct' ? 'direct' : 'puni';
+  const pv = store.get(PACE_KEY);
+  pace = Object.keys(STICK_PACE).includes(pv) ? pv : 'normal';
   renderControl();
   const pk = +(store.get(PICK_KEY) || 1);
   S.pick = pk >= 1 && pk <= STAGES.length ? pk : 1;
