@@ -43,6 +43,8 @@
   --t-lock:#5a4a72;
   --t-botan:#b0479e;
   --t-moegi:#6f7d1c;
+  --t-hi:#6b2a1a;
+  --t-sora:#3b8ec4;
   --bug:#2f5d48;
   --bad:#4b3a4f;
   --warn:#c4472f;
@@ -61,7 +63,7 @@
     --t-fuji:#9d86e0; --t-kurumi:#cf8b4d; --t-nibi:#8fa4b3; --bug:#72bf98;
     --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
     --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
-    --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a;
+    --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2;
     --bad:#7a5f80; --warn:#ef7b5f;
     color-scheme:dark;
   }
@@ -74,7 +76,7 @@
   --t-fuji:#9d86e0; --t-kurumi:#cf8b4d; --t-nibi:#8fa4b3; --bug:#72bf98;
   --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
   --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
-  --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a;
+  --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2;
   --bad:#7a5f80; --warn:#ef7b5f;
   color-scheme:dark;
 }
@@ -179,6 +181,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.magnet{background:var(--t-kon)}
 .cap.big{background:var(--t-botan)}
 .cap.aim{background:var(--t-moegi)}
+.cap.up{background:var(--t-sora)}
 .cap.iron{background:var(--t-iron);border-radius:3px}
 .cap.regen{background:var(--t-wakakusa);border-radius:3px}
 .cap.sprout{background:var(--t-sprout);border-radius:3px}
@@ -186,6 +189,10 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.chest{background:var(--t-chest);border-radius:3px}
 .cap.key{background:var(--t-fuji);border-radius:3px}
 .cap.lock{background:var(--t-lock);border-radius:3px}
+.cap.twin{background:var(--t-botan);border-radius:3px}
+.cap.fire{background:var(--t-hi);color:var(--t-yamabuki);border-radius:3px}
+/* 盾のタイルは、盤面と同じく下がわに濃い板を付ける */
+.cap.shield{background:var(--t-sango);border-radius:3px;box-shadow:inset 0 -4px 0 var(--t-hard)}
 /* まばたきタイルは目、ワープは穴を、盤面と同じ形で描く */
 .cap.blink{position:relative;background:var(--t-sango);border-radius:3px}
 .cap.blink::before,.cap.blink::after,.cap.warp::before{content:"";position:absolute;left:50%;top:50%;border-radius:50%}
@@ -304,6 +311,9 @@ img{max-width:100%}
                 <li data-from="57"><span class="cap lock">錠</span>{錠|じょう}。{開|ひら}くまでは、ボールも{光|ひかり}もはね{返|かえ}して{割|わ}れない。{爆弾|ばくだん}も{霧|きり}も{効|き}かない。{開|ひら}くと2{回|かい}で{割|わ}れるタイルになる</li>
                 <li data-from="57"><span class="cap blink"></span>まばたきタイル。3{秒|びょう}{出|で}て、2{秒|びょう}{消|き}える。{消|き}えているあいだは、ボールが{通|とお}りぬける。1{回|かい}で{割|わ}れる。「{止|と}」のあいだは、そのまま{止|と}まる</li>
                 <li data-from="57"><span class="cap warp"></span>ワープの{穴|あな}。{同|おな}じ{色|いろ}の{穴|あな}が2つで1{組|くみ}。ボールが{入|はい}ると、もう{片方|かたほう}の{穴|あな}から{同|おな}じ{向|む}きで{出|で}てくる。{割|わ}らなくてもクリアできる</li>
+                <li data-from="73"><span class="cap shield">盾</span>{盾|たて}のタイル。2{回|かい}で{割|わ}れる。{下|した}から{当|あ}たったボールと{光|ひかり}は、はね{返|かえ}して{割|わ}れない。{横|よこ}か{上|うえ}から{当|あ}てると{割|わ}れる。{霧|きり}がかかるか、お{助|たす}けで{光|ひか}ると、{盾|たて}が{外|はず}れる</li>
+                <li data-from="73"><span class="cap twin">双</span>ふたごタイル。{同|おな}じ{色|いろ}の2{枚|まい}で1{組|くみ}。1{枚|まい}に{当|あ}てると{光|ひか}って、7{秒|びょう}のうちにもう1{枚|まい}にも{当|あ}てると、2{枚|まい}とも{割|わ}れる。{爆弾|ばくだん}なら1{枚|まい}だけでも{割|わ}れる</li>
+                <li data-from="73"><span class="cap fire">火</span>{火|ひ}のタイル。1{回|かい}で{割|わ}れる。{割|わ}ると{左右|さゆう}へ{火|ひ}が{走|はし}って、{横|よこ}にならんだタイルを1{回|かい}ぶんずつ{割|わ}る。{火|ひ}は{空|あ}いたところも{越|こ}えて{端|はし}まで{走|はし}り、{鉄|てつ}と{錠|じょう}で{止|と}まる</li>
               </ul>
             </div>
             <div class="section group">
@@ -360,6 +370,12 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">ステージ73から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="73"><span class="cap up">上</span>{板|いた}で{打|う}ったボールが、いちばん{上|うえ}から{出|で}てくる（3{回|かい}まで）</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">たまに{出|で}るアイテム</p>
               <ul class="items one">
                 <li data-from="1"><span class="cap fuku">福</span>8{秒|びょう}のあいだ、{点|てん}が2{倍|ばい}。{鉄|てつ}でなければ、タイルをつきぬけて{割|わ}る</li>
@@ -396,6 +412,12 @@ img{max-width:100%}
               <p class="note" data-from="65">かためる{虫|むし}がいるステージも、ボールが{少|すこ}しゆっくりになります。</p>
             </div>
             <div class="section group">
+              <p class="sub">ステージ73から{出|で}てくる{虫|むし}（やっつけられない）</p>
+              <ul class="items one">
+                <li data-from="73"><span class="cap bug">運</span>{運|はこ}ぶ{虫|むし}。{上|うえ}を{歩|ある}きながら、8{秒|びょう}ごとに、いちばん{下|した}のタイルを1{枚|まい}つかんで、{上|うえ}のほうの{空|あ}いたところへ{運|はこ}ぶ。{運|はこ}んでいるタイルにボールか{光|ひかり}を{当|あ}てると、1{回|かい}で{割|わ}れる。{虫|むし}にボールか{光|ひかり}を{当|あ}てると4{秒|びょう}、{霧|きり}がかかると10{秒|びょう}{止|と}まる</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">お{助|たす}け</p>
               <ul class="notes">
                 <li data-from="1">1{分|ぷん}ごとに、どれか1{枚|まい}のタイルにいいアイテムが{入|はい}ります（{右|みぎ}がわの{丸|まる}い{印|しるし}）。{割|わ}ると、かならずそのアイテムが{落|お}ちてきます。</li>
@@ -404,6 +426,7 @@ img{max-width:100%}
                 <li data-from="33">{鉄|てつ}のタイルがあるステージでは、「{霧|きり}」が{出|で}やすくなります。</li>
                 <li data-from="49">ステージ49からは、40{秒|びょう}ごとにアイテムが{入|はい}ります。</li>
                 <li data-from="57">ステージ57からは、のこりのボールが1つでステージに{入|はい}ると、さいしょから「{守|まもり}」がついています。</li>
+                <li data-from="73">{盾|たて}のタイルがあるステージでは、「{上|うえ}」が{出|で}やすくなります。</li>
               </ul>
             </div>
             <div class="section group">
@@ -461,10 +484,20 @@ const BIG_T = 12, BIG_K = 1.6;
 const AIM_T = 10, AIM_LEN = 900, AIM_TURNS = 4, AIM_BALLS = 3;
 // かためる虫：かためる間隔、かたまりが飛んでいく時間
 const PAINT_EVERY = 8, PAINT_FLY = 0.4;
+// ふたごタイル：1枚目に当ててから、もう1枚に当てるまでの長さ
+const TWIN_T = 7;
+// 火：走る速さと、描く炎の大きさ
+const FIRE_V = 360, FIRE_R = 8;
+// 運ぶ虫：運ぶ間隔、1面で運ぶ数、飛ぶ速さ。残りのタイルがこの数以下になったら運ばない
+const CARRY_EVERY = 8, CARRY_STOCK = 10, CARRY_V = 170, CARRY_LEFT = 3;
+// 上：板で打ったボールを、いちばん上から出す回数
+const UP_N = 3;
 // ぐるぐる回る行：右の端から出きったタイルが、左の端の外へ戻るまでの長さ
 const LOOP_LEN = W + BRICK_W;
 // 鉄のある面で、霧吹きが出る割合に足す分
 const SPRAY_IRON_PLUS = 0.1;
+// 盾のある面で、「上」が出る割合に足す分
+const UP_SHIELD_PLUS = 0.1;
 // お助け：アイテム入りのタイルを作る間隔、残り枚数と待ち時間、アイテムの出方を変える面
 const GIFT_EVERY = 60, ASSIST_LEFT = 3, ASSIST_AFTER = 20, EASE_FROM = 33;
 // 49面からは、アイテム入りのタイルを作る間隔を短くする
@@ -474,7 +507,7 @@ const GUARD_FROM = 57;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
-const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2};
+const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
@@ -495,6 +528,9 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // o / O: ワープの穴（同じ字の2つで1組。タイルではなく、クリアの数に入らない。動く行・動く列には置かない）
 // J: 強い錠（鍵を全部割ると、ふつうの錠になって鍵がもう一度出る。この面の鍵は動く行・動く列に置かない）
 // M: 強いまばたき（2回。1.5秒出て1秒消える）
+// g: 盾（2回。下から当たったボールと光ははね返して割れない。横か上からなら割れる）
+// p / P: ふたご（1回。同じ字の2枚で1組。1枚に当ててから7秒のうちにもう1枚に当てると、2枚とも割れる。組の2枚を同じ動く行に置かない）
+// f: 火（1回。割ると左右へ火が走り、横にならんだタイルを1回ぶんずつ割る。空きは越えて端まで走り、鉄と閉じた錠で止まる）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
@@ -503,6 +539,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // paint: true  bug の虫を、8秒ごとに近くのタイルを1段かたくする虫にする
 // loop: { 行番号: 速さ }  その行のタイルが同じ向きに回り続ける。端から出たタイルは反対の端から入る（負の値は左へ）
 // thrower: true  上を歩いて空いたマスにタイルを投げ込む虫（動く行・動く列のマスには投げない）
+// carry: true  上を歩いて、いちばん下の行のふつうのタイルを、いちばん上に近い空いたマスへ運ぶ虫（動く行・動く列は使わない。thrower と同じ面には出さない）
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
   {rows: ['22222222','11111111','11111111','11111111','11111111']},
@@ -590,6 +627,15 @@ const STAGES = [
   {rows: ['33333333','3o3mm3O3','mmm..mmm','22.22...','22222222','2O2..2o2','11111111'], loop: {3: 70}},
   {rows: ['3J3333J3','o33MM33O','##.##.##','2k2..2k2','33.33...','2O2mm2o2','11111111'],
    loop: {4: -65}, bug: 60, paint: true},
+  {rows: ['33333333','22222222','2.g22g.2','11111111','1g.11.g1','11111111']},
+  {rows: ['33333333','22222222','2p2..2p2','11111111','1P1111P1','11111111']},
+  {rows: ['333f3333','22222222','2f2..2f2','11111111','1111f111','1.1..1.1']},
+  {rows: ['33333333','3.3333.3','22222222','2.2..2.2','11111111','1.1..1.1'], carry: true},
+  {rows: ['33333333','gg2f....','22222222','....f2gg','11111111','1.1..1.1'], move: {1: 60, 3: -60}},
+  {rows: ['33333333','3o2p22O3','##.##.##','22222222','2O22p2o2','11111111']},
+  {rows: ['33333333','3ggffgg3','mmmmmmmm','22.22.22','11111111','1.1..1.1'], carry: true},
+  {rows: ['3g3333g3','o3p33P3O','##.##.##','22g22g22','3f.33...','2O2Pp2o2','11111111'],
+   loop: {4: -65}, carry: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -607,6 +653,7 @@ const ITEMS = {
   magnet: {glyph: '磁', pop: 'じしゃく',      color: 't-kon',      weight: 9,  kind: 'good', from: 41},
   big:    {glyph: '大', pop: 'おおきい ボール', color: 't-botan',    weight: 9,  kind: 'good', from: 57},
   aim:    {glyph: '狙', pop: 'ねらい',        color: 't-moegi',    weight: 9,  kind: 'good', from: 65},
+  up:     {glyph: '上', pop: 'うえから',      color: 't-sora',     weight: 9,  kind: 'good', from: 73},
   fuku:   {glyph: '福', pop: '',              color: 'gold',       weight: 2,  kind: 'rare'},
   shrink: {glyph: '縮', pop: 'みじかい いた', color: 'bad',        weight: 5,  kind: 'bad'},
   fast:   {glyph: '速', pop: 'はやい ボール', color: 'bad',        weight: 5,  kind: 'bad'},
@@ -623,6 +670,7 @@ const INTROS = {
   49: {title: '{強|つよ}くなったタイルと{虫|むし}'},
   57: {title: '{鍵|かぎ}・まばたき・ワープ'},
   65: {title: '{強|つよ}いタイルと{新|あたら}しい{虫|むし}'},
+  73: {title: '{盾|たて}・ふたご・{火|ひ}・{運|はこ}ぶ{虫|むし}'},
 };
 
 const $ = id => document.getElementById(id);
@@ -675,13 +723,16 @@ const patternNo = n => ((n - 1) % STAGES.length) + 1;
 const itemWeight = (key, d, n) => n < EASE_FROM ? d.weight
   : d.kind === 'bad' ? d.weight * 0.5 : key === 'life' || key === 'guard' ? d.weight * 1.5 : d.weight;
 const hasIron = n => STAGES[n - 1].rows.some(r => r.includes('#'));
+const hasShield = n => STAGES[n - 1].rows.some(r => r.includes('g'));
 // クリアまでに割らないといけないタイルか（鉄は割らなくてよい）
 const needBreak = b => b.hp > 0 && !b.iron;
 // ボールをはね返して割れないタイル
 const solid = b => b.iron || b.lock;
+// 盾が、下から当たったボールを止めるか（ox / oy は横と縦のめりこみ、by はボールの中心の高さ）
+const guards = (b, ox, oy, by) => b.shield && ox >= oy && by > b.y + b.h / 2;
 // 仕掛けのない、ふつうのタイルか（かためる虫はこれだけをかたくする）
 const plain = b => b.hp > 0 && !b.gold && !b.bomb && !b.iron && !b.rust && !b.regen && !b.sprout && !b.wither &&
-  !b.zap && !b.chest && !b.key && !b.lock && !b.blink;
+  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
 
 const S = {
@@ -690,11 +741,11 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [],
+  keyCells: [], keyWait: [], globs: [], fires: [], carrier: null,
   giftT: 0, stuckT: 0, assisted: false,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
-  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, bolts: [],
+  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, bolts: [],
   paddle: {x: W / 2, w: 88}
 };
 let onPrimary = null, onSecondary = null;
@@ -707,7 +758,7 @@ function readColors(){
   const cs = getComputedStyle(document.documentElement);
   ['board','grout','ink','muted','panel','line','paddle','ball','on-tile','on-yamabuki','bad','warn',
    't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard','t-bomb','t-fuji','t-kurumi','t-nibi','t-iron','t-rust','t-mist',
-   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','bug']
+   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','bug']
     .forEach(k => { C[k] = cs.getPropertyValue('--' + k).trim(); });
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
@@ -773,6 +824,12 @@ function sfx(name, arg){
     case 'paint':  tone(240, 0.14, 'sine', 0.05, 520); break;
     case 'harden': tone(180, 0.1, 'square', 0.04, 120); tone(900, 0.05, 'triangle', 0.03, null, 0.04); break;
     case 'warp':   tone(320, 0.18, 'sine', 0.06, 1400); tone(1400, 0.14, 'sine', 0.03, 500, 0.12); break;
+    case 'shield': tone(1300, 0.05, 'square', 0.025, 900); tone(420, 0.08, 'triangle', 0.04, 300, 0.02); break;
+    case 'twin':   tone(1180, 0.12, 'sine', 0.05, 1480); break;
+    case 'twins':  [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.1, 'triangle', 0.055, null, i * 0.06)); break;
+    case 'fire':   tone(220, 0.32, 'sawtooth', 0.03, 560); tone(1600, 0.26, 'triangle', 0.02, 700, 0.03); break;
+    case 'up':     tone(480, 0.14, 'sine', 0.05, 1500); break;
+    case 'pick':   tone(380, 0.1, 'triangle', 0.05, 620); break;
     case 'spray':  tone(2600, 0.45, 'sawtooth', 0.012, 700); tone(1900, 0.4, 'triangle', 0.02, 900, 0.03); break;
     case 'gift':   [1175, 1568].forEach((f, i) => tone(f, 0.1, 'sine', 0.05, null, i * 0.08)); break;
     case 'assist': [660, 990, 1320].forEach((f, i) => tone(f, 0.12, 'sine', 0.05, null, i * 0.1)); break;
@@ -818,7 +875,8 @@ function makeBrick(r, c, hp, bomb){
     color: ROW_COLORS[r % ROW_COLORS.length], cracks: [], flash: 0, gold: false, bomb,
     iron: false, rust: false, regen: false, regenT: 0, item: null,
     sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false,
-    key: false, lock: false, blink: false, shown: true
+    key: false, lock: false, blink: false, shown: true,
+    shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false
   };
 }
 function buildStage(n){
@@ -843,6 +901,10 @@ function buildStage(n){
       b.key = ch === 'k';
       b.lock = ch === 'L' || ch === 'J';
       b.blink = ch === 'm' || ch === 'M';
+      b.shield = ch === 'g';
+      b.twin = ch === 'p' || ch === 'P';
+      b.pair = ch === 'P' ? 1 : 0;
+      b.fire = ch === 'f';
       list.push(b);
     });
   });
@@ -854,9 +916,12 @@ function buildStage(n){
   // ワープの穴は同じ字のもう1つへつなぐ（相手のない穴は置かない）
   for (const w of warps) w.to = warps.find(o => o !== w && o.pair === w.pair);
   S.warps = warps.filter(w => w.to);
+  // ふたごも同じ字のもう1枚と組にする（相手のないものは、ふつうのタイルにする）
+  for (const b of list) if (b.twin && !list.some(o => o !== b && o.twin && o.pair === b.pair)) b.twin = false;
   // 金のタイル：3回に1回くらい、どこか1枚
   if (Math.random() < 0.35) {
-    const cands = list.filter(b => b.max <= 2 && !b.bomb && !b.iron && !b.regen && !b.sprout && !b.chest && !b.key && !b.lock && !b.blink);
+    const cands = list.filter(b => b.max <= 2 && !b.bomb && !b.iron && !b.regen && !b.sprout && !b.chest && !b.key && !b.lock && !b.blink &&
+      !b.shield && !b.twin && !b.fire);
     if (cands.length) cands[Math.floor(Math.random() * cands.length)].gold = true;
   }
   S.rowMove = {};
@@ -882,8 +947,13 @@ function buildStage(n){
   S.thrower = def.thrower
     ? {x: W / 2, dir: Math.random() < 0.5 ? -1 : 1, stock: THROW_STOCK, cool: 3, windup: 0, stunT: 0, leaving: false, step: 0}
     : null;
+  S.carrier = def.carry
+    ? {x: W / 2, y: THROW_Y, dir: Math.random() < 0.5 ? -1 : 1, stock: CARRY_STOCK, cool: 4, stunT: 0, leaving: false, step: 0,
+       state: 'walk', br: null, to: null}
+    : null;
   S.flying = [];
   S.globs = [];
+  S.fires = [];
   return list;
 }
 function moveRows(dt){
@@ -990,6 +1060,9 @@ function freeCell(r, c){
   if (S.rowMove[r] || (S.colMove[c] && r >= top && r <= bottom)) return false;
   if (S.warps.some(w => w.row === r && w.col === c)) return false;
   if (S.keyCells.some(([kr, kc]) => kr === r && kc === c)) return false;
+  // 運ぶ虫がタイルを置きに行くマス
+  const to = S.carrier && S.carrier.to;
+  if (to && to[0] === r && to[1] === c) return false;
   if (S.bricks.some(b => b.hp > 0 && b.row === r && b.col === c)) return false;
   return !S.flying.some(f => f.row === r && f.col === c);
 }
@@ -1038,6 +1111,80 @@ function moveThrower(dt){
     if (t.cool <= 0) t.windup = 0.45;
   }
 }
+// 運ぶ虫：いちばん下の行のふつうのタイルを1枚選び、それより上でいちばん上に近い空いたマスを決める
+function carryPlan(){
+  if (S.bricks.reduce((a, b) => a + (needBreak(b) ? 1 : 0), 0) <= CARRY_LEFT) return null;
+  const [top, bottom] = S.vband;
+  const src = S.bricks.filter(b => plain(b) && !S.rowMove[b.row] && !(S.colMove[b.col] && b.row >= top && b.row <= bottom));
+  if (!src.length) return null;
+  const low = Math.max(...src.map(b => b.row));
+  for (let r = 0; r < low; r++) {
+    const cells = [];
+    for (let c = 0; c < COLS; c++) if (freeCell(r, c)) cells.push([r, c]);
+    if (!cells.length) continue;
+    const from = src.filter(b => b.row === low);
+    return {br: from[Math.floor(Math.random() * from.length)], to: cells[Math.floor(Math.random() * cells.length)]};
+  }
+  return null;
+}
+// 運ぶ虫を (x, y) へ近づける。着いたら true
+function flyTo(k, x, y, dt){
+  const dx = x - k.x, dy = y - k.y, d = Math.hypot(dx, dy), s = CARRY_V * dt;
+  if (d <= s) { k.x = x; k.y = y; return true; }
+  k.x += dx / d * s;
+  k.y += dy / d * s;
+  return false;
+}
+function moveCarrier(dt){
+  const k = S.carrier;
+  if (!k) return;
+  if (k.stunT > 0) { k.stunT = Math.max(0, k.stunT - dt); return; }
+  k.step += dt;
+  if (k.state === 'walk') {
+    if (k.leaving) {
+      k.x += k.dir * 90 * dt;
+      if (k.x < -BUG_R * 3 || k.x > W + BUG_R * 3) S.carrier = null;
+      return;
+    }
+    k.x += k.dir * 55 * dt;
+    if (k.x < BUG_EDGE) { k.x = BUG_EDGE; k.dir = 1; }
+    else if (k.x > W - BUG_EDGE) { k.x = W - BUG_EDGE; k.dir = -1; }
+    if (S.mode !== 'play') return;
+    k.cool -= dt;
+    if (k.cool > 0) return;
+    const plan = carryPlan();
+    if (!plan) { k.cool = 1.5; return; }
+    k.br = plan.br; k.to = plan.to; k.state = 'down';
+    k.stock--;
+    return;
+  }
+  const br = k.br;
+  // つかむ前や運んでいるあいだにタイルが割れたら、上へ戻る
+  if (k.state !== 'up' && br.hp <= 0) { k.state = 'up'; k.br = null; k.to = null; }
+  if (k.state === 'down') {
+    // タイルの真上へ下りて、つかむ
+    if (flyTo(k, br.x + br.w / 2, br.y - BUG_R + 2, dt)) { k.state = 'carry'; br.carried = true; sfx('pick'); }
+  } else if (k.state === 'carry') {
+    const [r, c] = k.to, cx = SIDE + c * CELL, cy = BRICK_TOP + r * ROW_STEP;
+    const there = flyTo(k, cx + BRICK_W / 2, cy - BUG_R + 2, dt);
+    br.x = k.x - br.w / 2;
+    br.y = k.y + BUG_R - 2;
+    // ボールがそのマスにいる間は、上で待ってから置く
+    if (there && !ballOverlaps(cx, cy, BRICK_W, BRICK_H)) {
+      br.row = r; br.col = c;
+      br.baseX = br.x = cx; br.baseY = br.y = cy;
+      br.carried = false;
+      br.flash = 0.12;
+      k.state = 'up'; k.br = null; k.to = null;
+      sfx('land');
+    }
+  } else if (flyTo(k, k.x, THROW_Y, dt)) {
+    k.state = 'walk';
+    k.cool = CARRY_EVERY;
+    // 運び切ったら近いほうの端から帰っていく
+    if (k.stock <= 0) { k.leaving = true; k.dir = k.x < W / 2 ? -1 : 1; }
+  }
+}
 function ballOverlaps(x, y, w, h){
   return S.balls.some(b => {
     const dx = b.x - clamp(b.x, x, x + w), dy = b.y - clamp(b.y, y, y + h);
@@ -1063,7 +1210,7 @@ function clearEffects(){
   S.items = []; S.lasers = []; S.mists = []; S.bolts = [];
   S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = false;
   S.laserT = 0; S.laserCool = 0; S.catchT = 0; S.stopT = 0; S.magnetT = 0; S.shockT = 0;
-  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = [];
+  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.fires = [];
   S.paddle.w = basePaddle(S.stage);
   S.paddle.x = clamp(S.paddle.x, S.paddle.w / 2, W - S.paddle.w / 2);
 }
@@ -1170,7 +1317,7 @@ function stageClear(){
   const bonus = 100 * S.stage + 50 * S.lives;
   S.score += bonus;
   S.mode = 'clear';
-  S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = [];
+  S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = []; S.fires = [];
   S.cleared.add(patternNo(S.stage));
   store.set(CLEARED_KEY, [...S.cleared].join(','));
   saveBest();
@@ -1203,6 +1350,9 @@ function stageClear(){
       if (firstTile(/M/)) notes.push('{次|つぎ}のステージから、{速|はや}くまばたく「{強|つよ}いまばたきタイル」が{出|で}てきます。2{回|かい}で{割|わ}れます。');
       if (first('paint')) notes.push('{次|つぎ}のステージから、タイルをかたくする{虫|むし}が{出|で}てきます。{霧|きり}をかけると{止|と}まります。');
       if (first('loop')) notes.push('{次|つぎ}のステージから、タイルが{横|よこ}にぐるぐる{回|まわ}ります。{端|はし}から{出|で}たタイルは、{反対|はんたい}の{端|はし}から{入|はい}ってきます。');
+      if (firstTile(/[pP]/)) notes.push('{次|つぎ}のステージから、2{枚|まい}で1{組|くみ}の「ふたごタイル」が{出|で}てきます。1{枚|まい}に{当|あ}ててから7{秒|びょう}のうちに、もう1{枚|まい}にも{当|あ}てると{割|わ}れます。');
+      if (firstTile(/f/)) notes.push('{次|つぎ}のステージから、{割|わ}ると{横|よこ}に{火|ひ}が{走|はし}る「{火|ひ}のタイル」が{出|で}てきます。');
+      if (first('carry')) notes.push('{次|つぎ}のステージから、{下|した}のタイルを{上|うえ}へ{運|はこ}ぶ{虫|むし}が{出|で}てきます。{運|はこ}んでいるタイルにボールを{当|あ}てると{割|わ}れます。');
       if (first('eat')) notes.push('{次|つぎ}のステージから、{落|お}ちてくるアイテムを{食|た}べる{虫|むし}が{出|で}てきます。');
       if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('{新|あたら}しいアイテムも{落|お}ちてくるようになります。');
       if (nextNo === EASE_FROM) notes.push('ここからは、とらないほうがいいアイテムがへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。');
@@ -1331,7 +1481,7 @@ for (let n = 1; n <= STAGES.length; n++) {
   const mark = document.createElement('span'); mark.className = 'st-mark';
   b.append(num, mark);
   const def = STAGES[n - 1];
-  const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') + (def.bug || def.thrower ? '虫' : '');
+  const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') + (def.bug || def.thrower || def.carry ? '虫' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -1351,7 +1501,8 @@ function renderPicker(){
       + (def.loop ? '（タイルがぐるぐる回る）' : '');
     const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug && def.eat ? '（アイテムを食べる虫が出る）'
       : def.bug && def.paint ? '（タイルをかためる虫が出る）'
-      : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
+      : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）'
+      : def.carry ? '（タイルを運ぶ虫が出る）' : '';
     b.setAttribute('aria-label', 'ステージ' + n + moves + bugs + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
@@ -1498,12 +1649,13 @@ function pickItem(ok){
   const n = patternNo(S.stage);
   const pool = Object.entries(ITEMS).filter(([, d]) => (!d.from || n >= d.from) && (!ok || ok(d)));
   const ws = pool.map(([key, d]) => itemWeight(key, d, n));
-  // 鉄のある面は、霧吹きの出る割合を SPRAY_IRON_PLUS だけ上げる（6% なら 16% に）
-  const si = pool.findIndex(([key]) => key === 'spray');
-  if (si >= 0 && hasIron(n)) {
+  // 鉄のある面は霧吹き、盾のある面は「上」の出る割合を、決めた分だけ上げる（6% なら 16% に）
+  for (const [k, plus, on] of [['spray', SPRAY_IRON_PLUS, hasIron(n)], ['up', UP_SHIELD_PLUS, hasShield(n)]]) {
+    const i = pool.findIndex(([key]) => key === k);
+    if (i < 0 || !on) continue;
     const all = ws.reduce((a, v) => a + v, 0);
-    const share = ws[si] / all + SPRAY_IRON_PLUS;
-    ws[si] = (all - ws[si]) * share / (1 - share);
+    const share = ws[i] / all + plus;
+    ws[i] = (all - ws[i]) * share / (1 - share);
   }
   let r = Math.random() * ws.reduce((a, v) => a + v, 0);
   for (let i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) return pool[i][0]; }
@@ -1562,6 +1714,7 @@ function applyItem(type){
     case 'magnet': S.magnetT = MAGNET_T; break;
     case 'big':    S.bigT = BIG_T; break;
     case 'aim':    S.aimT = AIM_T; break;
+    case 'up':     S.up = Math.min(S.up + UP_N, UP_N * 2); break;
     case 'spray': {
       // パドルにいちばん近い列を中心に、左右1列ずつ（端でも3列にかかるようにする）
       const c = clamp(Math.round((S.paddle.x - SIDE - BRICK_W / 2) / CELL), 1, COLS - 2);
@@ -1606,6 +1759,13 @@ function soften(br){
   // 閉じた錠には効かない
   if (br.lock) return;
   br.regen = false;
+  if (br.shield) {
+    // 盾は外れるだけで、やわらかくはならない
+    br.shield = false;
+    br.flash = 0.2;
+    S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: 'たてが とれた', t: 0});
+    return;
+  }
   if (br.sprout) {
     br.sprout = false; br.wither = true;
     S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: 'かれた', t: 0});
@@ -1648,7 +1808,12 @@ function updateMists(dt){
     }
     if (t && !t.leaving && !m.hit.has(t) && THROW_Y + BUG_R >= m.y && Math.abs(t.x - m.x) < SPRAY_W + BUG_R) {
       m.hit.add(t);
-      stunThrower(SPRAY_STUN);
+      stunWalker(t, SPRAY_STUN);
+    }
+    const k = S.carrier;
+    if (k && !k.leaving && !m.hit.has(k) && k.y + BUG_R >= m.y && Math.abs(k.x - m.x) < SPRAY_W + BUG_R) {
+      m.hit.add(k);
+      stunWalker(k, SPRAY_STUN);
     }
   }
 }
@@ -1722,6 +1887,10 @@ function assist(){
     if (br.lock) continue;
     if (br.hp > 1) softened = true;
     br.regen = false;
+    // 盾は外れ、ふたごは組がとけて、ふつうのタイルになる
+    br.shield = false;
+    br.twin = false;
+    br.lit = 0;
     if (br.sprout) { br.sprout = false; br.wither = true; }
     if (br.hp > 1) { br.hp--; addCrack(br); }
   }
@@ -1761,7 +1930,8 @@ function addCrack(br){
 function tileColor(br){
   return br.gold ? GOLD.bottom : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C['t-bomb']
     : br.sprout ? C['t-sprout'] : br.wither ? C['t-nibi'] : br.zap ? C['t-zap'] : br.chest ? C['t-chest']
-    : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.max === 3 ? C['t-hard'] : C[br.color];
+    : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.fire ? C['t-hi'] : br.twin ? C[br.pair ? 't-moegi' : 't-botan']
+    : br.max === 3 ? C['t-hard'] : C[br.color];
 }
 function shatter(br){
   if (reduceMotion.matches) return;
@@ -1782,6 +1952,29 @@ function damage(br, full, blast){
   // 閉じた錠は爆風でも壊れない。鉄は爆風でだけ壊れる
   if (br.lock) { sfx('lock'); return; }
   if (br.iron && !blast) { sfx('iron'); return; }
+  // 運ばれているタイルは、当てると1回で割れる
+  if (br.carried) full = true;
+  // ふたご：もう1枚が光っていなければ、光らせて待つ。光っていれば2枚とも割れる
+  // 爆風なら片方だけ割れて、残ったほうはふつうのタイルになる
+  let mate = null;
+  if (br.twin) {
+    mate = S.bricks.find(b => b !== br && b.twin && b.pair === br.pair && b.hp > 0) || null;
+    if (mate && !blast && mate.lit <= 0) {
+      br.lit = TWIN_T;
+      addScore(5);
+      sfx('twin');
+      ui();
+      return;
+    }
+    br.twin = false;
+    br.lit = 0;
+    if (mate) {
+      const both = !blast && mate.lit > 0;
+      mate.twin = false;
+      mate.lit = 0;
+      if (!both) mate = null;
+    }
+  }
   if (full) br.hp = 0; else br.hp--;
   if (br.hp > 0) {
     if (br.regen) br.regenT = REGEN_T;
@@ -1824,6 +2017,8 @@ function damage(br, full, blast){
 
   if (br.key && !S.bricks.some(b => b.key && b.hp > 0) && !S.keyWait.length) openLocks();
   if (br.bomb) explode(br);
+  if (br.fire) lightFire(br);
+  if (mate) { sfx('twins'); damage(mate, true); }
   // 連鎖の途中で割り切ることもあるので、クリアは1回だけ
   if (S.mode === 'play' && !S.bricks.some(needBreak)) stageClear();
   ui();
@@ -1876,6 +2071,33 @@ function explode(br){
         b.y + b.h > br.y - my && b.y < br.y + br.h + my) damage(b, true, true);
   }
 }
+// 火：割れた火のタイルから、左右へ1つずつ走らせる
+function lightFire(br){
+  const x = br.x + br.w / 2, y = br.y + br.h / 2;
+  for (const dir of [-1, 1]) S.fires.push({x, y, dir, t: 0, hit: new Set([br])});
+  sfx('fire');
+}
+function updateFires(dt){
+  for (let i = S.fires.length - 1; i >= 0; i--) {
+    const f = S.fires[i];
+    const x0 = f.x;
+    f.x += f.dir * FIRE_V * dt;
+    f.t += dt;
+    // このフレームで火の先が通った幅にかかるタイル（空いたところは越えて、端まで走る）
+    const lo = Math.min(x0, f.x), hi = Math.max(x0, f.x);
+    let out = f.x < -FIRE_R || f.x > W + FIRE_R;
+    for (const br of S.bricks) {
+      if (br.hp <= 0 || f.hit.has(br) || (br.blink && !br.shown)) continue;
+      if (f.y < br.y || f.y > br.y + br.h || br.x > hi || br.x + br.w < lo) continue;
+      f.hit.add(br);
+      // 鉄と閉じた錠で止まる
+      if (solid(br)) { br.flash = 0.12; sfx(br.lock ? 'lock' : 'iron'); out = true; break; }
+      damage(br, false);
+      if (S.mode !== 'play') return;
+    }
+    if (out) S.fires.splice(i, 1);
+  }
+}
 function hitBricks(b){
   const R = S.ballR;
   for (const br of S.bricks) {
@@ -1884,15 +2106,17 @@ function hitBricks(b){
     const cx = clamp(b.x, br.x, br.x + br.w), cy = clamp(b.y, br.y, br.y + br.h);
     const dx = b.x - cx, dy = b.y - cy;
     if (dx * dx + dy * dy > R * R) continue;
-    if ((S.feverT > 0 || S.pierce > 0) && !solid(br)) {
+    const ox = Math.min(b.x + R - br.x, br.x + br.w - (b.x - R));
+    const oy = Math.min(b.y + R - br.y, br.y + br.h - (b.y - R));
+    // 下から盾に当たったときは、貫通中でもはね返るだけ
+    const guarded = guards(br, ox, oy, b.y);
+    if ((S.feverT > 0 || S.pierce > 0) && !solid(br) && !guarded) {
       // 貫通中は跳ね返らず、硬さに関係なく1回で割る（鉄と閉じた錠だけは跳ね返る）
       if (S.feverT <= 0) S.pierce--;
       if (br.zap) dropBolt(br);
       damage(br, true);
       return true;
     }
-    const ox = Math.min(b.x + R - br.x, br.x + br.w - (b.x - R));
-    const oy = Math.min(b.y + R - br.y, br.y + br.h - (b.y - R));
     if (ox < oy) {
       if (b.x < br.x + br.w / 2) { b.vx = -Math.abs(b.vx); b.x = br.x - R; }
       else { b.vx = Math.abs(b.vx); b.x = br.x + br.w + R; }
@@ -1900,11 +2124,12 @@ function hitBricks(b){
       if (b.y < br.y + br.h / 2) { b.vy = -Math.abs(b.vy); b.y = br.y - R; }
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + R; }
     }
-    // 鉄や閉じた錠に当たっても速くはしない
-    if (!solid(br)) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
+    // 鉄や閉じた錠、盾に当たっても速くはしない
+    if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
     normalizeBall(b);
     if (br.zap) dropBolt(br);
-    damage(br, false);
+    if (guarded) { br.flash = 0.12; sfx('shield'); }
+    else damage(br, false);
     return true;
   }
   return false;
@@ -1941,9 +2166,9 @@ function bounceOffBug(b, x, y){
   normalizeBall(b);
   return true;
 }
-function stunThrower(sec){
-  const t = S.thrower;
-  if (t.stunT <= 0) S.pops.push({x: t.x, y: THROW_Y + BUG_R + 16, text: 'とまった', t: 0});
+// 上を歩く虫（投げ込む虫・運ぶ虫）を止める。運ぶ虫は下りてくるので、今の高さを y に持っている
+function stunWalker(t, sec){
+  if (t.stunT <= 0) S.pops.push({x: t.x, y: (t.y || THROW_Y) + BUG_R + 16, text: 'とまった', t: 0});
   t.stunT = Math.max(t.stunT, sec || THROW_STUN);
   t.windup = 0;
   t.cool = Math.max(t.cool, 1.5);
@@ -1952,7 +2177,9 @@ function stunThrower(sec){
 function hitBugs(b){
   for (const g of S.bugs) if (bounceOffBug(b, g.x, g.y)) { sfx('bug'); return; }
   const t = S.thrower;
-  if (t && !t.leaving && bounceOffBug(b, t.x, THROW_Y)) stunThrower();
+  if (t && !t.leaving && bounceOffBug(b, t.x, THROW_Y)) stunWalker(t);
+  const k = S.carrier;
+  if (k && !k.leaving && bounceOffBug(b, k.x, k.y)) stunWalker(k);
 }
 function catchBall(b){
   b.hold = CATCH_HOLD;
@@ -1969,6 +2196,17 @@ function release(b){
   b.vy = -S.speed * Math.cos(ang);
   b.hold = 0;
   sfx('paddle');
+  shootUp(b);
+}
+// 上：板で打ったボールを、いちばん上の壁ぎわへ移して下向きに出す（横の向きはそのまま）
+function shootUp(b){
+  if (S.up <= 0) return;
+  S.up--;
+  if (!reduceMotion.matches) S.blasts.push({x: b.x, y: b.y, t: 0, size: 22, color: C['t-sora']});
+  b.y = S.ballR + 2;
+  b.vy = Math.abs(b.vy);
+  if (!reduceMotion.matches) S.blasts.push({x: b.x, y: b.y, t: 0, size: 22, color: C['t-sora']});
+  sfx('up');
 }
 function releaseAll(){
   let any = false;
@@ -2011,6 +2249,7 @@ function physics(dt){
         b.vy = -S.speed * Math.cos(ang);
         b.y = PADDLE_Y - R;
         sfx('paddle');
+        shootUp(b);
       }
 
       if (S.guard && b.vy > 0 && b.y + R >= GUARD_Y) {
@@ -2063,17 +2302,21 @@ function updateLasers(dt){
       if (b.y <= y0 && b.y + b.h >= l.y && b.y + b.h > low) { br = b; low = b.y + b.h; }
     }
     const bugs = S.bugs.slice();
-    if (t && !t.leaving) bugs.push({x: t.x, y: THROW_Y, thrower: true});
+    if (t && !t.leaving) bugs.push({x: t.x, y: THROW_Y, walker: t});
+    const k = S.carrier;
+    if (k && !k.leaving) bugs.push({x: k.x, y: k.y, walker: k});
     for (const g of bugs) {
       if (Math.abs(l.x - g.x) > BUG_R) continue;
       if (g.y - BUG_R <= y0 && g.y + BUG_R >= l.y && g.y + BUG_R > low) { bug = g; low = g.y + BUG_R; }
     }
     if (bug) {
-      if (bug.thrower) stunThrower();
+      if (bug.walker) stunWalker(bug.walker);
       else { bug.stunT = Math.max(bug.stunT, 1.5); sfx('bug'); }
       S.lasers.splice(i, 1);
     } else if (br) {
       S.lasers.splice(i, 1);
+      // 光は下から当たるので、盾は割れない
+      if (br.shield) { br.flash = 0.12; sfx('shield'); continue; }
       damage(br, S.feverT > 0);
       if (S.mode !== 'play') return;
     } else if (l.y < -12) {
@@ -2098,7 +2341,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt); blink(dt);
+    moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt); moveCarrier(dt); blink(dt);
   }
   if (S.mode === 'ready') placeBall();
   else if (S.mode === 'play') {
@@ -2110,6 +2353,9 @@ function update(dt){
     if (S.mode === 'play') updateBolts(dt);
     if (S.mode === 'play') helpers(dt);
     if (S.mode === 'play') { updateGlobs(dt); respawnKeys(); }
+    if (S.mode === 'play') updateFires(dt);
+    // ふたごの光っている時間
+    if (S.mode === 'play') for (const br of S.bricks) if (br.lit > 0) br.lit = Math.max(0, br.lit - dt);
   }
   if (S.mode === 'play' || S.mode === 'ready') updateFlying(dt);
 
@@ -2283,6 +2529,30 @@ function drawTile(br){
     tileGlyph(br, '錠', C['on-tile']);
   } else if (br.key) {
     tileGlyph(br, '鍵', C['on-tile']);
+  } else if (br.shield) {
+    // 下がわの盾の板
+    rr(x + 1, y + h - 5, w - 2, 5, 2);
+    ctx.fillStyle = C['t-hard'];
+    ctx.fill();
+    tileGlyph(br, '盾', br.color === 't-yamabuki' ? C['on-yamabuki'] : C['on-tile']);
+  } else if (br.twin) {
+    tileGlyph(br, '双', C['on-tile']);
+    // 光っている残り時間（減っていって、なくなると消える）
+    if (br.lit > 0) {
+      ctx.fillStyle = C['on-tile'];
+      ctx.fillRect(x + 4, y + h - 3.5, (w - 8) * br.lit / TWIN_T, 2);
+    }
+  } else if (br.fire) {
+    tileGlyph(br, '火', C['t-yamabuki']);
+    // 左右へ走ることが分かるよう、両はしに外向きの小さな三角
+    ctx.fillStyle = C['t-yamabuki'];
+    for (const sd of [-1, 1]) {
+      const ex = sd < 0 ? x + 4 : x + w - 4, cy = y + h / 2 + 1;
+      ctx.beginPath();
+      ctx.moveTo(ex + sd * 2.5, cy); ctx.lineTo(ex - sd * 1.5, cy - 3.5); ctx.lineTo(ex - sd * 1.5, cy + 3.5);
+      ctx.closePath();
+      ctx.fill();
+    }
   } else if (br.blink) {
     // 消える前に目を閉じ、出てきたら目を開ける
     const [on, off] = blinkCycle(br), ph = S.blinkT % (on + off);
@@ -2308,6 +2578,22 @@ function drawTile(br){
     ctx.lineWidth = 2;
     ctx.strokeStyle = C.ink;
     ctx.stroke();
+  }
+  if (br.twin) {
+    // 光っているふたごは太いわく、その相方は点線のわくで、次に当てるタイルを知らせる
+    const waiting = br.lit <= 0 && S.bricks.some(b => b !== br && b.twin && b.pair === br.pair && b.hp > 0 && b.lit > 0);
+    if (br.lit > 0 || waiting) {
+      rr(x - 2.5, y - 2.5, w + 5, h + 5, 4);
+      ctx.save();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = tileColor(br);
+      if (waiting) {
+        ctx.setLineDash([4, 3]);
+        ctx.globalAlpha = reduceMotion.matches ? 1 : 0.6 + 0.4 * Math.sin(S.time * 8);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
   }
   if (br.cracks.length) {
     ctx.strokeStyle = C.board;
@@ -2372,6 +2658,30 @@ function drawMists(){
       ctx.arc(px, top + 6 + wob, 13, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore();
+  }
+}
+// 走っていく火。うしろに短い火の帯を引く
+function drawFires(){
+  for (const f of S.fires) {
+    const flick = reduceMotion.matches ? 0 : Math.sin(S.time * 40 + f.x) * 1.2;
+    ctx.save();
+    for (let i = 4; i >= 1; i--) {
+      ctx.globalAlpha = 0.18 * (5 - i);
+      ctx.fillStyle = C['t-sango'];
+      ctx.beginPath();
+      ctx.arc(f.x - f.dir * i * 7, f.y, FIRE_R - i * 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = C['t-sango'];
+    ctx.beginPath();
+    ctx.arc(f.x, f.y, FIRE_R + flick, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = C['t-yamabuki'];
+    ctx.beginPath();
+    ctx.arc(f.x + f.dir * 1.5, f.y, FIRE_R * 0.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 }
@@ -2450,6 +2760,13 @@ function drawBug(x, y, o){
     }
   }
   ctx.stroke();
+  if (o.grab) {
+    // 両手で下のタイルをつかむ
+    ctx.beginPath();
+    ctx.moveTo(x - r + 3, y + 4); ctx.lineTo(x - 9, y + r + 3);
+    ctx.moveTo(x + r - 3, y + 4); ctx.lineTo(x + 9, y + r + 3);
+    ctx.stroke();
+  }
   if (o.hold) {
     // 両手で頭の上にタイルを持ち上げる。投げる直前は高く上げる
     const lift = o.windup ? 6 : 0;
@@ -2568,10 +2885,11 @@ function aimPath(b){
     // ワープの穴に入るところで止める
     if (S.warps.some(w => Math.hypot(x - w.x, y - w.y) < WARP_IN)) { pts.push([x, y]); return pts; }
     for (const br of S.bricks) {
-      if (br.hp <= 0 || (br.blink && !br.shown) || (pass && !solid(br))) continue;
+      if (br.hp <= 0 || (br.blink && !br.shown)) continue;
       const cx = clamp(x, br.x, br.x + br.w), cy = clamp(y, br.y, br.y + br.h);
       if ((x - cx) * (x - cx) + (y - cy) * (y - cy) > R * R) continue;
       const ox = Math.min(x + R - br.x, br.x + br.w - (x - R)), oy = Math.min(y + R - br.y, br.y + br.h - (y - R));
+      if (pass && !solid(br) && !guards(br, ox, oy, y)) continue;
       if (ox < oy) vx = x < br.x + br.w / 2 ? -Math.abs(vx) : Math.abs(vx);
       else vy = y < br.y + br.h / 2 ? -Math.abs(vy) : Math.abs(vy);
       turn = true;
@@ -2640,6 +2958,12 @@ function drawThrower(){
   const shake = t.windup > 0 && !reduceMotion.matches ? Math.sin(S.time * 60) * 1.2 : 0;
   drawBug(t.x + shake, THROW_Y - bob, {step: t.step, stun: t.stunT, hold: !t.leaving, windup: t.windup > 0});
 }
+function drawCarrier(){
+  const k = S.carrier;
+  if (!k) return;
+  const bob = reduceMotion.matches || k.stunT > 0 || S.stopT > 0 || k.state !== 'walk' ? 0 : Math.abs(Math.sin(k.step * 9)) * 1.5;
+  drawBug(k.x, k.y - bob, {step: k.step, stun: k.stunT, grab: k.state === 'carry'});
+}
 function drawHud(){
   const chips = [];
   if (S.combo >= 2) chips.push(['れんぞく ' + S.combo, C['t-sango']]);
@@ -2657,6 +2981,7 @@ function drawHud(){
   if (S.magnetT > 0) chips.push(['じしゃく ' + Math.ceil(S.magnetT) + 'びょう', C['t-kon']]);
   if (S.bigT > 0) chips.push(['おおきい ボール ' + Math.ceil(S.bigT) + 'びょう', C['t-botan']]);
   if (S.aimT > 0) chips.push(['ねらい ' + Math.ceil(S.aimT) + 'びょう', C['t-moegi']]);
+  if (S.up > 0) chips.push(['うえから ×' + S.up, C['t-sora']]);
   if (!chips.length) return;
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textBaseline = 'middle';
@@ -2743,6 +3068,7 @@ function draw(){
   drawWarps();
   for (const br of S.bricks) if (br.hp > 0) drawTile(br);
   drawMists();
+  drawFires();
 
   // 爆発の輪
   for (const q of S.blasts) {
@@ -2848,6 +3174,7 @@ function draw(){
 
   if (S.mode === 'play' || S.mode === 'ready' || S.mode === 'paused') drawHud();
   drawThrower();
+  drawCarrier();
   drawBanner();
 }
 
