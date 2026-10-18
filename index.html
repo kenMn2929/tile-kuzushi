@@ -179,6 +179,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.chest{background:var(--t-chest);border-radius:3px}
 .cap.bug{background:var(--bug);color:var(--board)}
 .cap.bad{background:var(--bad);outline:1.5px dashed var(--warn);outline-offset:1px}
+/* 強くなったタイルは、盤面と同じく太いわくで囲む */
+.cap.strong{box-shadow:0 0 0 2px var(--ink)}
 .cap.mark{background:var(--board);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 /* 盤面のタイルと同じ見た目：2回は白い枠、3回は濃い色に枠とひし形 */
 .cap.tile{position:relative;background:var(--t-sango);border-radius:3px}
@@ -284,6 +286,14 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">{強|つよ}くなったタイル（{太|ふと}いわく）</p>
+              <ul class="items one">
+                <li data-from="49"><span class="cap bomb strong">爆</span>{大|だい}{爆弾|ばくだん}。3{回|かい}で{割|わ}れる。{割|わ}ると、2マス{先|さき}までのタイルがいっしょに{割|わ}れる</li>
+                <li data-from="49"><span class="cap chest strong">？</span>びっくり{箱|ばこ}。{割|わ}ると、アイテムが3つ{離|はな}れて{落|お}ちてくる。そのうち1つは、とらないほうがいいアイテム</li>
+                <li data-from="49"><span class="cap sprout strong">芽</span>{大|おお}きな{芽|め}。3{回|かい}で{割|わ}れる。5{秒|びょう}ごとに、となりの{空|あ}いたところへタイルを{生|は}やす（1{枚|まい}の{芽|め}で16{枚|まい}まで）。{生|は}えたタイルからは、アイテムがよく{出|で}る</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">いいアイテム</p>
               <ul class="items one">
                 <li data-from="1"><span class="cap split">分</span>ボールが2つにふえる</li>
@@ -337,12 +347,20 @@ img{max-width:100%}
               <p class="note" data-from="25">はね{返|かえ}す{虫|むし}がいるステージは、ボールが{少|すこ}しゆっくりになります。</p>
             </div>
             <div class="section group">
+              <p class="sub">ステージ49から{出|で}てくる{虫|むし}（やっつけられない）</p>
+              <ul class="items one">
+                <li data-from="49"><span class="cap bug">食</span>{食|く}いしん{坊|ぼう}の{虫|むし}。ボールをはね{返|かえ}して、{落|お}ちてくるアイテムを{食|た}べてしまう。とらないほうがいいアイテムも{食|た}べる。「{福|ふく}」とお{助|たす}けのアイテムは{食|た}べない。{止|と}まっているあいだも{食|た}べない</li>
+              </ul>
+              <p class="note" data-from="49">{食|く}いしん{坊|ぼう}の{虫|むし}がいるステージも、ボールが{少|すこ}しゆっくりになります。</p>
+            </div>
+            <div class="section group">
               <p class="sub">お{助|たす}け</p>
               <ul class="notes">
                 <li data-from="1">1{分|ぷん}ごとに、どれか1{枚|まい}のタイルにいいアイテムが{入|はい}ります（{右|みぎ}がわの{丸|まる}い{印|しるし}）。{割|わ}ると、かならずそのアイテムが{落|お}ちてきます。</li>
                 <li data-from="1">のこりが3{枚|まい}までになって20{秒|びょう}{割|わ}れないと、のこりのタイルが{光|ひか}って、やわらかくなります。</li>
                 <li data-from="33">ステージ33からは、とらないほうがいいアイテムが{半分|はんぶん}くらいにへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。</li>
                 <li data-from="33">{鉄|てつ}のタイルがあるステージでは、「{霧|きり}」が{出|で}やすくなります。</li>
+                <li data-from="49">ステージ49からは、40{秒|びょう}ごとにアイテムが{入|はい}ります。</li>
               </ul>
             </div>
             <div class="section group">
@@ -382,6 +400,10 @@ const SPRAY_W = CELL * 1.5, SPRAY_V = 520, SPRAY_STUN = 10;
 const REGEN_T = 4;
 // 芽：タイルを生やす間隔と、1枚の芽が生やす数
 const SPROUT_EVERY = 8, SPROUT_MAX = 4;
+// 大きな芽：生やす間隔と、1枚が生やす数（生えたタイルを壊されても数は戻らない）
+const BIG_SPROUT_EVERY = 5, BIG_SPROUT_MAX = 16;
+// びっくり箱：3つのアイテムの中心どうしの間（板の長さより広くあける）
+const SURPRISE_GAP = 110;
 // 雷：落ちる速さ、一度に出る数、板がしびれる長さ。BOLT_HW は当たり判定の半分の幅
 const BOLT_V = 280, BOLT_MAX = 3, BOLT_H = 22, BOLT_HW = 5, SHOCK_T = 0.5;
 // 磁石：いいアイテムを横へ寄せる速さ
@@ -390,10 +412,12 @@ const MAGNET_T = 15, MAGNET_V = 140;
 const SPRAY_IRON_PLUS = 0.1;
 // お助け：アイテム入りのタイルを作る間隔、残り枚数と待ち時間、アイテムの出方を変える面
 const GIFT_EVERY = 60, ASSIST_LEFT = 3, ASSIST_AFTER = 20, EASE_FROM = 33;
+// 49面からは、アイテム入りのタイルを作る間隔を短くする
+const GIFT_SOON = 40, SOON_FROM = 49;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
-const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2};
+const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
@@ -407,10 +431,13 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // #: 鉄（割れない。爆風でだけ壊れる。クリアの数に入らない）  r / R: 2回 / 3回の再生タイル
 // v: 芽（2回。となりの空いたマスにタイルを生やす。動く行・動く列には置かない）  z: 雷（3回。当たるたびに雷を落とす）
 // t: 宝箱（2回。割るといいアイテムが2つ落ちる）
+// B: 大爆弾（3回。まわり2マスまで割れる）  V: 大きな芽（3回。5秒ごとに生やし、1枚で16枚まで。置き方は v と同じ）
+// ?: びっくり箱（2回。アイテムが3つ離れて落ちる。1つは悪いアイテム）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
 // bug: 速さ  タイルの下を斜めに漂う虫（1面に1匹まで。負の値は左へ動き出す）
+// eat: true  bug の虫を、落ちてくるアイテムを食べる食いしん坊にする
 // thrower: true  上を歩いて空いたマスにタイルを投げ込む虫（動く行・動く列のマスには投げない）
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -471,6 +498,16 @@ const STAGES = [
    vmove: {1: 45, 3: -40, 4: 40, 6: -45}, vband: [3, 6]},
   {rows: ['z3R33R3z','3333....','2v.##.v2','22r22r22','....2222','1t1111t1','11.11.11'],
    move: {1: 70, 4: -70}, bug: 65, thrower: true},
+  {rows: ['B333333B','3#2222#3','22222222','22.22.22','11111111','22.22.22']},
+  {rows: ['33333333','222.2222','22.V.222','111.1111','11111111','2.2..2.2']},
+  {rows: ['33333333','2?2222?2','23.33.32','22222222','1111....','22222222'], move: {4: 60}},
+  {rows: ['3.3333.3','2t2222t2','2.2..2.2','22222222','1.1111.1','22222222'], bug: 60, eat: true},
+  {rows: ['33333333','....3333','B2.22.22','2.V.2222','22.22222','2222....','11111111'], move: {1: -60, 5: 60}},
+  {rows: ['33333333','3?3333?3','22.22.22','222?.222','11111111','1.1..1.1'], bug: -65, eat: true},
+  {rows: ['33333333','322.222.','32.V.22.','.22.222.','.222222.','.1111113','.1111113'],
+   vmove: {0: 45, 7: -45}, vband: [1, 6], bug: 60, eat: true},
+  {rows: ['B333333B','3?3333?3','2.V..V.2','22.22.22','11111111','....1111','22222222'],
+   move: {5: -70}, bug: 65, eat: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -499,6 +536,7 @@ const INTROS = {
   25: {title: '{虫|むし}と{新|あたら}しいアイテム'},
   33: {title: '{鉄|てつ}・{再生|さいせい}・{霧吹|きりふ}き'},
   41: {title: '{芽|め}・{雷|かみなり}・{宝箱|たからばこ}・{磁石|じしゃく}'},
+  49: {title: '{強|つよ}くなったタイルと{虫|むし}'},
 };
 
 const $ = id => document.getElementById(id);
@@ -617,6 +655,10 @@ function sfx(name, arg){
     }
     case 'gold':   tone(1500, 0.25, 'sine', 0.07, 2600); break;
     case 'bomb':   tone(150, 0.28, 'sawtooth', 0.06, 45); tone(95, 0.32, 'square', 0.035, 40, 0.02); break;
+    case 'bigbomb':
+      tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
+      break;
+    case 'munch':  [0, 0.11].forEach(d => tone(300, 0.06, 'square', 0.035, 170, d)); break;
     case 'fuku':   [784, 988, 1175, 1568, 1976].forEach((f, i) => tone(f, 0.12, 'triangle', 0.06, null, i * 0.07)); break;
     case 'bug':    tone(330, 0.08, 'square', 0.035, 210); break;
     case 'stun':   tone(1100, 0.16, 'triangle', 0.06, 380); break;
@@ -675,7 +717,7 @@ function makeBrick(r, c, hp, bomb){
     w: BRICK_W, h: BRICK_H, hp, max: hp, row: r, col: c,
     color: ROW_COLORS[r % ROW_COLORS.length], cracks: [], flash: 0, gold: false, bomb,
     iron: false, rust: false, regen: false, regenT: 0, item: null,
-    sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false
+    sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false
   };
 }
 function buildStage(n){
@@ -684,13 +726,15 @@ function buildStage(n){
   def.rows.forEach((row, r) => {
     [...row].forEach((ch, c) => {
       if (ch === '.') return;
-      const b = makeBrick(r, c, TILE_HP[ch] || +ch, ch === '*');
+      const b = makeBrick(r, c, TILE_HP[ch] || +ch, ch === '*' || ch === 'B');
+      // B・V・? は、爆弾・芽・宝箱の強くなったもの
+      b.big = ch === 'B' || ch === 'V' || ch === '?';
       b.iron = ch === '#';
       b.regen = ch === 'r' || ch === 'R';
-      b.sprout = ch === 'v';
-      b.sproutT = SPROUT_EVERY;
+      b.sprout = ch === 'v' || ch === 'V';
+      b.sproutT = b.big ? BIG_SPROUT_EVERY : SPROUT_EVERY;
       b.zap = ch === 'z';
-      b.chest = ch === 't';
+      b.chest = ch === 't' || ch === '?';
       list.push(b);
     });
   });
@@ -713,7 +757,8 @@ function buildStage(n){
   S.bugs = def.bug ? [{
     x: W / 2,
     y: S.bugZone.top + (S.bugZone.bottom - S.bugZone.top) * 0.35,
-    vx: def.bug * 0.8, vy: Math.abs(def.bug) * 0.6, stunT: 0, step: Math.random() * 6
+    vx: def.bug * 0.8, vy: Math.abs(def.bug) * 0.6, stunT: 0, step: Math.random() * 6,
+    eat: !!def.eat, munch: 0
   }] : [];
   S.thrower = def.thrower
     ? {x: W / 2, dir: Math.random() < 0.5 ? -1 : 1, stock: THROW_STOCK, cool: 3, windup: 0, stunT: 0, leaving: false, step: 0}
@@ -769,6 +814,7 @@ function bounceBug(g){
 function moveBugs(dt){
   const z = S.bugZone;
   for (const g of S.bugs) {
+    if (g.munch > 0) g.munch = Math.max(0, g.munch - dt);
     if (g.stunT > 0) { g.stunT = Math.max(0, g.stunT - dt); continue; }
     g.x += g.vx * dt; g.y += g.vy * dt; g.step += dt;
     let hit = false;
@@ -983,6 +1029,10 @@ function stageClear(){
       if (firstTile(/v/)) notes.push('{次|つぎ}のステージから、となりにタイルを{生|は}やす「{芽|め}」のタイルが{出|で}てきます。');
       if (firstTile(/z/)) notes.push('{次|つぎ}のステージから、{雷|かみなり}のタイルが{出|で}てきます。{落|お}ちてくる{雷|かみなり}が{板|いた}に{当|あ}たると、ほんの{少|すこ}し{動|うご}けません。');
       if (firstTile(/t/)) notes.push('{次|つぎ}のステージから、いいアイテムが2つ{入|はい}った{宝箱|たからばこ}が{出|で}てきます。');
+      if (firstTile(/B/)) notes.push('{次|つぎ}のステージから、2マス{先|さき}まで{割|わ}れる{大|だい}{爆弾|ばくだん}が{出|で}てきます。');
+      if (firstTile(/V/)) notes.push('{次|つぎ}のステージから、タイルを16{枚|まい}まで{生|は}やす「{大|おお}きな{芽|め}」が{出|で}てきます。{生|は}えたタイルからは、アイテムがよく{出|で}ます。');
+      if (firstTile(/\?/)) notes.push('{次|つぎ}のステージから、アイテムが3つ{入|はい}った「びっくり{箱|ばこ}」が{出|で}てきます。1つは、とらないほうがいいアイテムです。');
+      if (first('eat')) notes.push('{次|つぎ}のステージから、{落|お}ちてくるアイテムを{食|た}べる{虫|むし}が{出|で}てきます。');
       if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('{新|あたら}しいアイテムも{落|お}ちてくるようになります。');
       if (nextNo === EASE_FROM) notes.push('ここからは、とらないほうがいいアイテムがへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。');
     }
@@ -1127,7 +1177,8 @@ function renderPicker(){
     b.querySelector('.st-mark').textContent = done ? '★' : '';
     const def = STAGES[n - 1];
     const moves = def.move && def.vmove ? '（タイルが左右と上下に動く）' : def.move ? '（タイルが左右に動く）' : def.vmove ? '（タイルが上下に動く）' : '';
-    const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
+    const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug && def.eat ? '（アイテムを食べる虫が出る）'
+      : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
     b.setAttribute('aria-label', 'ステージ' + n + moves + bugs + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
@@ -1285,8 +1336,30 @@ function pickItem(ok){
   for (let i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) return pool[i][0]; }
   return 'split';
 }
-function spawnItem(x, y, forced){
-  S.items.push({x: clamp(x, ITEM_W / 2, W - ITEM_W / 2), y, type: forced || pickItem()});
+// gift はお助けで入ったアイテム（食いしん坊の虫に食べられない）
+function spawnItem(x, y, forced, gift){
+  S.items.push({x: clamp(x, ITEM_W / 2, W - ITEM_W / 2), y, type: forced || pickItem(), gift: !!gift});
+}
+function surprise(br){
+  // 3つを板の長さより広く離して落とす。どれか1つは悪いアイテム（ボールが速くなる「速」は出さない）
+  const cx = clamp(br.x + br.w / 2, ITEM_W / 2 + SURPRISE_GAP, W - ITEM_W / 2 - SURPRISE_GAP);
+  const bad = Math.floor(Math.random() * 3);
+  for (let i = 0; i < 3; i++) {
+    const type = i === bad ? (Math.random() < 0.5 ? 'shrink' : 'yaku') : pickItem(d => d.kind === 'good');
+    spawnItem(cx + (i - 1) * SURPRISE_GAP, br.y + br.h / 2, type);
+  }
+}
+// 食いしん坊の虫が、このアイテムにふれていれば食べる
+function eatItem(it){
+  if (it.gift || it.type === 'fuku' || S.stopT > 0) return false;
+  const g = S.bugs.find(g => g.eat && g.stunT <= 0 &&
+    Math.abs(it.x - g.x) < BUG_R + ITEM_W / 2 - 4 && Math.abs(it.y - g.y) < BUG_R + ITEM_H / 2);
+  if (!g) return false;
+  g.munch = 0.5;
+  const bad = ITEMS[it.type].kind === 'bad';
+  S.pops.push({x: g.x, y: g.y + BUG_R + 16, text: bad ? 'たべてくれた' : 'たべられた', t: 0, bad: !bad});
+  sfx('munch');
+  return true;
 }
 function splitBalls(){
   const add = [];
@@ -1342,7 +1415,9 @@ function updateItems(dt){
     it.y += 150 * dt;
     // 磁石が効いているあいだは、いいアイテムが板の真上へ寄っていく
     if (S.magnetT > 0 && ITEMS[it.type].kind !== 'bad') it.x += clamp(p.x - it.x, -MAGNET_V * dt, MAGNET_V * dt);
-    if (it.y + ITEM_H / 2 >= PADDLE_Y && it.y - ITEM_H / 2 <= PADDLE_Y + PADDLE_H &&
+    if (eatItem(it)) {
+      S.items.splice(i, 1);
+    } else if (it.y + ITEM_H / 2 >= PADDLE_Y && it.y - ITEM_H / 2 <= PADDLE_Y + PADDLE_H &&
         Math.abs(it.x - p.x) <= p.w / 2 + ITEM_W / 2) {
       S.items.splice(i, 1);
       applyItem(it.type);
@@ -1414,7 +1489,7 @@ function regrow(dt){
 }
 function growSprouts(dt){
   for (const br of S.bricks) {
-    if (!br.sprout || br.hp <= 0 || br.sproutN >= SPROUT_MAX) continue;
+    if (!br.sprout || br.hp <= 0 || br.sproutN >= (br.big ? BIG_SPROUT_MAX : SPROUT_MAX)) continue;
     br.sproutT -= dt;
     if (br.sproutT > 0) continue;
     // 上下左右の空いたマス。ボールがいるマスには生やさない
@@ -1424,11 +1499,13 @@ function growSprouts(dt){
     const [r, c] = cells[Math.floor(Math.random() * cells.length)];
     const nb = makeBrick(r, c, 1, false);
     nb.leaf = true;
+    // 大きな芽から生えたタイルは、アイテムが出やすい
+    nb.rich = br.big;
     nb.color = 't-wakakusa';
     nb.flash = 0.2;
     S.bricks.push(nb);
     br.sproutN++;
-    br.sproutT = SPROUT_EVERY;
+    br.sproutT = br.big ? BIG_SPROUT_EVERY : SPROUT_EVERY;
     br.flash = 0.12;
     sfx('sprout');
   }
@@ -1458,8 +1535,9 @@ function assist(){
   sfx('assist');
 }
 function helpers(dt){
+  const every = patternNo(S.stage) >= SOON_FROM ? GIFT_SOON : GIFT_EVERY;
   S.giftT += dt;
-  if (S.giftT >= GIFT_EVERY) { S.giftT -= GIFT_EVERY; giveGift(); }
+  if (S.giftT >= every) { S.giftT -= every; giveGift(); }
   const left = S.bricks.reduce((a, b) => a + (b.hp > 0 && !b.iron ? 1 : 0), 0);
   S.stuckT = left <= ASSIST_LEFT ? S.stuckT + dt : 0;
   if (S.stuckT >= ASSIST_AFTER) { S.stuckT = 0; assist(); }
@@ -1534,10 +1612,11 @@ function damage(br, full, blast){
     spawnItem(br.x + br.w / 2, br.y + br.h / 2, 'fuku');
   } else if (br.chest) {
     sfx('chest');
-    for (const dx of [-15, 15]) spawnItem(br.x + br.w / 2 + dx, br.y + br.h / 2, pickItem(d => d.kind === 'good'));
+    if (br.big) surprise(br);
+    else for (const dx of [-15, 15]) spawnItem(br.x + br.w / 2 + dx, br.y + br.h / 2, pickItem(d => d.kind === 'good'));
   } else if (br.item) {
-    spawnItem(br.x + br.w / 2, br.y + br.h / 2, br.item);
-  } else if (S.items.length < 4 && Math.random() < (br.max === 3 ? 0.4 : 0.2)) {
+    spawnItem(br.x + br.w / 2, br.y + br.h / 2, br.item, true);
+  } else if (S.items.length < 4 && Math.random() < (br.max === 3 || br.rich ? 0.4 : 0.2)) {
     spawnItem(br.x + br.w / 2, br.y + br.h / 2);
   }
 
@@ -1554,10 +1633,11 @@ function damage(br, full, blast){
   ui();
 }
 function explode(br){
-  sfx('bomb');
-  if (!reduceMotion.matches) S.blasts.push({x: br.x + br.w / 2, y: br.y + br.h / 2, t: 0});
-  // 今の位置でまわり1マス分に重なるタイルを割る（動く列でも当たった場所で効く）
-  const mx = BRICK_W / 2 + GAP, my = BRICK_H / 2 + GAP;
+  sfx(br.big ? 'bigbomb' : 'bomb');
+  if (!reduceMotion.matches) S.blasts.push({x: br.x + br.w / 2, y: br.y + br.h / 2, t: 0, big: br.big});
+  // 今の位置でまわり1マス分（大爆弾は2マス分）に重なるタイルを割る（動く列でも当たった場所で効く）
+  const far = br.big ? 1 : 0;
+  const mx = far * CELL + BRICK_W / 2 + GAP, my = far * ROW_STEP + BRICK_H / 2 + GAP;
   for (const b of S.bricks) {
     if (b.hp <= 0) continue;
     if (b.x + b.w > br.x - mx && b.x < br.x + br.w + mx &&
@@ -1877,9 +1957,9 @@ function drawTile(br){
   } else if (br.sprout || br.wither) {
     tileGlyph(br, '芽', C['on-tile']);
     // 次に生やすまで（たまっていって、いっぱいになると生える）
-    if (br.sprout && br.sproutN < SPROUT_MAX) {
+    if (br.sprout && br.sproutN < (br.big ? BIG_SPROUT_MAX : SPROUT_MAX)) {
       ctx.fillStyle = C['on-tile'];
-      ctx.fillRect(x + 4, y + h - 3.5, (w - 8) * clamp(1 - br.sproutT / SPROUT_EVERY, 0, 1), 2);
+      ctx.fillRect(x + 4, y + h - 3.5, (w - 8) * clamp(1 - br.sproutT / (br.big ? BIG_SPROUT_EVERY : SPROUT_EVERY), 0, 1), 2);
     }
   } else if (br.zap) {
     tileGlyph(br, '雷', C['t-yamabuki']);
@@ -1887,7 +1967,7 @@ function drawTile(br){
     // ふたの合わせ目
     ctx.fillStyle = 'rgba(0,0,0,.22)';
     ctx.fillRect(x + 2, y + 8, w - 4, 1.5);
-    tileGlyph(br, '宝', C['on-tile']);
+    tileGlyph(br, br.big ? '？' : '宝', C['on-tile']);
   } else {
     if (br.max >= 2) {
       ctx.strokeStyle = 'rgba(255,255,255,.55)';
@@ -1902,6 +1982,13 @@ function drawTile(br){
       ctx.fillStyle = 'rgba(255,255,255,.6)';
       ctx.fill();
     }
+  }
+  if (br.big && !br.wither) {
+    // 強くなったタイルは太いわくで囲む（枯れた大きな芽は、ただのタイルに戻る）
+    rr(x - 1.5, y - 1.5, w + 3, h + 3, 4);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = C.ink;
+    ctx.stroke();
   }
   if (br.cracks.length) {
     ctx.strokeStyle = C.board;
@@ -2098,6 +2185,14 @@ function drawBug(x, y, o){
       ctx.fillStyle = '#1b3241'; ctx.fill();
     }
   }
+  if (o.eat) {
+    // 食いしん坊の大きな口。食べたあとは、もぐもぐ動く
+    const chew = o.munch > 0 && !still ? Math.abs(Math.sin(o.munch * 28)) : 0.6;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 8, 5, 0.8 + chew * 2.4, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#1b3241';
+    ctx.fill();
+  }
   if (S.stopT > 0) {
     ctx.beginPath();
     ctx.arc(x, y, r + 4, 0, Math.PI * 2);
@@ -2255,9 +2350,9 @@ function draw(){
   for (const q of S.blasts) {
     const k = q.t / 0.35;
     ctx.beginPath();
-    ctx.arc(q.x, q.y, 10 + k * 46, 0, Math.PI * 2);
+    ctx.arc(q.x, q.y, 10 + k * (q.big ? 100 : 46), 0, Math.PI * 2);
     ctx.globalAlpha = 1 - k;
-    ctx.lineWidth = 4 - k * 2;
+    ctx.lineWidth = (q.big ? 6 : 4) - k * 2;
     ctx.strokeStyle = C['t-bomb'];
     ctx.stroke();
     ctx.globalAlpha = 1;
@@ -2265,7 +2360,7 @@ function draw(){
 
   drawStick();
 
-  for (const g of S.bugs) drawBug(g.x, g.y, {step: g.step, stun: g.stunT});
+  for (const g of S.bugs) drawBug(g.x, g.y, {step: g.step, stun: g.stunT, eat: g.eat, munch: g.munch});
 
   if (S.lasers.length) {
     ctx.fillStyle = C['t-fuji'];
