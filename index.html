@@ -122,7 +122,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 }
 .eyebrow{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.1em;color:var(--muted)}
 .card h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.5rem;line-height:1.25;text-wrap:balance}
-.card p.text{margin:0;font-size:.86rem;line-height:1.7;white-space:pre-line}
+.card p.text{margin:0;font-size:.86rem;line-height:2;white-space:pre-line}
 .sub{margin:0;font-size:.72rem;font-weight:700;letter-spacing:.06em;color:var(--muted)}
 .section{display:flex;flex-direction:column;gap:6px}
 
@@ -137,7 +137,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .st-mark{top:3px;right:4px}
 .st-move{top:3px;left:4px}
 .st[aria-pressed="true"] .st-mark,.st[aria-pressed="true"] .st-move{color:var(--on-paddle)}
-.note{margin:0;font-size:.72rem;color:var(--muted)}
+.note{margin:0;font-size:.72rem;line-height:2;color:var(--muted)}
 
 .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
 .seg-btn{font:inherit;font-size:.8rem;font-weight:700;line-height:1.3;padding:8px 6px;border:0;background:var(--board);color:var(--ink);cursor:pointer}
@@ -147,7 +147,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 
 .items{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:6px 10px}
 .items.one{grid-template-columns:1fr}
-.items li{display:flex;align-items:center;gap:7px;font-size:.8rem;line-height:1.35;min-width:0}
+.items li{display:flex;align-items:center;gap:7px;font-size:.8rem;line-height:1.95;min-width:0}
 .cap{
   flex:none;display:inline-grid;place-items:center;width:30px;height:17px;border-radius:9px;
   font-size:.72rem;font-weight:700;color:var(--on-tile);
@@ -168,12 +168,24 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.regen{background:var(--t-wakakusa);border-radius:3px}
 .cap.bug{background:var(--bug);color:var(--board)}
 .cap.bad{background:var(--bad);outline:1.5px dashed var(--warn);outline-offset:1px}
-.notes{margin:0;padding-left:1.1em;font-size:.8rem;line-height:1.6;display:flex;flex-direction:column;gap:4px}
+.cap.mark{background:var(--board);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+/* 盤面のタイルと同じ見た目：2回は白い枠、3回は濃い色に枠とひし形 */
+.cap.tile{position:relative;background:var(--t-sango);border-radius:3px}
+.cap.tile.two::after,.cap.tile.three::after{content:"";position:absolute;inset:5px 4px 3px;border:1px solid rgba(255,255,255,.55)}
+.cap.tile.three{background:var(--t-hard)}
+.cap.tile.three::before{
+  content:"";position:absolute;left:50%;top:7px;width:8px;height:5px;margin-left:-4px;
+  background:rgba(255,255,255,.6);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+}
+.notes{margin:0;padding-left:1.1em;font-size:.8rem;line-height:2;display:flex;flex-direction:column;gap:4px}
 
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
 .primary,.ghost{font:inherit;font-size:.9rem;font-weight:700;border-radius:6px;cursor:pointer}
 .primary{background:var(--paddle);color:var(--on-paddle);border:1px solid var(--paddle);padding:10px 16px}
 .ghost{background:transparent;color:var(--ink);border:1px solid var(--line);padding:10px 14px}
+/* ふりがなが入る行は、上の行とぶつからないよう行間を広めにしてある */
+ruby{ruby-align:center}
+rt{font-size:.5em;font-weight:700;letter-spacing:0}
 </style>
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -182,18 +194,20 @@ img{max-width:100%}
 </style>
 </head>
 <body>
+<!-- 小さい子も遊ぶので、漢字にはふりがなを付ける。{漢字|かんじ} と書くと、読み込んだときにふりがな付きになる -->
 <div class="app">
   <header class="top">
-    <h1>タイル崩し</h1>
+    <h1>タイル{崩|くず}し</h1>
     <div class="tools">
-      <button class="btn" id="soundBtn" type="button" aria-pressed="true">音あり</button>
-      <button class="btn" id="pauseBtn" type="button" disabled>一時停止</button>
+      <button class="btn" id="soundBtn" type="button" aria-pressed="true">{音|おと}あり</button>
+      <button class="btn" id="pauseBtn" type="button" disabled>{止|と}める</button>
     </div>
   </header>
 
-  <div class="stats" role="group" aria-label="成績">
-    <div class="stat"><span class="label">スコア</span><span class="value" id="score">0</span></div>
-    <div class="stat"><span class="label">ベスト</span><span class="value" id="best">0</span></div>
+  <!-- 小さい字のところは、ふりがなが読めないので ひらがなで書く -->
+  <div class="stats" role="group" aria-label="点数">
+    <div class="stat"><span class="label">てんすう</span><span class="value" id="score">0</span></div>
+    <div class="stat"><span class="label">さいこう</span><span class="value" id="best">0</span></div>
     <div class="stat"><span class="label">ステージ</span><span class="value" id="stage">1</span></div>
     <div class="stat"><span class="label">ボール</span><span class="lives" id="lives" aria-label="残り3"></span></div>
   </div>
@@ -209,80 +223,114 @@ img{max-width:100%}
           <p class="text" id="ovText"></p>
 
           <div class="section" id="controlSec" hidden>
-            <p class="sub">スマホでの操作</p>
-            <div class="seg" id="controlSeg" role="group" aria-label="スマホでの操作">
-              <button class="seg-btn" type="button" data-control="puni">起点から動かす</button>
-              <button class="seg-btn" type="button" data-control="direct">指の位置に合わせる</button>
+            <p class="sub">スマホでの{動|うご}かし{方|かた}</p>
+            <div class="seg" id="controlSeg" role="group" aria-label="スマホでの動かし方">
+              <button class="seg-btn" type="button" data-control="puni">ずらして{動|うご}かす</button>
+              <button class="seg-btn" type="button" data-control="direct">{指|ゆび}についてくる</button>
             </div>
             <div class="section" id="paceBox">
-              <p class="sub">起点から動かすときの速さ</p>
-              <div class="seg three" id="paceSeg" role="group" aria-label="起点から動かすときの速さ">
-                <button class="seg-btn" type="button" data-pace="slow">遅め</button>
+              <p class="sub">ずらして{動|うご}かすときの{速|はや}さ</p>
+              <div class="seg three" id="paceSeg" role="group" aria-label="ずらして動かすときの速さ">
+                <button class="seg-btn" type="button" data-pace="slow">ゆっくり</button>
                 <button class="seg-btn" type="button" data-pace="normal">ふつう</button>
-                <button class="seg-btn" type="button" data-pace="fast">速め</button>
+                <button class="seg-btn" type="button" data-pace="fast">はやい</button>
               </div>
             </div>
           </div>
 
           <div class="section" id="picker" hidden>
-            <p class="sub">ステージ（数字が大きいほど難しい）</p>
+            <p class="sub">ステージ（{数字|すうじ}が{大|おお}きいほど{難|むずか}しい）</p>
             <div class="stages" id="stages"></div>
-            <p class="note">↔ は左右、↕ は上下にタイルが動く面。虫 は虫が邪魔をしてくる面です。</p>
+            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}くステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージです。★ はクリアしたステージです。</p>
           </div>
 
+          <!-- data-from はその項目が出てくる最初の面。面の前の説明では、その面の分だけを出す -->
           <div class="section" id="help" hidden>
-            <p class="sub">いいアイテム</p>
-            <ul class="items">
-              <li><span class="cap split">分</span>ボールが2つに</li>
-              <li><span class="cap pierce">貫</span>3枚貫通</li>
-              <li><span class="cap wide">広</span>パドル拡大 15秒</li>
-              <li><span class="cap slow">遅</span>減速 10秒</li>
-              <li><span class="cap guard">守</span>下に壁を1回</li>
-              <li><span class="cap life">命</span>ボール +1</li>
-            </ul>
-            <p class="sub">25面から落ちてくるアイテム</p>
-            <ul class="items one">
-              <li><span class="cap laser">光</span>8秒間、パドルの両端からレーザーが出る</li>
-              <li><span class="cap catch">吸</span>10秒間、ボールがパドルにくっつく（3秒で自動発射）</li>
-              <li><span class="cap stop">止</span>6秒間、動くタイルと虫が止まる</li>
-            </ul>
-            <p class="sub">33面から落ちてくるアイテム</p>
-            <ul class="items one">
-              <li><span class="cap spray">霧</span>スプレー。パドルの上3列に霧を吹きつける。タイルは1段やわらかくなり（1回で割れるタイルはそのまま）、鉄は錆びて3回で割れるタイルに変わる。霧を浴びた虫は10秒止まる</li>
-            </ul>
-            <p class="sub">まれに出るアイテム</p>
-            <ul class="items one">
-              <li><span class="cap fuku">福</span>8秒間、得点2倍で鉄以外のタイルを突き抜ける</li>
-            </ul>
-            <p class="sub">よけたいアイテム（点線の枠）</p>
-            <ul class="items one">
-              <li><span class="cap bad">縮</span>パドルが10秒間せまくなる</li>
-              <li><span class="cap bad">速</span>ボールが10秒間速くなる</li>
-              <li><span class="cap bad">厄</span>ボール -1（残り1のときは減らない）</li>
-            </ul>
-            <p class="sub">仕掛けのあるタイル</p>
-            <ul class="items one">
-              <li><span class="cap bomb">爆</span>割ると、まわり8マスのタイルも硬さに関係なく割れる</li>
-              <li><span class="cap iron">鉄</span>ボールもレーザーも跳ね返し、貫通中でも割れない。爆弾の爆風でだけ壊れる。割らなくてもクリアできる</li>
-              <li><span class="cap regen">再</span>ひびが入ってから4秒当たらないと、1段ずつ元に戻る</li>
-            </ul>
-            <p class="sub">25面から出てくる虫（倒せない）</p>
-            <ul class="items one">
-              <li><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
-              <li><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
-            </ul>
-            <p class="note">跳ね返す虫がいる面は、ボールが4分の1ほど遅くなります。</p>
-            <p class="sub">お助け</p>
-            <ul class="notes">
-              <li>1分ごとに、どれか1枚のタイルにいいアイテムが入ります（右側の丸印）。割ると必ずそのアイテムが落ちてきます。</li>
-              <li>残りが3枚以下のまま20秒割れないと、残りのタイルが光り、1段やわらかくなります。光ったタイルは再生しません。</li>
-              <li>33面からは、よけたいアイテムが半分ほどに減り、「命」と「守」が出やすくなります。</li>
-            </ul>
-            <p class="sub">ボーナス</p>
-            <ul class="notes">
-              <li>コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
-              <li>金のタイルがたまに1枚だけ混ざっています。割ると +500 で、「福」が落ちてきます。</li>
-            </ul>
+            <div class="section group">
+              <p class="sub">タイルの{硬|かた}さ</p>
+              <ul class="items">
+                <li data-from="1"><span class="cap tile"></span>1{回|かい}で{割|わ}れる</li>
+                <li data-from="1"><span class="cap tile two"></span>2{回|かい}で{割|わ}れる</li>
+                <li data-from="1"><span class="cap tile three"></span>3{回|かい}で{割|わ}れる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">{動|うご}くタイル</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap mark">↔</span>ステージ5から、タイルが{横|よこ}に{動|うご}く</li>
+                <li data-from="17"><span class="cap mark">↕</span>ステージ17から、タイルが{縦|たて}に{動|うご}く</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">{変|か}わったタイル</p>
+              <ul class="items one">
+                <li data-from="17"><span class="cap bomb">爆</span>{爆弾|ばくだん}。{割|わ}ると、まわりのタイルもいっしょに{割|わ}れる</li>
+                <li data-from="33"><span class="cap iron">鉄</span>{鉄|てつ}。ボールも{光|ひかり}もはね{返|かえ}して、{割|わ}れない。{爆弾|ばくだん}でだけ{壊|こわ}せる。{割|わ}らなくてもクリアできる</li>
+                <li data-from="33"><span class="cap regen">再</span>{再生|さいせい}タイル。ひびが{入|はい}ってから4{秒|びょう}{当|あ}てないと、{元|もと}に{戻|もど}っていく。お{助|たす}けで{光|ひか}ったあとは{戻|もど}らない</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">いいアイテム</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap split">分</span>ボールが2つにふえる</li>
+                <li data-from="1"><span class="cap pierce">貫</span>ボールがタイルを3{枚|まい}つきぬける</li>
+                <li data-from="1"><span class="cap wide">広</span>15{秒|びょう}のあいだ、{板|いた}が{長|なが}くなる</li>
+                <li data-from="1"><span class="cap slow">遅</span>10{秒|びょう}のあいだ、ボールがゆっくりになる</li>
+                <li data-from="1"><span class="cap guard">守</span>{下|した}に{壁|かべ}ができて、1{回|かい}だけボールをはね{返|かえ}す</li>
+                <li data-from="1"><span class="cap life">命</span>のこりのボール +1</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ25から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="25"><span class="cap laser">光</span>8{秒|びょう}のあいだ、{板|いた}の{両|りょう}はしから{光|ひかり}が{出|で}る</li>
+                <li data-from="25"><span class="cap catch">吸</span>10{秒|びょう}のあいだ、ボールが{板|いた}にくっつく（3{秒|びょう}たつと{勝手|かって}に{飛|と}んでいく）</li>
+                <li data-from="25"><span class="cap stop">止</span>6{秒|びょう}のあいだ、{動|うご}くタイルと{虫|むし}が{止|と}まる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ33から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="33"><span class="cap spray">霧</span>{霧吹|きりふ}き。{板|いた}の{上|うえ}の3{列|れつ}に{霧|きり}をふきかける。タイルはやわらかくなり（1{回|かい}で{割|わ}れるタイルはそのまま）、{鉄|てつ}はさびて3{回|かい}で{割|わ}れるタイルになる。{霧|きり}がかかった{虫|むし}は10{秒|びょう}{止|と}まる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">たまに{出|で}るアイテム</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap fuku">福</span>8{秒|びょう}のあいだ、{点|てん}が2{倍|ばい}。{鉄|てつ}でなければ、タイルをつきぬけて{割|わ}る</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">とらないほうがいいアイテム（{点線|てんせん}のわく）</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap bad">縮</span>10{秒|びょう}のあいだ、{板|いた}が{短|みじか}くなる</li>
+                <li data-from="1"><span class="cap bad">速</span>10{秒|びょう}のあいだ、ボールが{速|はや}くなる</li>
+                <li data-from="1"><span class="cap bad">厄</span>のこりのボール -1（のこり1のときはへらない）</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ25から{出|で}てくる{虫|むし}（やっつけられない）</p>
+              <ul class="items one">
+                <li data-from="25"><span class="cap bug">虫</span>タイルの{下|した}をふわふわ{飛|と}んで、ボールをはね{返|かえ}す</li>
+                <li data-from="25"><span class="cap bug">投</span>{上|うえ}を{歩|ある}きながら、{空|あ}いたところにタイルを{投|な}げこむ。ボールか{光|ひかり}を{当|あ}てると4{秒|びょう}{止|と}まる</li>
+              </ul>
+              <p class="note" data-from="25">はね{返|かえ}す{虫|むし}がいるステージは、ボールが{少|すこ}しゆっくりになります。</p>
+            </div>
+            <div class="section group">
+              <p class="sub">お{助|たす}け</p>
+              <ul class="notes">
+                <li data-from="1">1{分|ぷん}ごとに、どれか1{枚|まい}のタイルにいいアイテムが{入|はい}ります（{右|みぎ}がわの{丸|まる}い{印|しるし}）。{割|わ}ると、かならずそのアイテムが{落|お}ちてきます。</li>
+                <li data-from="1">のこりが3{枚|まい}までになって20{秒|びょう}{割|わ}れないと、のこりのタイルが{光|ひか}って、やわらかくなります。</li>
+                <li data-from="33">ステージ33からは、とらないほうがいいアイテムが{半分|はんぶん}くらいにへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ごほうび</p>
+              <ul class="notes">
+                <li data-from="1">{板|いた}に{戻|もど}るまでに{続|つづ}けて{割|わ}ると{連続|れんぞく}になります。5{枚|まい}で +100、10{枚|まい}で +300、15{枚|まい}で +500、20{枚|まい}で +800、そのあとは5{枚|まい}ごとに +1,000。</li>
+                <li data-from="1">{金|きん}のタイルが、たまに1{枚|まい}だけまざっています。{割|わ}ると +500 で、「{福|ふく}」が{落|お}ちてきます。</li>
+              </ul>
+            </div>
           </div>
 
           <div class="actions">
@@ -382,21 +430,30 @@ const STAGES = [
   {rows: ['3R3##3R3','r2r22r2r','..####..','22222222','1r1r1r1r','11111111'], move: {2: 50}, bug: 60},
 ];
 
+// pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
 const ITEMS = {
-  split:  {glyph: '分', pop: '分裂',       color: 't-sango',    weight: 22, kind: 'good'},
-  pierce: {glyph: '貫', pop: '貫通 +3',    color: 't-ai',       weight: 20, kind: 'good'},
-  wide:   {glyph: '広', pop: 'パドル拡大',  color: 't-wakakusa', weight: 20, kind: 'good'},
-  slow:   {glyph: '遅', pop: '減速',       color: 't-asagi',    weight: 12, kind: 'good'},
-  guard:  {glyph: '守', pop: '守り',       color: 't-yamabuki', weight: 11, kind: 'good'},
-  life:   {glyph: '命', pop: 'ボール +1',  color: 't-life',     weight: 5,  kind: 'good'},
-  laser:  {glyph: '光', pop: 'レーザー',    color: 't-fuji',     weight: 11, kind: 'good', from: 25},
-  catch:  {glyph: '吸', pop: 'キャッチ',    color: 't-kurumi',   weight: 9,  kind: 'good', from: 25},
-  stop:   {glyph: '止', pop: '時止め',      color: 't-nibi',     weight: 8,  kind: 'good', from: 25},
-  spray:  {glyph: '霧', pop: 'スプレー',    color: 't-mist',     weight: 9,  kind: 'good', from: 33},
-  fuku:   {glyph: '福', pop: '',           color: 'gold',       weight: 2,  kind: 'rare'},
-  shrink: {glyph: '縮', pop: 'パドル縮小',  color: 'bad',        weight: 5,  kind: 'bad'},
-  fast:   {glyph: '速', pop: 'ボール加速',  color: 'bad',        weight: 5,  kind: 'bad'},
-  yaku:   {glyph: '厄', pop: 'ボール -1',  color: 'bad',        weight: 3,  kind: 'bad'},
+  split:  {glyph: '分', pop: 'ふえる',        color: 't-sango',    weight: 22, kind: 'good'},
+  pierce: {glyph: '貫', pop: 'つきぬけ +3',   color: 't-ai',       weight: 20, kind: 'good'},
+  wide:   {glyph: '広', pop: 'ながい いた',   color: 't-wakakusa', weight: 20, kind: 'good'},
+  slow:   {glyph: '遅', pop: 'ゆっくり',      color: 't-asagi',    weight: 12, kind: 'good'},
+  guard:  {glyph: '守', pop: 'まもり',        color: 't-yamabuki', weight: 11, kind: 'good'},
+  life:   {glyph: '命', pop: 'ボール +1',     color: 't-life',     weight: 5,  kind: 'good'},
+  laser:  {glyph: '光', pop: 'ひかり',        color: 't-fuji',     weight: 11, kind: 'good', from: 25},
+  catch:  {glyph: '吸', pop: 'くっつく',      color: 't-kurumi',   weight: 9,  kind: 'good', from: 25},
+  stop:   {glyph: '止', pop: 'ぜんぶ とまる', color: 't-nibi',     weight: 8,  kind: 'good', from: 25},
+  spray:  {glyph: '霧', pop: 'きりふき',      color: 't-mist',     weight: 9,  kind: 'good', from: 33},
+  fuku:   {glyph: '福', pop: '',              color: 'gold',       weight: 2,  kind: 'rare'},
+  shrink: {glyph: '縮', pop: 'みじかい いた', color: 'bad',        weight: 5,  kind: 'bad'},
+  fast:   {glyph: '速', pop: 'はやい ボール', color: 'bad',        weight: 5,  kind: 'bad'},
+  yaku:   {glyph: '厄', pop: 'ボール -1',     color: 'bad',        weight: 3,  kind: 'bad'},
+};
+
+// 始める前に説明をはさむ面。1面は最初からあるもの、その先は8面ごとに増えたものだけ（中身は説明ページの data-from）
+const INTROS = {
+  1:  {title: '{遊|あそ}び{方|かた}', text: '{板|いた}でボールを{打|う}ち{返|かえ}して、タイルを{全部|ぜんぶ}{割|わ}るとクリアです。ボールを{下|した}に{落|お}とすと1つへって、なくなるとおしまいです。'},
+  17: {title: '{爆弾|ばくだん}と{縦|たて}の{動|うご}き'},
+  25: {title: '{虫|むし}と{新|あたら}しいアイテム'},
+  33: {title: '{鉄|てつ}・{再生|さいせい}・{霧吹|きりふ}き'},
 };
 
 const $ = id => document.getElementById(id);
@@ -406,6 +463,24 @@ const overlay = $('overlay'), ovEyebrow = $('ovEyebrow'), ovTitle = $('ovTitle')
 const ovBtn = $('ovBtn'), ovBtn2 = $('ovBtn2'), pickerEl = $('picker'), helpEl = $('help'), stagesEl = $('stages');
 const controlSec = $('controlSec'), controlSeg = $('controlSeg'), paceBox = $('paceBox'), paceSeg = $('paceSeg');
 const hint = $('hint');
+
+// {漢字|かんじ} をふりがな付きにする。文字はすべてこのゲームの中で書いたものだけ
+const esc = s => s.replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';');
+const furigana = s => esc(s).replace(/\{([^{}|]+)\|([^{}]+)\}/g, '<ruby>$1<rt>$2</rt></ruby>');
+function setText(el, s){ el.innerHTML = furigana(s); }
+// 最初から書いてある字は、読み込んだときに1回だけ置き換える
+function furiganaAll(root){
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const found = [];
+  while (w.nextNode()) if (w.currentNode.nodeValue.includes('{')) found.push(w.currentNode);
+  for (const t of found) {
+    // 1つの span にまとめる（横並びの行の中で、字の切れ目ごとに間が空かないように）
+    const s = document.createElement('span');
+    setText(s, t.nodeValue);
+    t.replaceWith(s);
+  }
+}
+furiganaAll(document.querySelector('.app'));
 const elScore = $('score'), elBest = $('best'), elStage = $('stage'), elLives = $('lives');
 const btnPause = $('pauseBtn'), btnSound = $('soundBtn');
 
@@ -513,7 +588,7 @@ function sfx(name, arg){
   }
 }
 function soundUi(){
-  btnSound.textContent = soundOn ? '音あり' : '音なし';
+  setText(btnSound, soundOn ? '{音|おと}あり' : '{音|おと}なし');
   btnSound.setAttribute('aria-pressed', soundOn ? 'true' : 'false');
 }
 btnSound.addEventListener('click', e => {
@@ -764,6 +839,24 @@ function startGame(n){
   S.stage = n;
   startStage();
 }
+// fresh はステージ一覧から選んだとき（スコアを0から）。説明をはさむ面では、後ろにその面を見せて説明を出す
+function enterStage(n, fresh){
+  const go = fresh ? () => startGame(n) : () => { S.stage = n; startStage(); };
+  const intro = INTROS[n];
+  if (!intro) { go(); return; }
+  if (!fresh) loadStage(n);
+  S.mode = 'intro';
+  showOverlay({
+    eyebrow: n === 1 ? 'はじめに' : 'ステージ ' + n + ' から{増|ふ}えるもの',
+    title: intro.title,
+    text: intro.text,
+    intro: n,
+    btn: 'ステージ ' + n + ' を{始|はじ}める',
+    primary: go,
+    btn2: fresh ? '{戻|もど}る' : 'ステージを{選|えら}ぶ',
+    secondary: goTitle
+  });
+}
 function launch(){
   if (S.mode !== 'ready') return;
   const b = S.balls[0];
@@ -796,12 +889,12 @@ function loseLife(){
     const updated = saveBest();
     showOverlay({
       eyebrow: 'ステージ ' + S.stage,
-      title: 'ゲームオーバー',
-      text: 'スコア ' + fmt(S.score) + '\n最大コンボ ' + S.maxCombo + '\n' +
-        (updated ? 'ベストを更新しました（前回 ' + fmt(prevBest) + '）' : 'ベスト ' + fmt(S.best)),
-      btn: 'ステージ ' + S.stage + ' からもう一度',
+      title: 'おしまい',
+      text: '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n' +
+        (updated ? '{最高|さいこう}{記録|きろく}！（{前|まえ}は ' + fmt(prevBest) + '）' : '{最高|さいこう}{記録|きろく} ' + fmt(S.best)),
+      btn: 'ステージ ' + S.stage + ' からもう{一度|いちど}',
       primary: () => startGame(S.stage),
-      btn2: 'ステージを選ぶ',
+      btn2: 'ステージを{選|えら}ぶ',
       secondary: goTitle
     });
   } else {
@@ -825,28 +918,31 @@ function stageClear(){
   const firstTile = re => re.test(nextDef.rows.join('')) && !STAGES.slice(0, nextNo - 1).some(d => re.test(d.rows.join('')));
   const notes = [];
   if (lastOne) {
-    notes.push('全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。');
+    notes.push('{全部|ぜんぶ}で' + STAGES.length + 'ステージ{回|まわ}りました。ここからは、ステージ1の{形|かたち}からもう1{周|しゅう}します。');
   } else {
-    if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
-    if (first('bug')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
-    if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
-    if (firstTile(/#/)) notes.push('次のステージから、割れない鉄のタイルが出てきます。爆弾の爆風なら壊せます。');
-    if (firstTile(/[rR]/)) notes.push('次のステージから、しばらく当てないとひびが直る「再」のタイルが出てきます。');
-    if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
-    if (nextNo === EASE_FROM) notes.push('ここからは、よけたいアイテムが減り、「命」と「守」が出やすくなります。');
+    // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる
+    if (!INTROS[S.stage + 1]) {
+      if (first('vmove')) notes.push('{次|つぎ}のステージから、タイルが{縦|たて}にも{動|うご}きます。');
+      if (first('bug')) notes.push('{次|つぎ}のステージから、ボールをはね{返|かえ}す{虫|むし}が{出|で}てきます。');
+      if (first('thrower')) notes.push('{次|つぎ}のステージから、{空|あ}いたところにタイルを{投|な}げこむ{虫|むし}が{出|で}てきます。ボールを{当|あ}てると{少|すこ}しのあいだ{止|と}まります。');
+      if (firstTile(/#/)) notes.push('{次|つぎ}のステージから、{割|わ}れない{鉄|てつ}のタイルが{出|で}てきます。{爆弾|ばくだん}なら{壊|こわ}せます。');
+      if (firstTile(/[rR]/)) notes.push('{次|つぎ}のステージから、しばらく{当|あ}てないと{元|もと}に{戻|もど}る「{再|さい}」のタイルが{出|で}てきます。');
+      if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('{新|あたら}しいアイテムも{落|お}ちてくるようになります。');
+      if (nextNo === EASE_FROM) notes.push('ここからは、とらないほうがいいアイテムがへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。');
+    }
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
-    if (nextSlow < nowSlow) notes.push('虫がいるぶん、ボールは遅めです。');
+    if (nextSlow < nowSlow) notes.push('{虫|むし}がいるので、ボールはゆっくりです。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
-      notes.push(nowSlow === 1 ? '次のステージはボールが少し速くなります。' : nextSlow === 1 ? 'ボールの速さは元に戻ります。' : 'ボールは少し速くなります。');
+      notes.push(nowSlow === 1 ? '{次|つぎ}のステージは、ボールが{少|すこ}し{速|はや}くなります。' : nextSlow === 1 ? 'ボールの{速|はや}さは{元|もと}に{戻|もど}ります。' : 'ボールは{少|すこ}し{速|はや}くなります。');
     }
   }
   const note = notes.join('');
   showOverlay({
     title: 'ステージ ' + S.stage + ' クリア',
-    text: 'クリアボーナス +' + fmt(bonus) + (note ? '\n' + note : ''),
+    text: 'クリアのごほうび +' + fmt(bonus) + (note ? '\n' + note : ''),
     btn: 'ステージ ' + (S.stage + 1) + ' へ',
-    primary: () => { S.stage++; startStage(); },
-    btn2: 'ステージを選ぶ',
+    primary: () => enterStage(S.stage + 1, false),
+    btn2: 'ステージを{選|えら}ぶ',
     secondary: goTitle
   });
   ui();
@@ -854,18 +950,21 @@ function stageClear(){
 
 /* ---------- 画面の重ね表示 ---------- */
 function showOverlay(o){
-  ovEyebrow.textContent = o.eyebrow || '';
+  setText(ovEyebrow, o.eyebrow || '');
   ovEyebrow.hidden = !o.eyebrow;
-  ovTitle.textContent = o.title;
-  ovText.textContent = o.text || '';
+  setText(ovTitle, o.title);
+  setText(ovText, o.text || '');
   ovText.hidden = !o.text;
   pickerEl.hidden = !o.picker;
   controlSec.hidden = !o.control;
-  helpEl.hidden = !o.help;
-  ovBtn.textContent = o.btn;
+  helpEl.hidden = !o.help && !o.intro;
+  // 面の前の説明では、その面から出てくる項目だけを残す
+  for (const el of helpEl.querySelectorAll('[data-from]')) el.hidden = !!o.intro && +el.dataset.from !== o.intro;
+  for (const g of helpEl.querySelectorAll('.group')) g.hidden = !g.querySelector('[data-from]:not([hidden])');
+  setText(ovBtn, o.btn);
   onPrimary = o.primary || null;
   ovBtn2.hidden = !o.btn2;
-  ovBtn2.textContent = o.btn2 || '';
+  setText(ovBtn2, o.btn2 || '');
   onSecondary = o.secondary || null;
   overlay.hidden = false;
   cardEl.scrollTop = 0;
@@ -877,10 +976,10 @@ ovBtn.addEventListener('click', () => { ensureAudio(); if (onPrimary) onPrimary(
 ovBtn2.addEventListener('click', () => { ensureAudio(); if (onSecondary) onSecondary(); });
 
 function titleText(){
-  if (!coarse) return 'マウスか ← → でパドルを動かし、クリックかスペースで発射。P で一時停止。';
+  if (!coarse) return 'マウスか ← → キーで{板|いた}を{動|うご}かして、クリックかスペースキーでボールを{打|う}ちます。P キーで{止|と}まります。';
   return control === 'puni'
-    ? '指を置いたところから左右にずらすと、その向きにパドルが動きます。大きくずらすほど速く動きます。指を離すとボールが出ます。'
-    : '指で左右になぞるとパドルが動き、指を離すとボールが出ます。';
+    ? '{指|ゆび}を{置|お}いたところから{横|よこ}にずらすと、そっちへ{板|いた}が{動|うご}きます。{大|おお}きくずらすほど{速|はや}く{動|うご}きます。{指|ゆび}をはなすとボールが{出|で}ます。'
+    : '{指|ゆび}で{横|よこ}になぞると{板|いた}が{動|うご}いて、{指|ゆび}をはなすとボールが{出|で}ます。';
 }
 function renderControl(){
   for (const b of controlSeg.children) b.setAttribute('aria-pressed', b.dataset.control === control ? 'true' : 'false');
@@ -891,7 +990,7 @@ function setControl(v){
   control = v;
   store.set(CONTROL_KEY, v);
   renderControl();
-  if (S.mode === 'title' && !pickerEl.hidden) ovText.textContent = titleText();
+  if (S.mode === 'title' && !pickerEl.hidden) setText(ovText, titleText());
 }
 for (const b of controlSeg.children) {
   b.addEventListener('click', e => {
@@ -911,23 +1010,23 @@ for (const b of paceSeg.children) {
 }
 function showTitle(){
   showOverlay({
-    title: 'タイル崩し',
+    title: 'タイル{崩|くず}し',
     text: titleText(),
     control: coarse,
     picker: true,
-    btn: 'ステージ ' + S.pick + ' から始める',
-    primary: () => startGame(S.pick),
-    btn2: 'アイテムとボーナス',
+    btn: 'ステージ ' + S.pick + ' から{始|はじ}める',
+    primary: () => enterStage(S.pick, true),
+    btn2: 'タイルとアイテム',
     secondary: showHelp
   });
   renderPicker();
 }
 function showHelp(){
   showOverlay({
-    title: 'アイテムとボーナス',
-    text: 'タイルを割るとアイテムが落ちてきます。パドルで受けると効き目が出ます。',
+    title: 'タイルとアイテム',
+    text: 'タイルを{割|わ}ると、アイテムが{落|お}ちてきます。{板|いた}で{受|う}けると{効|き}きめが{出|で}ます。',
     help: true,
-    btn: '戻る',
+    btn: '{戻|もど}る',
     primary: showTitle
   });
 }
@@ -969,13 +1068,13 @@ function renderPicker(){
     const n = +b.dataset.n;
     const done = S.cleared.has(n);
     b.setAttribute('aria-pressed', n === S.pick ? 'true' : 'false');
-    b.querySelector('.st-mark').textContent = done ? '済' : '';
+    b.querySelector('.st-mark').textContent = done ? '★' : '';
     const def = STAGES[n - 1];
     const moves = def.move && def.vmove ? '（タイルが左右と上下に動く）' : def.move ? '（タイルが左右に動く）' : def.vmove ? '（タイルが上下に動く）' : '';
     const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）' : '';
     b.setAttribute('aria-label', 'ステージ' + n + moves + bugs + (done ? '（クリア済み）' : ''));
   }
-  if (S.mode === 'title' && !pickerEl.hidden) ovBtn.textContent = 'ステージ ' + S.pick + ' から始める';
+  if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
 }
 
 function pause(){
@@ -985,10 +1084,10 @@ function pause(){
   keys.left = keys.right = false;
   showOverlay({
     eyebrow: 'ステージ ' + S.stage,
-    title: '一時停止',
-    btn: '再開',
+    title: 'ひと{休|やす}み',
+    btn: 'つづける',
     primary: resume,
-    btn2: 'ステージを選ぶ',
+    btn2: 'ステージを{選|えら}ぶ',
     secondary: goTitle
   });
 }
@@ -1020,8 +1119,8 @@ function ui(){
     elLives.setAttribute('aria-label', '残り' + Math.max(0, S.lives));
   }
   btnPause.disabled = !(S.mode === 'play' || S.mode === 'ready' || S.mode === 'paused');
-  btnPause.textContent = S.mode === 'paused' ? '再開' : '一時停止';
-  hint.textContent = coarse ? '指を離すと発射' : 'クリックかスペースで発射';
+  setText(btnPause, S.mode === 'paused' ? 'つづける' : '{止|と}める');
+  setText(hint, coarse ? '{指|ゆび}をはなすとボールが{出|で}る' : 'クリックかスペースキーでボールが{出|で}る');
   hint.hidden = !(S.mode === 'ready' || (S.mode === 'play' && S.balls.some(b => b.hold > 0)));
 }
 
@@ -1150,13 +1249,13 @@ function applyItem(type){
     }
     case 'fuku':
       S.feverT = 8;
-      banner('大当たり', '8秒間 得点2倍・突き抜ける', GOLD.text);
+      banner('おおあたり', '8びょう てんが2ばい・つきぬける', GOLD.text);
       break;
     case 'shrink': S.shrinkT = 10; S.wideT = 0; break;
     case 'fast':   S.fastT = 10; S.slowT = 0; break;
     case 'yaku':
       if (S.lives > 1) S.lives--;
-      else pop = 'セーフ（残り1）';
+      else pop = 'だいじょうぶ（のこり1）';
       break;
   }
   if (pop) S.pops.push({x: S.paddle.x, y: PADDLE_Y - 12, text: pop, t: 0, bad: d.kind === 'bad'});
@@ -1184,7 +1283,7 @@ function soften(br){
     // 鉄は錆びて、3回で割れるタイルになる
     br.iron = false; br.rust = true;
     br.max = br.hp = 3;
-    S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: '錆びた', t: 0});
+    S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: 'さびた', t: 0});
   } else if (br.hp > 1) {
     br.hp--;
     addCrack(br);
@@ -1213,7 +1312,7 @@ function updateMists(dt){
       if (m.hit.has(g) || g.y + BUG_R < m.y || Math.abs(g.x - m.x) >= SPRAY_W + BUG_R) continue;
       m.hit.add(g);
       g.stunT = Math.max(g.stunT, SPRAY_STUN);
-      S.pops.push({x: g.x, y: g.y + BUG_R + 16, text: '10秒止まる', t: 0});
+      S.pops.push({x: g.x, y: g.y + BUG_R + 16, text: '10びょう とまる', t: 0});
       sfx('stun');
     }
     if (t && !t.leaving && !m.hit.has(t) && THROW_Y + BUG_R >= m.y && Math.abs(t.x - m.x) < SPRAY_W + BUG_R) {
@@ -1240,7 +1339,7 @@ function giveGift(){
   const br = cands[Math.floor(Math.random() * cands.length)];
   br.item = pickItem(d => d.kind === 'good');
   br.flash = 0.3;
-  S.pops.push({x: br.x + br.w / 2, y: br.y + br.h + 14, text: 'アイテム入り', t: 0});
+  S.pops.push({x: br.x + br.w / 2, y: br.y + br.h + 14, text: 'アイテムいり', t: 0});
   sfx('gift');
 }
 function assist(){
@@ -1254,7 +1353,7 @@ function assist(){
     if (br.hp > 1) { br.hp--; addCrack(br); }
     br.flash = 0.3;
   }
-  banner('残りわずか', softened ? '残りのタイルが1段やわらかくなりました' : '残りのタイルを光らせました', C['t-yamabuki']);
+  banner('のこり すこし', softened ? 'のこりの タイルが やわらかく なった' : 'のこりの タイルを ひからせた', C['t-yamabuki']);
   sfx('assist');
 }
 function helpers(dt){
@@ -1329,7 +1428,7 @@ function damage(br, full, blast){
 
   if (br.gold) {
     sfx('gold');
-    banner('金のタイル', '+' + fmt(got), GOLD.text);
+    banner('きんの タイル', '+' + fmt(got), GOLD.text);
     spawnItem(br.x + br.w / 2, br.y + br.h / 2, 'fuku');
   } else if (br.item) {
     spawnItem(br.x + br.w / 2, br.y + br.h / 2, br.item);
@@ -1340,7 +1439,7 @@ function damage(br, full, blast){
   const cb = comboBonus(S.combo);
   if (cb) {
     const gotB = addScore(cb);
-    banner(S.combo + 'コンボ', '+' + fmt(gotB), C['t-sango']);
+    banner(S.combo + ' れんぞく', '+' + fmt(gotB), C['t-sango']);
     sfx('combo', S.combo);
   }
 
@@ -1403,7 +1502,7 @@ function bounceOffBug(b, x, y){
 }
 function stunThrower(sec){
   const t = S.thrower;
-  if (t.stunT <= 0) S.pops.push({x: t.x, y: THROW_Y + BUG_R + 16, text: '気絶', t: 0});
+  if (t.stunT <= 0) S.pops.push({x: t.x, y: THROW_Y + BUG_R + 16, text: 'とまった', t: 0});
   t.stunT = Math.max(t.stunT, sec || THROW_STUN);
   t.windup = 0;
   t.cool = Math.max(t.cool, 1.5);
@@ -1542,7 +1641,7 @@ function update(dt){
     movePaddle(p.x + (dir * 560 + stickSpeed()) * dt);
   }
   // 時止め中は、動くタイルも虫も止まる
-  if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title') && S.stopT <= 0) {
+  if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
     moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt);
   }
   if (S.mode === 'ready') placeBall();
@@ -1893,18 +1992,18 @@ function drawThrower(){
 }
 function drawHud(){
   const chips = [];
-  if (S.combo >= 2) chips.push(['コンボ ' + S.combo, C['t-sango']]);
+  if (S.combo >= 2) chips.push(['れんぞく ' + S.combo, C['t-sango']]);
   if (S.balls.length > 1) chips.push(['ボール ×' + S.balls.length, C['t-sango']]);
-  if (S.feverT > 0) chips.push(['大当たり ' + Math.ceil(S.feverT) + '秒', GOLD.bottom]);
-  if (S.pierce > 0) chips.push(['貫通 ×' + S.pierce, C['t-ai']]);
-  if (S.wideT > 0) chips.push(['拡大 ' + Math.ceil(S.wideT) + '秒', C['t-wakakusa']]);
-  if (S.shrinkT > 0) chips.push(['縮小 ' + Math.ceil(S.shrinkT) + '秒', C.warn]);
-  if (S.slowT > 0) chips.push(['減速 ' + Math.ceil(S.slowT) + '秒', C['t-asagi']]);
-  if (S.fastT > 0) chips.push(['加速 ' + Math.ceil(S.fastT) + '秒', C.warn]);
-  if (S.guard) chips.push(['守り', C['t-yamabuki']]);
-  if (S.laserT > 0) chips.push(['レーザー ' + Math.ceil(S.laserT) + '秒', C['t-fuji']]);
-  if (S.catchT > 0) chips.push(['キャッチ ' + Math.ceil(S.catchT) + '秒', C['t-kurumi']]);
-  if (S.stopT > 0) chips.push(['時止め ' + Math.ceil(S.stopT) + '秒', C['t-nibi']]);
+  if (S.feverT > 0) chips.push(['おおあたり ' + Math.ceil(S.feverT) + 'びょう', GOLD.bottom]);
+  if (S.pierce > 0) chips.push(['つきぬけ ×' + S.pierce, C['t-ai']]);
+  if (S.wideT > 0) chips.push(['ながい いた ' + Math.ceil(S.wideT) + 'びょう', C['t-wakakusa']]);
+  if (S.shrinkT > 0) chips.push(['みじかい いた ' + Math.ceil(S.shrinkT) + 'びょう', C.warn]);
+  if (S.slowT > 0) chips.push(['ゆっくり ' + Math.ceil(S.slowT) + 'びょう', C['t-asagi']]);
+  if (S.fastT > 0) chips.push(['はやい ボール ' + Math.ceil(S.fastT) + 'びょう', C.warn]);
+  if (S.guard) chips.push(['まもり', C['t-yamabuki']]);
+  if (S.laserT > 0) chips.push(['ひかり ' + Math.ceil(S.laserT) + 'びょう', C['t-fuji']]);
+  if (S.catchT > 0) chips.push(['くっつく ' + Math.ceil(S.catchT) + 'びょう', C['t-kurumi']]);
+  if (S.stopT > 0) chips.push(['とまる ' + Math.ceil(S.stopT) + 'びょう', C['t-nibi']]);
   if (!chips.length) return;
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textBaseline = 'middle';
