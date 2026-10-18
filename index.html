@@ -168,6 +168,15 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.regen{background:var(--t-wakakusa);border-radius:3px}
 .cap.bug{background:var(--bug);color:var(--board)}
 .cap.bad{background:var(--bad);outline:1.5px dashed var(--warn);outline-offset:1px}
+.cap.mark{background:var(--board);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+/* 盤面のタイルと同じ見た目：2回は白い枠、3回は濃い色に枠とひし形 */
+.cap.tile{position:relative;background:var(--t-sango);border-radius:3px}
+.cap.tile.two::after,.cap.tile.three::after{content:"";position:absolute;inset:5px 4px 3px;border:1px solid rgba(255,255,255,.55)}
+.cap.tile.three{background:var(--t-hard)}
+.cap.tile.three::before{
+  content:"";position:absolute;left:50%;top:7px;width:8px;height:5px;margin-left:-4px;
+  background:rgba(255,255,255,.6);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);
+}
 .notes{margin:0;padding-left:1.1em;font-size:.8rem;line-height:1.6;display:flex;flex-direction:column;gap:4px}
 
 .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
@@ -230,59 +239,93 @@ img{max-width:100%}
             <p class="note">↔ は左右、↕ は上下にタイルが動く面。虫 は虫が邪魔をしてくる面です。</p>
           </div>
 
+          <!-- data-from はその項目が出てくる最初の面。面の前の説明では、その面の分だけを出す -->
           <div class="section" id="help" hidden>
-            <p class="sub">いいアイテム</p>
-            <ul class="items">
-              <li><span class="cap split">分</span>ボールが2つに</li>
-              <li><span class="cap pierce">貫</span>3枚貫通</li>
-              <li><span class="cap wide">広</span>パドル拡大 15秒</li>
-              <li><span class="cap slow">遅</span>減速 10秒</li>
-              <li><span class="cap guard">守</span>下に壁を1回</li>
-              <li><span class="cap life">命</span>ボール +1</li>
-            </ul>
-            <p class="sub">25面から落ちてくるアイテム</p>
-            <ul class="items one">
-              <li><span class="cap laser">光</span>8秒間、パドルの両端からレーザーが出る</li>
-              <li><span class="cap catch">吸</span>10秒間、ボールがパドルにくっつく（3秒で自動発射）</li>
-              <li><span class="cap stop">止</span>6秒間、動くタイルと虫が止まる</li>
-            </ul>
-            <p class="sub">33面から落ちてくるアイテム</p>
-            <ul class="items one">
-              <li><span class="cap spray">霧</span>スプレー。パドルの上3列に霧を吹きつける。タイルは1段やわらかくなり（1回で割れるタイルはそのまま）、鉄は錆びて3回で割れるタイルに変わる。霧を浴びた虫は10秒止まる</li>
-            </ul>
-            <p class="sub">まれに出るアイテム</p>
-            <ul class="items one">
-              <li><span class="cap fuku">福</span>8秒間、得点2倍で鉄以外のタイルを突き抜ける</li>
-            </ul>
-            <p class="sub">よけたいアイテム（点線の枠）</p>
-            <ul class="items one">
-              <li><span class="cap bad">縮</span>パドルが10秒間せまくなる</li>
-              <li><span class="cap bad">速</span>ボールが10秒間速くなる</li>
-              <li><span class="cap bad">厄</span>ボール -1（残り1のときは減らない）</li>
-            </ul>
-            <p class="sub">仕掛けのあるタイル</p>
-            <ul class="items one">
-              <li><span class="cap bomb">爆</span>割ると、まわり8マスのタイルも硬さに関係なく割れる</li>
-              <li><span class="cap iron">鉄</span>ボールもレーザーも跳ね返し、貫通中でも割れない。爆弾の爆風でだけ壊れる。割らなくてもクリアできる</li>
-              <li><span class="cap regen">再</span>ひびが入ってから4秒当たらないと、1段ずつ元に戻る</li>
-            </ul>
-            <p class="sub">25面から出てくる虫（倒せない）</p>
-            <ul class="items one">
-              <li><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
-              <li><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
-            </ul>
-            <p class="note">跳ね返す虫がいる面は、ボールが4分の1ほど遅くなります。</p>
-            <p class="sub">お助け</p>
-            <ul class="notes">
-              <li>1分ごとに、どれか1枚のタイルにいいアイテムが入ります（右側の丸印）。割ると必ずそのアイテムが落ちてきます。</li>
-              <li>残りが3枚以下のまま20秒割れないと、残りのタイルが光り、1段やわらかくなります。光ったタイルは再生しません。</li>
-              <li>33面からは、よけたいアイテムが半分ほどに減り、「命」と「守」が出やすくなります。</li>
-            </ul>
-            <p class="sub">ボーナス</p>
-            <ul class="notes">
-              <li>コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
-              <li>金のタイルがたまに1枚だけ混ざっています。割ると +500 で、「福」が落ちてきます。</li>
-            </ul>
+            <div class="section group">
+              <p class="sub">タイルの硬さ</p>
+              <ul class="items">
+                <li data-from="1"><span class="cap tile"></span>1回で割れる</li>
+                <li data-from="1"><span class="cap tile two"></span>2回で割れる</li>
+                <li data-from="1"><span class="cap tile three"></span>3回で割れる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">動くタイル</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap mark">↔</span>5面から、行ごとにタイルが左右に動く</li>
+                <li data-from="17"><span class="cap mark">↕</span>17面から、列ごとにタイルが上下に動く</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">仕掛けのあるタイル</p>
+              <ul class="items one">
+                <li data-from="17"><span class="cap bomb">爆</span>割ると、まわり8マスのタイルも硬さに関係なく割れる</li>
+                <li data-from="33"><span class="cap iron">鉄</span>ボールもレーザーも跳ね返し、貫通中でも割れない。爆弾の爆風でだけ壊れる。割らなくてもクリアできる</li>
+                <li data-from="33"><span class="cap regen">再</span>ひびが入ってから4秒当たらないと、1段ずつ元に戻る。お助けで光ったあとは戻らない</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">いいアイテム</p>
+              <ul class="items">
+                <li data-from="1"><span class="cap split">分</span>ボールが2つに</li>
+                <li data-from="1"><span class="cap pierce">貫</span>3枚貫通</li>
+                <li data-from="1"><span class="cap wide">広</span>パドル拡大 15秒</li>
+                <li data-from="1"><span class="cap slow">遅</span>減速 10秒</li>
+                <li data-from="1"><span class="cap guard">守</span>下に壁を1回</li>
+                <li data-from="1"><span class="cap life">命</span>ボール +1</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">25面から落ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="25"><span class="cap laser">光</span>8秒間、パドルの両端からレーザーが出る</li>
+                <li data-from="25"><span class="cap catch">吸</span>10秒間、ボールがパドルにくっつく（3秒で自動発射）</li>
+                <li data-from="25"><span class="cap stop">止</span>6秒間、動くタイルと虫が止まる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">33面から落ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="33"><span class="cap spray">霧</span>スプレー。パドルの上3列に霧を吹きつける。タイルは1段やわらかくなり（1回で割れるタイルはそのまま）、鉄は錆びて3回で割れるタイルに変わる。霧を浴びた虫は10秒止まる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">まれに出るアイテム</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap fuku">福</span>8秒間、得点2倍で鉄以外のタイルを突き抜ける</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">よけたいアイテム（点線の枠）</p>
+              <ul class="items one">
+                <li data-from="1"><span class="cap bad">縮</span>パドルが10秒間せまくなる</li>
+                <li data-from="1"><span class="cap bad">速</span>ボールが10秒間速くなる</li>
+                <li data-from="1"><span class="cap bad">厄</span>ボール -1（残り1のときは減らない）</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">25面から出てくる虫（倒せない）</p>
+              <ul class="items one">
+                <li data-from="25"><span class="cap bug">虫</span>タイルの下を漂って、ボールを跳ね返す</li>
+                <li data-from="25"><span class="cap bug">投</span>上を歩きながら、空いたマスにタイルを投げ込む。ボールかレーザーを当てると4秒止まる</li>
+              </ul>
+              <p class="note" data-from="25">跳ね返す虫がいる面は、ボールが4分の1ほど遅くなります。</p>
+            </div>
+            <div class="section group">
+              <p class="sub">お助け</p>
+              <ul class="notes">
+                <li data-from="1">1分ごとに、どれか1枚のタイルにいいアイテムが入ります（右側の丸印）。割ると必ずそのアイテムが落ちてきます。</li>
+                <li data-from="1">残りが3枚以下のまま20秒割れないと、残りのタイルが光り、1段やわらかくなります。</li>
+                <li data-from="33">33面からは、よけたいアイテムが半分ほどに減り、「命」と「守」が出やすくなります。</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ボーナス</p>
+              <ul class="notes">
+                <li data-from="1">コンボはパドルに戻るまでに続けて割った数。5で +100、10で +300、15で +500、20で +800、その先は5ごとに +1,000。</li>
+                <li data-from="1">金のタイルがたまに1枚だけ混ざっています。割ると +500 で、「福」が落ちてきます。</li>
+              </ul>
+            </div>
           </div>
 
           <div class="actions">
@@ -397,6 +440,14 @@ const ITEMS = {
   shrink: {glyph: '縮', pop: 'パドル縮小',  color: 'bad',        weight: 5,  kind: 'bad'},
   fast:   {glyph: '速', pop: 'ボール加速',  color: 'bad',        weight: 5,  kind: 'bad'},
   yaku:   {glyph: '厄', pop: 'ボール -1',  color: 'bad',        weight: 3,  kind: 'bad'},
+};
+
+// 始める前に説明をはさむ面。1面は最初からあるもの、その先は8面ごとに増えたものだけ（中身は説明ページの data-from）
+const INTROS = {
+  1:  {title: '遊び方', text: 'パドルでボールを打ち返して、タイルを全部割るとクリアです。ボールを下に落とすと1つ減り、なくなるとゲームオーバーです。'},
+  17: {title: '爆弾と上下の動き'},
+  25: {title: '虫と新しいアイテム'},
+  33: {title: '鉄・再生・スプレー'},
 };
 
 const $ = id => document.getElementById(id);
@@ -764,6 +815,24 @@ function startGame(n){
   S.stage = n;
   startStage();
 }
+// fresh はステージ一覧から選んだとき（スコアを0から）。説明をはさむ面では、後ろにその面を見せて説明を出す
+function enterStage(n, fresh){
+  const go = fresh ? () => startGame(n) : () => { S.stage = n; startStage(); };
+  const intro = INTROS[n];
+  if (!intro) { go(); return; }
+  if (!fresh) loadStage(n);
+  S.mode = 'intro';
+  showOverlay({
+    eyebrow: n === 1 ? 'はじめに' : 'ステージ ' + n + ' から増えるもの',
+    title: intro.title,
+    text: intro.text,
+    intro: n,
+    btn: 'ステージ ' + n + ' を始める',
+    primary: go,
+    btn2: fresh ? '戻る' : 'ステージを選ぶ',
+    secondary: goTitle
+  });
+}
 function launch(){
   if (S.mode !== 'ready') return;
   const b = S.balls[0];
@@ -827,13 +896,16 @@ function stageClear(){
   if (lastOne) {
     notes.push('全' + STAGES.length + 'ステージを回りました。この先は1面の配置からもう一周します。');
   } else {
-    if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
-    if (first('bug')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
-    if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
-    if (firstTile(/#/)) notes.push('次のステージから、割れない鉄のタイルが出てきます。爆弾の爆風なら壊せます。');
-    if (firstTile(/[rR]/)) notes.push('次のステージから、しばらく当てないとひびが直る「再」のタイルが出てきます。');
-    if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
-    if (nextNo === EASE_FROM) notes.push('ここからは、よけたいアイテムが減り、「命」と「守」が出やすくなります。');
+    // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる
+    if (!INTROS[S.stage + 1]) {
+      if (first('vmove')) notes.push('次のステージから、タイルが上下にも動きます。');
+      if (first('bug')) notes.push('次のステージから、ボールを跳ね返す虫が出てきます。');
+      if (first('thrower')) notes.push('次のステージから、空いたマスにタイルを投げ込む虫が出てきます。ボールを当てると少しの間止まります。');
+      if (firstTile(/#/)) notes.push('次のステージから、割れない鉄のタイルが出てきます。爆弾の爆風なら壊せます。');
+      if (firstTile(/[rR]/)) notes.push('次のステージから、しばらく当てないとひびが直る「再」のタイルが出てきます。');
+      if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('新しいアイテムも落ちてくるようになります。');
+      if (nextNo === EASE_FROM) notes.push('ここからは、よけたいアイテムが減り、「命」と「守」が出やすくなります。');
+    }
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
     if (nextSlow < nowSlow) notes.push('虫がいるぶん、ボールは遅めです。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
@@ -845,7 +917,7 @@ function stageClear(){
     title: 'ステージ ' + S.stage + ' クリア',
     text: 'クリアボーナス +' + fmt(bonus) + (note ? '\n' + note : ''),
     btn: 'ステージ ' + (S.stage + 1) + ' へ',
-    primary: () => { S.stage++; startStage(); },
+    primary: () => enterStage(S.stage + 1, false),
     btn2: 'ステージを選ぶ',
     secondary: goTitle
   });
@@ -861,7 +933,10 @@ function showOverlay(o){
   ovText.hidden = !o.text;
   pickerEl.hidden = !o.picker;
   controlSec.hidden = !o.control;
-  helpEl.hidden = !o.help;
+  helpEl.hidden = !o.help && !o.intro;
+  // 面の前の説明では、その面から出てくる項目だけを残す
+  for (const el of helpEl.querySelectorAll('[data-from]')) el.hidden = !!o.intro && +el.dataset.from !== o.intro;
+  for (const g of helpEl.querySelectorAll('.group')) g.hidden = !g.querySelector('[data-from]:not([hidden])');
   ovBtn.textContent = o.btn;
   onPrimary = o.primary || null;
   ovBtn2.hidden = !o.btn2;
@@ -916,15 +991,15 @@ function showTitle(){
     control: coarse,
     picker: true,
     btn: 'ステージ ' + S.pick + ' から始める',
-    primary: () => startGame(S.pick),
-    btn2: 'アイテムとボーナス',
+    primary: () => enterStage(S.pick, true),
+    btn2: 'タイルとアイテム',
     secondary: showHelp
   });
   renderPicker();
 }
 function showHelp(){
   showOverlay({
-    title: 'アイテムとボーナス',
+    title: 'タイルとアイテム',
     text: 'タイルを割るとアイテムが落ちてきます。パドルで受けると効き目が出ます。',
     help: true,
     btn: '戻る',
@@ -1542,7 +1617,7 @@ function update(dt){
     movePaddle(p.x + (dir * 560 + stickSpeed()) * dt);
   }
   // 時止め中は、動くタイルも虫も止まる
-  if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title') && S.stopT <= 0) {
+  if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
     moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt);
   }
   if (S.mode === 'ready') placeBall();
