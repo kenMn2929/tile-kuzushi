@@ -425,13 +425,14 @@ img{max-width:100%}
                 <li data-from="33">ステージ33からは、とらないほうがいいアイテムが{半分|はんぶん}くらいにへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。</li>
                 <li data-from="33">{鉄|てつ}のタイルがあるステージでは、「{霧|きり}」が{出|で}やすくなります。</li>
                 <li data-from="49">ステージ49からは、40{秒|びょう}ごとにアイテムが{入|はい}ります。</li>
-                <li data-from="57">ステージ57からは、のこりのボールが1つでステージに{入|はい}ると、さいしょから「{守|まもり}」がついています。</li>
+                <li data-from="57">ステージ57からは、のこりのボールが1つでクリアすると、{次|つぎ}のステージはさいしょから「{守|まもり}」がついています。</li>
                 <li data-from="73">{盾|たて}のタイルがあるステージでは、「{上|うえ}」が{出|で}やすくなります。</li>
               </ul>
             </div>
             <div class="section group">
               <p class="sub">ごほうび</p>
               <ul class="notes">
+                <li data-from="1">ステージをクリアすると、のこりのボールが1つふえます（6つまで）。</li>
                 <li data-from="1">{板|いた}に{戻|もど}るまでに{続|つづ}けて{割|わ}ると{連続|れんぞく}になります。5{枚|まい}で +100、10{枚|まい}で +300、15{枚|まい}で +500、20{枚|まい}で +800、そのあとは5{枚|まい}ごとに +1,000。</li>
                 <li data-from="1">{金|きん}のタイルが、たまに1{枚|まい}だけまざっています。{割|わ}ると +500 で、「{福|ふく}」が{落|お}ちてきます。</li>
               </ul>
@@ -442,6 +443,9 @@ img{max-width:100%}
                 <li data-from="81">{火|ひ}は{鍵|かぎ}も{割|わ}ります。{閉|と}じた{錠|じょう}で{止|と}まるので、{錠|じょう}のとなりにある{火|ひ}は、{錠|じょう}が{開|ひら}いてから{割|わ}ると{先|さき}まで{走|はし}ります。</li>
                 <li data-from="81">{盾|たて}が{防|ふせ}ぐのは、{下|した}から{当|あ}たるボールと{光|ひかり}だけです。{爆弾|ばくだん}と{火|ひ}は、{盾|たて}のタイルにも{効|き}きます。</li>
                 <li data-from="81">かためる{虫|むし}がかたくしたタイルは、{火|ひ}1{回|かい}では{割|わ}りきれません。{火|ひ}は{早|はや}めに{使|つか}いましょう。</li>
+                <li data-from="89">{火|ひ}は、{消|き}えているまばたきタイルを{通|とお}りぬけます。まばたきタイルを{火|ひ}で{割|わ}りたいときは、タイルが{出|で}ているあいだに{火|ひ}を{割|わ}りましょう。</li>
+                <li data-from="89">ふたごの{片方|かたほう}がまばたきタイルの{奥|おく}にあるときは、まばたきが{消|き}えたすきにボールを{通|とお}しましょう。</li>
+                <li data-from="89">{虫|むし}が{投|な}げこんだタイルも、{火|ひ}でまとめて{割|わ}れます。</li>
               </ul>
             </div>
           </div>
@@ -510,8 +514,10 @@ const UP_SHIELD_PLUS = 0.1;
 const GIFT_EVERY = 60, ASSIST_LEFT = 3, ASSIST_AFTER = 20, EASE_FROM = 33;
 // 49面からは、アイテム入りのタイルを作る間隔を短くする
 const GIFT_SOON = 40, SOON_FROM = 49;
-// 57面からは、残りのボールが1つで面に入ると「守」を付ける
+// 57面からは、残りのボールが1つでクリアすると、次の面に「守」を付ける
 const GUARD_FROM = 57;
+// ボールの数の上限（「命」でもクリアでも、ここまでしか増えない）
+const LIVES_MAX = 6;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
@@ -654,6 +660,16 @@ const STAGES = [
   {rows: ['33333333','3JJfJJJ3','k2.f2.2k','32323232','2222....','11111111','1.1..1.1'], move: {4: 70}},
   {rows: ['3J3333J3','33333333','3gMffMg3','2.2kk2.2','2.p33P.2','2.2..2.2','1.P11p.1'],
    vmove: {1: 45, 6: -45}, vband: [2, 6], bug: 60, eat: true},
+  {rows: ['33333333','2r2ff2r2','2##22##2','r2f#.f2r','11111111','1.1111.1','11111111']},
+  {rows: ['33333333','MMMfMMMM','32.33.23','....3333','mmfmmfmm','32222223','2222....'], move: {3: -85, 6: 85}},
+  {rows: ['33333333','3p3333P3','m.mmmm.m','32.33.23','2.2..2.2','M.MMMM.M','1P1111p1'],
+   vmove: {1: 55, 6: -55}, vband: [2, 5]},
+  {rows: ['33333333','gg*gg...','33233233','...gg*gg','32.33.23','1g2112g1','21111112'], loop: {1: 70, 3: -70}},
+  {rows: ['3k3333k3','33o..O33','##L##L##','2LLLLLL2','22222222','2O2..2o2','11111111']},
+  {rows: ['33z33z33','3.f..f.3','32222223','z3.22.3z','3.f..f.3','23322332','z.2..2.z'], thrower: true},
+  {rows: ['3J3333J3','3p3JJ3P3','22222222','k2.22.2k','2P2..2p2','11111111','1.1kk1.1'], bug: 60, paint: true},
+  {rows: ['3J3333J3','o3MffM3O','##.##.##','3gk33kg3','3p.33...','M3.MM.3M','2O2Pp2o2','2P222222'],
+   loop: {4: -80}, carry: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -679,7 +695,7 @@ const ITEMS = {
 };
 
 // 始める前に説明をはさむ面。1面は最初からあるもの、その先は8面ごとに増えたものだけ（中身は説明ページの data-from）
-// 81面からは増えるものがないので、組み合わせのコツを出す（eyebrow で上の小さい字を変える）
+// 81面と89面からは増えるものがないので、組み合わせのコツを出す（eyebrow で上の小さい字を変える）
 const INTROS = {
   1:  {title: '{遊|あそ}び{方|かた}', text: '{板|いた}でボールを{打|う}ち{返|かえ}して、タイルを{全部|ぜんぶ}{割|わ}るとクリアです。ボールを{下|した}に{落|お}とすと1つへって、なくなるとおしまいです。'},
   17: {title: '{爆弾|ばくだん}と{縦|たて}の{動|うご}き'},
@@ -692,6 +708,8 @@ const INTROS = {
   73: {title: '{盾|たて}・ふたご・{火|ひ}・{運|はこ}ぶ{虫|むし}'},
   81: {eyebrow: 'ステージ 81 から', title: '{組|く}み{合|あ}わせ',
        text: 'ここからは、{新|あたら}しいものは{出|で}てきません。これまでのタイルや{虫|むし}を{組|く}み{合|あ}わせたステージです。'},
+  89: {eyebrow: 'ステージ 89 から', title: '{組|く}み{合|あ}わせ その2',
+       text: 'ここからも、{新|あたら}しいものは{出|で}てきません。これまでのタイルや{虫|むし}を、3つ{以上|いじょう}{組|く}み{合|あ}わせたステージです。'},
 };
 
 const $ = id => document.getElementById(id);
@@ -763,7 +781,7 @@ const S = {
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], blinkT: 0,
   keyCells: [], keyWait: [], globs: [], fires: [], carrier: null,
-  giftT: 0, stuckT: 0, assisted: false,
+  giftT: 0, stuckT: 0, assisted: false, guardNext: false,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
   laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, bolts: [],
@@ -1260,14 +1278,15 @@ function loadStage(n){
 function startStage(){
   hideOverlay();
   loadStage(S.stage);
-  if (patternNo(S.stage) >= GUARD_FROM && S.lives === 1) {
+  if (S.guardNext) {
     S.guard = true;
-    banner('まもり つき', 'ボールが のこり 1こ だから', C['t-yamabuki']);
+    banner('まもり つき', 'のこり 1こで クリアしたから', C['t-yamabuki']);
   }
+  S.guardNext = false;
   ui();
 }
 function startGame(n){
-  S.score = 0; S.lives = 3; S.maxCombo = 0;
+  S.score = 0; S.lives = 3; S.maxCombo = 0; S.guardNext = false;
   S.stage = n;
   startStage();
 }
@@ -1337,6 +1356,10 @@ function loseLife(){
 function stageClear(){
   const bonus = 100 * S.stage + 50 * S.lives;
   S.score += bonus;
+  // ごほうびは増やす前の数で数える。残り1つでクリアしたら、次の面に守も付ける
+  S.guardNext = patternNo(S.stage + 1) >= GUARD_FROM && S.lives === 1;
+  const gained = S.lives < LIVES_MAX;
+  S.lives = Math.min(S.lives + 1, LIVES_MAX);
   S.mode = 'clear';
   S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = []; S.fires = [];
   S.cleared.add(patternNo(S.stage));
@@ -1385,9 +1408,11 @@ function stageClear(){
     }
   }
   const note = notes.join('');
+  const lifeNote = (gained ? 'ボール +1' : 'ボールは' + LIVES_MAX + 'つでいっぱいです') +
+    (S.guardNext ? '\n{次|つぎ}のステージは、さいしょから「{守|まもり}」がついています。' : '');
   showOverlay({
     title: 'ステージ ' + S.stage + ' クリア',
-    text: 'クリアのごほうび +' + fmt(bonus) + (note ? '\n' + note : ''),
+    text: 'クリアのごほうび +' + fmt(bonus) + '\n' + lifeNote + (note ? '\n' + note : ''),
     btn: 'ステージ ' + (S.stage + 1) + ' へ',
     primary: () => enterStage(S.stage + 1, false),
     btn2: 'ステージを{選|えら}ぶ',
@@ -1728,7 +1753,7 @@ function applyItem(type){
     case 'wide':   S.wideT = 15; S.shrinkT = 0; break;
     case 'slow':   S.slowT = 10; S.fastT = 0; break;
     case 'guard':  S.guard = true; break;
-    case 'life':   S.lives = Math.min(S.lives + 1, 6); break;
+    case 'life':   S.lives = Math.min(S.lives + 1, LIVES_MAX); break;
     case 'laser':  S.laserT = LASER_T; S.laserCool = 0; break;
     case 'catch':  S.catchT = CATCH_T; break;
     case 'stop':   S.stopT = STOP_T; break;
