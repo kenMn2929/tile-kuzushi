@@ -504,6 +504,8 @@ const FIRE_V = 360, FIRE_R = 8;
 const CARRY_EVERY = 8, CARRY_STOCK = 10, CARRY_V = 170, CARRY_LEFT = 3;
 // 上：板で打ったボールを、いちばん上から出す回数
 const UP_N = 3;
+// 板にも割れるタイルにも当たらないまま、この秒数がたったボールは向きを少し変える（同じ道筋を回り続けないように）
+const LOOP_T = 10;
 // ぐるぐる回る行：右の端から出きったタイルが、左の端の外へ戻るまでの長さ
 const LOOP_LEN = W + BRICK_W;
 // 鉄のある面で、霧吹きが出る割合に足す分
@@ -2158,6 +2160,8 @@ function hitBricks(b){
     const oy = Math.min(b.y + R - br.y, br.y + br.h - (b.y - R));
     // 下から盾に当たったときは、貫通中でもはね返るだけ
     const guarded = guards(br, ox, oy, b.y);
+    // 割れるタイルに当たったら、回り続けているとは数えない
+    if (!solid(br) && !guarded) b.idle = 0;
     if ((S.feverT > 0 || S.pierce > 0) && !solid(br) && !guarded) {
       // 貫通中は跳ね返らず、硬さに関係なく1回で割る（鉄と閉じた錠だけは跳ね返る）
       if (S.feverT <= 0) S.pierce--;
@@ -2276,6 +2280,8 @@ function physics(dt){
       continue;
     }
     if (b.warpT > 0) b.warpT = Math.max(0, b.warpT - dt);
+    b.idle = (b.idle || 0) + dt;
+    if (b.idle >= LOOP_T) { b.idle = 0; turnBall(b); }
     const steps = Math.max(1, Math.ceil(S.speed * f * dt / 3));
     const h = dt * f / steps;
     let lost = false;
@@ -2290,6 +2296,7 @@ function physics(dt){
       if (b.vy > 0 && prevY + R <= PADDLE_Y + 1 && b.y + R >= PADDLE_Y &&
           b.x >= p.x - p.w / 2 - R * 0.6 && b.x <= p.x + p.w / 2 + R * 0.6) {
         S.combo = 0;
+        b.idle = 0;
         if (S.catchT > 0) { catchBall(b); break; }
         const rel = clamp((b.x - p.x) / (p.w / 2), -1, 1);
         const ang = rel * 1.13; // 端で約65度
@@ -2315,6 +2322,15 @@ function physics(dt){
     if (lost) S.balls.splice(bi, 1);
   }
   if (S.balls.length === 0) loseLife();
+}
+// 回り続けているボールの向きを、左右どちらかへ少し（9〜20度くらい）変える
+function turnBall(b){
+  const a = (0.15 + Math.random() * 0.2) * (Math.random() < 0.5 ? -1 : 1);
+  const c = Math.cos(a), s = Math.sin(a);
+  const vx = b.vx * c - b.vy * s;
+  b.vy = b.vx * s + b.vy * c;
+  b.vx = vx;
+  normalizeBall(b);
 }
 // ワープの穴に入ったボールを、組になった穴へ移す（向きと速さはそのまま）
 function warpBall(b){
