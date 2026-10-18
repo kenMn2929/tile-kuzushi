@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>タイル崩し</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -68,7 +68,8 @@
   color-scheme:dark;
 }
 
-html{height:100%;box-sizing:border-box}
+/* 2本指で触ったり続けてたたいたりしても拡大しない。横向きにしても字が勝手に大きくならない */
+html{height:100%;box-sizing:border-box;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 *,*::before,*::after{box-sizing:inherit}
 body{
   height:100%;margin:0;overflow:hidden;overscroll-behavior:none;
@@ -1125,6 +1126,10 @@ function ui(){
 }
 
 /* ---------- 入力 ---------- */
+// iPhone の Safari は拡大を止める指定を無視するので、2本指の動きをここで止める
+// （拡大されると盤面が見切れ、全体のスクロールを止めているので元に戻しにくい）
+for (const t of ['gesturestart', 'gesturechange', 'gestureend']) document.addEventListener(t, e => e.preventDefault());
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive: false});
 const keys = {left: false, right: false};
 function movePaddle(x){ const p = S.paddle; p.x = clamp(x, p.w / 2, W - p.w / 2); }
 function toLogicalX(clientX){
