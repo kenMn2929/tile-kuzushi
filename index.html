@@ -469,10 +469,6 @@ img{max-width:100%}
                 <li data-from="89">{火|ひ}は、{消|き}えているまばたきタイルを{通|とお}りぬけます。まばたきタイルを{火|ひ}で{割|わ}りたいときは、タイルが{出|で}ているあいだに{火|ひ}を{割|わ}りましょう。</li>
                 <li data-from="89">ふたごの{片方|かたほう}がまばたきタイルの{奥|おく}にあるときは、まばたきが{消|き}えたすきにボールを{通|とお}しましょう。</li>
                 <li data-from="89">{虫|むし}が{投|な}げこんだタイルも、{火|ひ}でまとめて{割|わ}れます。</li>
-                <li data-from="101">{火|ひ}と{爆弾|ばくだん}は、たまごも{割|わ}ります。かえりそうなたまごは、{火|ひ}や{爆弾|ばくだん}でまとめて{割|わ}りましょう。</li>
-                <li data-from="101">「{止|と}」のあいだは、たまごもかえりません。</li>
-                <li data-from="109">{霧|きり}と「{止|と}」は、{虫|むし}KINGも{止|と}めます。{止|と}まっているあいだは、たまごを{産|う}みません。</li>
-                <li data-from="109">ずっと{歩|ある}いている{虫|むし}KINGは、のこりのタイルが4{枚|まい}になると、たまごを{産|う}まなくなります。</li>
               </ul>
             </div>
           </div>
@@ -720,24 +716,6 @@ const STAGES = [
   {rows: ['33333333','3.3ee3.3','22222222','e2.22.2e','33.33...','11111111','1.1..1.1'], loop: {4: -60}, bug: 60, king: 'pass'},
   {rows: ['3#3333#3','33e33e33','22222222','#..##..#','2e2..2e2','22222222','11111111'], king: 'nest'},
   {rows: ['........','.222222.','.2t22t2.','.333333.','.2.22.2.','.111111.'], king: 'boss', room: 1},
-  {rows: ['33333333','e3f33f3e','22222222','....2222','2e2112e2','11111111','f.1..1.f'], move: {3: -60}},
-  {rows: ['33333333','3o3ee3O3','mmmmmmmm','22.22.22','2e2..2e2','2O2222o2','11111111']},
-  {rows: ['33333333','3p3ee3P3','22222222','33.33...','2P2ee2p2','11111111','1.1..1.1'], loop: {3: 60}},
-  {rows: ['3R3333R3','3e.33.e3','##*##*##','2e2..2e2','r2r22r2r','11111111','1.1..1.1']},
-  {rows: ['33333333','3g3ee3g3','2222....','22.22.22','....2222','e1g11g1e','11111111'], move: {2: 60, 4: -60}, king: 'pass'},
-  {rows: ['33z33z33','MMMeeMMM','2t2..2t2','22222222','e.2MM2.e','11111111','1.1..1.1']},
-  {rows: ['33333333','3?3ee3?3','2.v22v.2','22222222','e2.22.2e','11111111'], bug: 60, eat: true},
-  {rows: ['3J3333J3','3e3ff3e3','k2.22.2k','33333333','2e2..2e2','11111111','1.1kk1.1'], thrower: true},
-  {rows: ['3R3333R3','o3f..f3O','##3##3##','r2r22r2r','22222222','O2.11.2o','11111111'], carry: true},
-  {rows: ['33333333','gp3333Pg','2222....','g2.22.2g','....2222','2P2..2p2','11111111'], move: {2: 70, 4: -70}, bug: 60, paint: true},
-  {rows: ['B333333B','MMM33MMM','33.33...','e*.22.*e','...22.22','22222222','1.1..1.1'], loop: {2: 70, 4: -70}},
-  {rows: ['3L3333L3','3o3LL3O3','22222.22','k22...2k','2..222.2','2O.112o2','11111111'],
-   vmove: {2: 45, 5: -45}, vband: [2, 5], bug: 60},
-  {rows: ['3J3zz3J3','33333333','f2.V..2f','k2.22.2k','22222222','2z2..2z2','11111111']},
-  {rows: ['33333333','MMpMMPMM','33.33...','g2g22g2g','...22.22','MMPMMpMM','11111111'], loop: {2: 60, 4: -60}, bug: 60, eat: true},
-  {rows: ['3#3333#3','o3f33f3O','MM#..#MM','33333333','O2e..e2o','32222223','22222222'], king: 'nest'},
-  {rows: ['3J3333J3','o3MffM3O','##.##.##','kg3ee3gk','3p.33...','e3.MM.3e','2O2Pp2o2','2P222222'],
-   loop: {4: -70}, king: 'pass'},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -765,7 +743,6 @@ const ITEMS = {
 // 始める前に説明をはさむ面。1面は最初からあるもの、その先は8面ごとに増えたものだけ（中身は説明ページの data-from）
 // 81面と89面からは増えるものがないので、組み合わせのコツを出す（eyebrow で上の小さい字を変える）
 // 97面からはたまご、99面で虫KINGが出てきて、100面で虫KINGとたたかう
-// 101面と109面からは、また組み合わせのコツを出す
 const INTROS = {
   1:  {title: '{遊|あそ}び{方|かた}', text: '{板|いた}でボールを{打|う}ち{返|かえ}して、タイルを{全部|ぜんぶ}{割|わ}るとクリアです。ボールを{下|した}に{落|お}とすと1つへって、なくなるとおしまいです。'},
   17: {title: '{爆弾|ばくだん}と{縦|たて}の{動|うご}き'},
@@ -784,11 +761,7 @@ const INTROS = {
   99: {eyebrow: 'ステージ 99', title: '{虫|むし}KING',
        text: 'たまごを{産|う}んでいたのは、{虫|むし}KINGでした。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
   100: {eyebrow: 'ステージ 100', title: '{虫|むし}KINGとたたかう',
-        text: '{虫|むし}KINGにボールを' + KING_HP + '{回|かい}{当|あ}てて、やっつけましょう。'},
-  101: {eyebrow: 'ステージ 101 から', title: '{組|く}み{合|あ}わせ その3',
-        text: '{虫|むし}KINGは{逃|に}げましたが、たまごはまだのこっています。ここからは、たまごとこれまでのものを{組|く}み{合|あ}わせたステージです。{新|あたら}しいものは{出|で}てきません。'},
-  109: {eyebrow: 'ステージ 109 から', title: '{組|く}み{合|あ}わせ その4',
-        text: '{最後|さいご}の8ステージです。4つ{以上|いじょう}のものを{組|く}み{合|あ}わせています。{逃|に}げた{虫|むし}KINGも、また{出|で}てきます。'},
+        text: '{最後|さいご}のステージです。{虫|むし}KINGにボールを' + KING_HP + '{回|かい}{当|あ}てて、やっつけましょう。'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。空ならなにも出さない
 const STORY = {
@@ -837,13 +810,10 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
 // 速さは16面で止める（その先は仕掛けで難しくする）
 const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
-// 1〜16面は、ボールをさらに1.1倍速くする
-const EARLY_FAST = 1.1, EARLY_TO = 16;
 // 跳ね返す虫がいる面と、虫KINGとたたかう面は、ボールを25%遅くする
 const BUG_SLOW = 0.75;
 const bugSlow = n => { const d = STAGES[patternNo(n) - 1]; return d.bug || d.king === 'boss' ? BUG_SLOW : 1; };
-const speedK = n => bugSlow(n) * (n <= EARLY_TO ? EARLY_FAST : 1);
-const stageSpeed = n => baseSpeed(n) * speedK(n);
+const stageSpeed = n => baseSpeed(n) * bugSlow(n);
 const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 // 33面からは、よけたいアイテムを半分にし、「命」と「守」を1.5倍出やすくする
@@ -1658,9 +1628,7 @@ function stageClear(){
   store.set(CLEARED_KEY, [...S.cleared].join(','));
   saveBest();
   const lastOne = S.stage % STAGES.length === 0;
-  // 虫KINGをやっつけた面と、いちばん最後の面は、おめでとうの画面にする
-  const beatKing = STAGES[patternNo(S.stage) - 1].king === 'boss';
-  sfx(lastOne || beatKing ? 'fanfare' : 'clear');
+  sfx(lastOne ? 'fanfare' : 'clear');
   const nextNo = patternNo(S.stage + 1), nextDef = STAGES[nextNo - 1];
   // 仕掛けはその面で初めて出るときだけ知らせる。ボールの速さが変わるときはあわせて知らせる
   const first = key => nextDef[key] && !STAGES.slice(0, nextNo - 1).some(d => d[key]);
@@ -1705,16 +1673,16 @@ function stageClear(){
   const lifeNote = (gained ? 'ボール +1' : 'ボールは' + LIVES_MAX + 'つでいっぱいです') +
     (S.guardNext ? '\n{次|つぎ}のステージは、さいしょから「{守|まもり}」がついています。' : '');
   const story = STORY[patternNo(S.stage)] ? STORY[patternNo(S.stage)]() : '';
-  if (lastOne || beatKing) {
-    // 100面のあとは、おめでとうの画面を出してから101面へ。116面のあとは、1面の形へ
+  if (lastOne) {
+    // 100面のあとは、おめでとうの画面を出してから1面の形へ
     if (!reduceMotion.matches) confetti();
     showOverlay({
       eyebrow: 'ステージ ' + S.stage + ' クリア',
       title: 'おめでとう！',
-      text: (beatKing ? '{虫|むし}KINGをやっつけました。\n' : '') + (lastOne ? STAGES.length + 'ステージ、{全部|ぜんぶ}クリアです。\n' : '') +
+      text: '{虫|むし}KINGをやっつけました。\n' + STAGES.length + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
         '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
-        'クリアのごほうび +' + fmt(bonus) + '\n' + lifeNote + (note ? '\n' + note : ''),
-      btn: lastOne ? 'もう1{周|しゅう}する' : 'ステージ ' + (S.stage + 1) + ' へ',
+        'クリアのごほうび +' + fmt(bonus) + '\n' + lifeNote + '\n' + note,
+      btn: 'もう1{周|しゅう}する',
       primary: () => enterStage(S.stage + 1, false),
       btn2: 'ステージを{選|えら}ぶ',
       secondary: goTitle
@@ -2551,7 +2519,7 @@ function hitBricks(b){
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + R; }
     }
     // 鉄や閉じた錠、盾に当たっても速くはしない
-    if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * speedK(S.stage));
+    if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
     normalizeBall(b);
     if (br.zap) dropBolt(br);
     if (guarded) { br.flash = 0.12; sfx('shield'); }
