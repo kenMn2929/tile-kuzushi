@@ -1641,7 +1641,7 @@ function stageClear(){
   const notes = [];
   if (lastOne) {
     notes.push('{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。' +
-      (lapFast(S.stage + 1) > 1 ? 'ボールは1{周目|しゅうめ}より{少|すこ}し{速|はや}くなります。' : ''));
+      (lapFast(S.stage + 1) > 1 ? 'ステージ' + (S.stage + LAP_FAST_TO) + 'までは、ボールが1{周目|しゅうめ}より{少|すこ}し{速|はや}くなります。' : ''));
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる
     if (!INTROS[S.stage + 1]) {
@@ -1671,6 +1671,7 @@ function stageClear(){
     }
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
     if (nextSlow < nowSlow) notes.push('{虫|むし}がいるので、ボールはゆっくりです。');
+    else if (lapFast(S.stage + 1) < lapFast(S.stage)) notes.push('{次|つぎ}のステージからは、ボールの{速|はや}さが1{周目|しゅうめ}と{同|おな}じになります。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
       notes.push(nowSlow === 1 ? '{次|つぎ}のステージは、ボールが{少|すこ}し{速|はや}くなります。' : nextSlow === 1 ? 'ボールの{速|はや}さは{元|もと}に{戻|もど}ります。' : 'ボールは{少|すこ}し{速|はや}くなります。');
     }
