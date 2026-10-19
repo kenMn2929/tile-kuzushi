@@ -808,13 +808,18 @@ const store = {
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
-// 速さは16面で止める（その先は仕掛けで難しくする）
-const baseSpeed = n => Math.min(280 + (n - 1) * 14, 490);
+// 速さは16面で止める（その先は仕掛けで難しくする）。2周目からも、同じ形の面の速さで数える
+const baseSpeed = n => Math.min(280 + (patternNo(n) - 1) * 14, 490);
+// 2周目からは、ボールを1周目の1.1倍速くする（いまは1〜16面の形だけ。101〜116面）
+const LAP_FAST = 1.1, LAP_FAST_TO = 16;
+const lapFast = n => n > STAGES.length && patternNo(n) <= LAP_FAST_TO ? LAP_FAST : 1;
 // 跳ね返す虫がいる面と、虫KINGとたたかう面は、ボールを25%遅くする
 const BUG_SLOW = 0.75;
 const bugSlow = n => { const d = STAGES[patternNo(n) - 1]; return d.bug || d.king === 'boss' ? BUG_SLOW : 1; };
-const stageSpeed = n => baseSpeed(n) * bugSlow(n);
-const basePaddle = n => Math.max(60, 88 - (n - 1) * 1.8);
+const speedK = n => bugSlow(n) * lapFast(n);
+const stageSpeed = n => baseSpeed(n) * speedK(n);
+// 板の長さも、2周目からは同じ形の面と同じにする
+const basePaddle = n => Math.max(60, 88 - (patternNo(n) - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 // 33面からは、よけたいアイテムを半分にし、「命」と「守」を1.5倍出やすくする
 const itemWeight = (key, d, n) => n < EASE_FROM ? d.weight
@@ -1635,7 +1640,8 @@ function stageClear(){
   const firstTile = re => re.test(nextDef.rows.join('')) && !STAGES.slice(0, nextNo - 1).some(d => re.test(d.rows.join('')));
   const notes = [];
   if (lastOne) {
-    notes.push('{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。');
+    notes.push('{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。' +
+      (lapFast(S.stage + 1) > 1 ? 'ボールは1{周目|しゅうめ}より{少|すこ}し{速|はや}くなります。' : ''));
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる
     if (!INTROS[S.stage + 1]) {
@@ -2519,7 +2525,7 @@ function hitBricks(b){
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + R; }
     }
     // 鉄や閉じた錠、盾に当たっても速くはしない
-    if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * bugSlow(S.stage));
+    if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * speedK(S.stage));
     normalizeBall(b);
     if (br.zap) dropBolt(br);
     if (guarded) { br.flash = 0.12; sfx('shield'); }
