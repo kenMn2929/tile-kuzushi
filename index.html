@@ -152,6 +152,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .st-mark{top:3px;right:4px}
 .st-move{top:3px;left:4px}
 .st[aria-pressed="true"] .st-mark,.st[aria-pressed="true"] .st-move{color:var(--on-paddle)}
+.st-lap{grid-column:1/-1;margin:8px 0 2px;font-size:.72rem;font-weight:700;letter-spacing:.06em;color:var(--muted)}
 .note{margin:0;font-size:.72rem;line-height:2;color:var(--muted)}
 
 .seg{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:6px;overflow:hidden}
@@ -285,7 +286,7 @@ img{max-width:100%}
           <div class="section" id="picker" hidden>
             <p class="sub">ステージ（{数字|すうじ}が{大|おお}きいほど{難|むずか}しい）</p>
             <div class="stages" id="stages"></div>
-            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGとたたかうステージです。★ はクリアしたステージです。</p>
+            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGとたたかうステージです。★ はクリアしたステージです。101から200は2{周目|しゅうめ}で、1から100と{同|おな}じ{形|かたち}のまま、ボールが{少|すこ}し{速|はや}くなります。</p>
           </div>
 
           <!-- data-from はその項目が出てくる最初の面。面の前の説明では、その面の分だけを出す -->
@@ -821,6 +822,9 @@ const stageSpeed = n => baseSpeed(n) * speedK(n);
 // 板の長さも、2周目からは同じ形の面と同じにする
 const basePaddle = n => Math.max(60, 88 - (patternNo(n) - 1) * 1.8);
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
+// ステージ一覧は2周目の終わり（200面）まで。3周目からは、同じ速さの2周目の面にクリアの印をつける
+const LAST_STAGE = STAGES.length * 2;
+const listNo = n => n > LAST_STAGE ? patternNo(n) + STAGES.length : n;
 // 33面からは、よけたいアイテムを半分にし、「命」と「守」を1.5倍出やすくする
 const itemWeight = (key, d, n) => n < EASE_FROM ? d.weight
   : d.kind === 'bad' ? d.weight * 0.5 : key === 'life' || key === 'guard' ? d.weight * 1.5 : d.weight;
@@ -1629,7 +1633,7 @@ function stageClear(){
   S.lives = Math.min(S.lives + 1, LIVES_MAX);
   S.mode = 'clear';
   S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = []; S.fires = [];
-  S.cleared.add(patternNo(S.stage));
+  S.cleared.add(listNo(S.stage));
   store.set(CLEARED_KEY, [...S.cleared].join(','));
   saveBest();
   const lastOne = S.stage % STAGES.length === 0;
@@ -1812,7 +1816,12 @@ function setPick(n){
   renderPicker();
   ui();
 }
-for (let n = 1; n <= STAGES.length; n++) {
+for (let n = 1; n <= LAST_STAGE; n++) {
+  if (n === STAGES.length + 1) {
+    const lap = document.createElement('p'); lap.className = 'st-lap';
+    setText(lap, '2{周目|しゅうめ}');
+    stagesEl.appendChild(lap);
+  }
   const b = document.createElement('button');
   b.type = 'button';
   b.className = 'st';
@@ -1820,7 +1829,7 @@ for (let n = 1; n <= STAGES.length; n++) {
   const num = document.createElement('span'); num.textContent = String(n);
   const mark = document.createElement('span'); mark.className = 'st-mark';
   b.append(num, mark);
-  const def = STAGES[n - 1];
+  const def = STAGES[patternNo(n) - 1];
   const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') +
     (def.king === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '');
   if (marks) {
@@ -1832,12 +1841,12 @@ for (let n = 1; n <= STAGES.length; n++) {
   stagesEl.appendChild(b);
 }
 function renderPicker(){
-  for (const b of stagesEl.children) {
+  for (const b of stagesEl.querySelectorAll('.st')) {
     const n = +b.dataset.n;
     const done = S.cleared.has(n);
     b.setAttribute('aria-pressed', n === S.pick ? 'true' : 'false');
     b.querySelector('.st-mark').textContent = done ? '★' : '';
-    const def = STAGES[n - 1];
+    const def = STAGES[patternNo(n) - 1];
     const moves = (def.move && def.vmove ? '（タイルが左右と上下に動く）' : def.move ? '（タイルが左右に動く）' : def.vmove ? '（タイルが上下に動く）' : '')
       + (def.loop ? '（タイルがぐるぐる回る）' : '');
     const bugs = def.bug && def.thrower ? '（虫が2種類出る）' : def.bug && def.eat ? '（アイテムを食べる虫が出る）'
@@ -1845,7 +1854,7 @@ function renderPicker(){
       : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）'
       : def.carry ? '（タイルを運ぶ虫が出る）' : '';
     const king = def.king === 'boss' ? '（虫KINGとたたかう）' : def.king ? '（虫KINGが出る）' : '';
-    b.setAttribute('aria-label', 'ステージ' + n + moves + bugs + king + (done ? '（クリア済み）' : ''));
+    b.setAttribute('aria-label', 'ステージ' + n + (n > STAGES.length ? '（2周目）' : '') + moves + bugs + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
 }
@@ -3735,8 +3744,8 @@ function start(data){
   pace = Object.keys(STICK_PACE).includes(pv) ? pv : 'normal';
   renderControl();
   const pk = +(store.get(PICK_KEY) || 1);
-  S.pick = pk >= 1 && pk <= STAGES.length ? pk : 1;
-  (store.get(CLEARED_KEY) || '').split(',').forEach(v => { const n = +v; if (n >= 1 && n <= STAGES.length) S.cleared.add(n); });
+  S.pick = pk >= 1 && pk <= LAST_STAGE ? pk : 1;
+  (store.get(CLEARED_KEY) || '').split(',').forEach(v => { const n = +v; if (n >= 1 && n <= LAST_STAGE) S.cleared.add(n); });
   readColors();
   soundUi();
   if (document.fonts && document.fonts.load) {
@@ -3750,7 +3759,7 @@ function start(data){
     S.lives = data.lives || 3;
     S.maxCombo = data.maxCombo || 0;
     S.best = Math.max(S.best, data.best || 0);
-    if (data.pick >= 1 && data.pick <= STAGES.length) S.pick = data.pick;
+    if (data.pick >= 1 && data.pick <= LAST_STAGE) S.pick = data.pick;
     if (data.mode === 'clear') {
       loadStage((data.stage || 1) + 1);
     } else {
