@@ -810,9 +810,9 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
 // 速さは16面で止める（その先は仕掛けで難しくする）。2周目からも、同じ形の面の速さで数える
 const baseSpeed = n => Math.min(280 + (patternNo(n) - 1) * 14, 490);
-// 2周目からは、ボールを1周目の1.1倍速くする（いまは1〜16面の形だけ。101〜116面）
-const LAP_FAST = 1.1, LAP_FAST_TO = 16;
-const lapFast = n => n > STAGES.length && patternNo(n) <= LAP_FAST_TO ? LAP_FAST : 1;
+// 2周目（101面）からは、ボールを1周目の同じ形の面の1.1倍速くする
+const LAP_FAST = 1.1;
+const lapFast = n => n > STAGES.length ? LAP_FAST : 1;
 // 跳ね返す虫がいる面と、虫KINGとたたかう面は、ボールを25%遅くする
 const BUG_SLOW = 0.75;
 const bugSlow = n => { const d = STAGES[patternNo(n) - 1]; return d.bug || d.king === 'boss' ? BUG_SLOW : 1; };
@@ -1640,8 +1640,7 @@ function stageClear(){
   const firstTile = re => re.test(nextDef.rows.join('')) && !STAGES.slice(0, nextNo - 1).some(d => re.test(d.rows.join('')));
   const notes = [];
   if (lastOne) {
-    notes.push('{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。' +
-      (lapFast(S.stage + 1) > 1 ? 'ステージ' + (S.stage + LAP_FAST_TO) + 'までは、ボールが1{周目|しゅうめ}より{少|すこ}し{速|はや}くなります。' : ''));
+    notes.push('{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。ボールは1{周目|しゅうめ}より{少|すこ}し{速|はや}くなります。');
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる
     if (!INTROS[S.stage + 1]) {
@@ -1671,7 +1670,6 @@ function stageClear(){
     }
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
     if (nextSlow < nowSlow) notes.push('{虫|むし}がいるので、ボールはゆっくりです。');
-    else if (lapFast(S.stage + 1) < lapFast(S.stage)) notes.push('{次|つぎ}のステージからは、ボールの{速|はや}さが1{周目|しゅうめ}と{同|おな}じになります。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
       notes.push(nowSlow === 1 ? '{次|つぎ}のステージは、ボールが{少|すこ}し{速|はや}くなります。' : nextSlow === 1 ? 'ボールの{速|はや}さは{元|もと}に{戻|もど}ります。' : 'ボールは{少|すこ}し{速|はや}くなります。');
     }
