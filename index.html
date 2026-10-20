@@ -286,7 +286,7 @@ img{max-width:100%}
           <div class="section" id="picker" hidden>
             <p class="sub">ステージ（{数字|すうじ}が{大|おお}きいほど{難|むずか}しい）</p>
             <div class="stages" id="stages"></div>
-            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGとたたかうステージです。★ はクリアしたステージです。101から200は2{周目|しゅうめ}です。1から100の{形|かたち}に{仕掛|しか}けが{加|くわ}わり、タイルが1{段|だん}かたくなります。ボールはさいしょからいちばん{速|はや}く、{板|いた}はいちばん{短|みじか}くなります。</p>
+            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGとたたかうステージです。★ はクリアしたステージです。101から200は2{周目|しゅうめ}です。1から100の{形|かたち}に{仕掛|しか}けが{加|くわ}わり、タイルが1{段|だん}かたくなって、{少|すこ}しずつ{下|お}りてきます。ボールはさいしょからいちばん{速|はや}く、{板|いた}はいちばん{短|みじか}くなります。</p>
           </div>
 
           <!-- data-from はその項目が出てくる最初の面。面の前の説明では、その面の分だけを出す -->
@@ -305,6 +305,7 @@ img{max-width:100%}
                 <li data-from="1"><span class="cap mark">↔</span>ステージ5から、タイルが{横|よこ}に{動|うご}く</li>
                 <li data-from="17"><span class="cap mark">↕</span>ステージ17から、タイルが{縦|たて}に{動|うご}く</li>
                 <li data-from="65"><span class="cap mark">↻</span>ステージ69から、タイルが{横|よこ}にぐるぐる{回|まわ}る。{端|はし}から{出|で}たタイルは、{反対|はんたい}の{端|はし}から{入|はい}ってくる</li>
+                <li data-from="101"><span class="cap mark">↓</span>ステージ101から、タイルが{少|すこ}しずつ{下|お}りてくる。{割|わ}らないといけないタイルが{赤|あか}い{点線|てんせん}まで{来|く}ると、ボールが1つへって、タイルは{元|もと}の{高|たか}さへ{戻|もど}る。{先|さき}のステージほど{速|はや}く{下|お}りてくる。「{止|と}」のあいだは{止|と}まる。ステージ200は{下|お}りてこない</li>
               </ul>
             </div>
             <div class="section group">
@@ -556,6 +557,9 @@ const GIFT_SOON = 40, SOON_FROM = 49;
 const GUARD_FROM = 57;
 // ボールの数の上限（「命」でもクリアでも、ここまでしか増えない）
 const LIVES_MAX = 6;
+// 2周目（101面から）は、タイルが少しずつ下りてくる。速さ（px/秒）は101面の DROP_V0 から、199面の DROP_V1 まで上がっていく
+// 割らないといけないタイルのいちばん下が DROP_LINE まで来たら、ボールが1つへって、タイルは DROP_BACK の速さで元の高さへ戻る
+const DROP_V0 = 1, DROP_V1 = 1.8, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
@@ -876,6 +880,8 @@ const INTROS = {
        text: 'たまごを{産|う}んでいたのは、{虫|むし}KINGでした。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
   100: {eyebrow: 'ステージ 100', title: '{虫|むし}KINGとたたかう',
         text: '{最後|さいご}のステージです。{虫|むし}KINGにボールを' + KING_HP + '{回|かい}{当|あ}てて、やっつけましょう。'},
+  101: {title: '{下|お}りてくるタイル',
+        text: '2{周目|しゅうめ}は、タイルが{少|すこ}しずつ{下|お}りてきます。{下|した}のほうのタイルから{割|わ}っていきましょう。'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。空ならなにも出さない
 const STORY = {
@@ -937,6 +943,9 @@ const basePaddle = n => n > STAGES.length ? 60 : Math.max(60, 88 - (n - 1) * 1.8
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 // その面の形と仕掛け。2周目からは LAP2 を重ねたもの
 const stageDef = n => n > STAGES.length ? LAP2_STAGES[patternNo(n) - 1] : STAGES[n - 1];
+// タイルが下りてくる速さ。1周目と、虫KINGとたたかう面は下りてこない
+const dropSpeed = n => n <= STAGES.length || stageDef(n).king === 'boss' ? 0
+  : DROP_V0 + (DROP_V1 - DROP_V0) * (patternNo(n) - 1) / (STAGES.length - 2);
 // ステージ一覧は2周目の終わり（200面）まで。3周目からは、同じ速さの2周目の面にクリアの印をつける
 const LAST_STAGE = STAGES.length * 2;
 const listNo = n => n > LAST_STAGE ? patternNo(n) + STAGES.length : n;
@@ -964,7 +973,7 @@ const S = {
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], blinkT: 0,
   keyCells: [], keyWait: [], globs: [], fires: [], carrier: null,
   king: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
-  giftT: 0, stuckT: 0, assisted: false, guardNext: false,
+  giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
   laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, bolts: [],
@@ -1099,8 +1108,10 @@ function fit(){
 new ResizeObserver(fit).observe(wrapEl);
 
 /* ---------- ステージ ---------- */
+// r 行のマスの上の端。2周目は、タイルが下りてきた分だけ下になる
+const cellY = r => BRICK_TOP + S.drop + r * ROW_STEP;
 function makeBrick(r, c, hp, bomb){
-  const bx = SIDE + c * CELL, by = BRICK_TOP + r * ROW_STEP;
+  const bx = SIDE + c * CELL, by = cellY(r);
   return {
     baseX: bx, x: bx, baseY: by, y: by,
     w: BRICK_W, h: BRICK_H, hp, max: hp, row: r, col: c,
@@ -1118,7 +1129,7 @@ function buildStage(n){
     [...row].forEach((ch, c) => {
       if (ch === '.') return;
       if (ch === 'o' || ch === 'O') {
-        warps.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: BRICK_TOP + r * ROW_STEP + BRICK_H / 2, pair: ch === 'O' ? 1 : 0});
+        warps.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2, pair: ch === 'O' ? 1 : 0});
         return;
       }
       const b = makeBrick(r, c, TILE_HP[ch] || +ch, ch === '*' || ch === 'B');
@@ -1219,6 +1230,30 @@ function moveRows(dt){
     for (const b of S.bricks) if (b.row === r) b.x = b.baseX + m.off;
   }
 }
+// 盤面のタイル・ワープの穴・投げこみ中のタイルの行き先を、まとめて d だけ下へずらす
+function shiftField(d){
+  S.drop += d;
+  for (const b of S.bricks) { b.baseY += d; if (!b.carried) b.y += d; }
+  for (const w of S.warps) w.y += d;
+  for (const f of S.flying) f.y1 += d;
+}
+// 割らないといけないタイルのいちばん下（運ばれているタイルは数えない）
+const fieldBottom = () => S.bricks.reduce((a, b) => needBreak(b) && !b.carried ? Math.max(a, b.y + b.h) : a, 0);
+// 2周目は、タイルが少しずつ下りてくる。線まで来たら、ボールが1つへって、タイルは元の高さへ戻る
+function lowerField(dt){
+  if (S.rise) {
+    shiftField(-Math.min(S.drop, DROP_BACK * dt));
+    if (S.drop <= 0) S.rise = false;
+    return;
+  }
+  const v = dropSpeed(S.stage);
+  if (!v || S.mode !== 'play' || S.stopT > 0) return;
+  shiftField(v * dt);
+  if (fieldBottom() < DROP_LINE) return;
+  S.rise = true;
+  banner('せんまで きた', 'タイルが うえに もどる', C.warn);
+  loseLife();
+}
 function moveCols(dt){
   const [top, bottom] = S.vband;
   const inCol = (b, c) => b.col === c && b.row >= top && b.row <= bottom;
@@ -1247,7 +1282,8 @@ function bounceBug(g){
   g.vy = sy * sp * Math.sin(a);
 }
 function moveBugs(dt){
-  const z = S.bugZone;
+  // タイルが下りてきた分だけ、上の端も下げる（パドルに近づきすぎないよう、下の端はそのまま）
+  const z = S.bugZone, top = Math.min(z.top + S.drop, z.bottom - BUG_R * 2);
   for (const g of S.bugs) {
     if (g.munch > 0) g.munch = Math.max(0, g.munch - dt);
     if (g.stunT > 0) { g.stunT = Math.max(0, g.stunT - dt); continue; }
@@ -1259,7 +1295,7 @@ function moveBugs(dt){
     let hit = false;
     if (g.x < BUG_EDGE) { g.x = BUG_EDGE; g.vx = Math.abs(g.vx); hit = true; }
     else if (g.x > W - BUG_EDGE) { g.x = W - BUG_EDGE; g.vx = -Math.abs(g.vx); hit = true; }
-    if (g.y < z.top) { g.y = z.top; g.vy = Math.abs(g.vy); hit = true; }
+    if (g.y < top) { g.y = top; g.vy = Math.abs(g.vy); hit = true; }
     else if (g.y > z.bottom) { g.y = z.bottom; g.vy = -Math.abs(g.vy); hit = true; }
     if (hit) bounceBug(g);
   }
@@ -1296,6 +1332,8 @@ function updateGlobs(dt){
 function freeCell(r, c){
   const [top, bottom] = S.vband, def = stageDef(S.stage);
   if (r < (def.room || 0) || c < 0 || c >= COLS || r >= def.rows.length) return false;
+  // タイルが下りてくる面では、線にかかるマスには置かない（投げこまれたり生えたりしたタイルで、すぐボールがへらないように）
+  if (dropSpeed(S.stage) && cellY(r) + BRICK_H >= DROP_LINE) return false;
   if (S.rowMove[r] || (S.colMove[c] && r >= top && r <= bottom)) return false;
   if (S.warps.some(w => w.row === r && w.col === c)) return false;
   if (S.keyCells.some(([kr, kc]) => kr === r && kc === c)) return false;
@@ -1313,7 +1351,7 @@ function throwTarget(){
 }
 // (x, y) から r 行 c 列へタイルを投げる。egg ならたまごになる
 function tossTo(r, c, x, y, egg){
-  const x1 = SIDE + c * CELL + BRICK_W / 2, y1 = BRICK_TOP + r * ROW_STEP + BRICK_H / 2;
+  const x1 = SIDE + c * CELL + BRICK_W / 2, y1 = cellY(r) + BRICK_H / 2;
   S.flying.push({row: r, col: c, x0: x, y0: y, x1, y1, t: 0, dur: 0.5 + Math.hypot(x1 - x, y1 - y) / 900, egg: !!egg});
 }
 // どこかの空いたマスへ投げる。空きがなければ false
@@ -1411,7 +1449,7 @@ function moveCarrier(dt){
     // タイルの真上へ下りて、つかむ
     if (flyTo(k, br.x + br.w / 2, br.y - BUG_R + 2, dt)) { k.state = 'carry'; br.carried = true; sfx('pick'); }
   } else if (k.state === 'carry') {
-    const [r, c] = k.to, cx = SIDE + c * CELL, cy = BRICK_TOP + r * ROW_STEP;
+    const [r, c] = k.to, cx = SIDE + c * CELL, cy = cellY(r);
     const there = flyTo(k, cx + BRICK_W / 2, cy - BUG_R + 2, dt);
     br.x = k.x - br.w / 2;
     br.y = k.y + BUG_R - 2;
@@ -1652,6 +1690,7 @@ function resetBall(){
 }
 function loadStage(n){
   S.stage = n;
+  S.drop = 0; S.rise = false;
   S.bricks = buildStage(n);
   S.paddle.x = W / 2;
   S.particles = []; S.pops = []; S.banners = []; S.blasts = []; S.confetti = [];
@@ -1760,7 +1799,7 @@ function stageClear(){
   const notes = [];
   if (lastOne) {
     notes.push(S.stage === STAGES.length
-      ? '{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。2{周目|しゅうめ}は、タイルが1{段|だん}かたくなり、{仕掛|しか}けも{増|ふ}えます。ボールは1{周目|しゅうめ}でいちばん{速|はや}かったときより、もう{少|すこ}し{速|はや}くなり、{板|いた}はいちばん{短|みじか}いままです。'
+      ? '{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。2{周目|しゅうめ}は、タイルが1{段|だん}かたくなり、{仕掛|しか}けも{増|ふ}えて、{少|すこ}しずつ{下|お}りてきます。ボールは1{周目|しゅうめ}でいちばん{速|はや}かったときより、もう{少|すこ}し{速|はや}くなり、{板|いた}はいちばん{短|みじか}いままです。'
       : '{次|つぎ}は、2{周目|しゅうめ}と{同|おな}じステージをもう1{周|しゅう}します。');
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる。2周目の仕掛けは、どれも1周目で出てきたものなので知らせない
@@ -2327,7 +2366,7 @@ function growSprouts(dt){
     if (br.sproutT > 0) continue;
     // 上下左右の空いたマス。ボールがいるマスには生やさない
     const cells = [[br.row - 1, br.col], [br.row + 1, br.col], [br.row, br.col - 1], [br.row, br.col + 1]]
-      .filter(([r, c]) => freeCell(r, c) && !ballOverlaps(SIDE + c * CELL, BRICK_TOP + r * ROW_STEP, BRICK_W, BRICK_H));
+      .filter(([r, c]) => freeCell(r, c) && !ballOverlaps(SIDE + c * CELL, cellY(r), BRICK_W, BRICK_H));
     if (!cells.length) { br.sproutT = 1; continue; }
     const [r, c] = cells[Math.floor(Math.random() * cells.length)];
     const nb = makeBrick(r, c, 1, false);
@@ -2886,6 +2925,7 @@ function update(dt){
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
     moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
+  if (S.mode === 'play' || S.mode === 'ready') lowerField(dt);
   if (S.king) for (const key of ['hurtT', 'flash', 'noT']) if (S.king[key] > 0) S.king[key] = Math.max(0, S.king[key] - dt);
   if (S.mode === 'ready') placeBall();
   else if (S.mode === 'play') {
@@ -3715,6 +3755,21 @@ function draw(){
     ctx.lineWidth = 3;
     ctx.setLineDash([10, 6]);
     ctx.strokeRect(9, 9, W - 18, H - 18);
+    ctx.restore();
+  }
+
+  // 2周目は、タイルが来てはいけない線を引く。タイルが2行ぶんより近づくと、濃くなって点滅する
+  if (dropSpeed(S.stage)) {
+    const near = clamp(1 - (DROP_LINE - fieldBottom()) / (ROW_STEP * 2), 0, 1);
+    ctx.save();
+    ctx.globalAlpha = 0.55 + 0.45 * near * (reduceMotion.matches ? 1 : 0.6 + 0.4 * Math.sin(S.time * 10));
+    ctx.strokeStyle = C.warn;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(6, DROP_LINE);
+    ctx.lineTo(W - 6, DROP_LINE);
+    ctx.stroke();
     ctx.restore();
   }
 
