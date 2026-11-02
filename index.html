@@ -196,6 +196,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.arrow{background:var(--t-kon);border-radius:3px}
 .cap.back{background:var(--t-sora);border-radius:3px}
 .cap.runner{background:var(--t-life);border-radius:3px}
+.cap.uzu{background:var(--board);color:var(--t-ai);box-shadow:inset 0 0 0 1px var(--line)}
+.cap.net{background:var(--t-chest)}
 .cap.burst{background:var(--t-bomb)}
 /* 盾のタイルは、盤面と同じく下がわに濃い板を付ける */
 .cap.shield{background:var(--t-sango);border-radius:3px;box-shadow:inset 0 -4px 0 var(--t-hard)}
@@ -332,6 +334,7 @@ img{max-width:100%}
                 <li data-from="201"><span class="cap arrow">→</span>やじるしのタイル。2{回|かい}で{割|わ}れる。{当|あ}たったボールは、やじるしの{向|む}き（{左|ひだり}か{右|みぎ}）へ、ななめに{飛|と}んでいく。やじるしのしっぽのほうから{横|よこ}に{当|あ}たったときは、ふつうにはね{返|かえ}る</li>
                 <li data-from="209"><span class="cap back">戻</span>{戻|もど}しのタイル。1{回|かい}で{割|わ}れる。{割|わ}ると、{下|お}りてきたタイルが1{行|ぎょう}ぶん{上|うえ}へ{戻|もど}る。まだ{下|お}りてきていないときは、なにも{起|お}きない</li>
                 <li data-from="217"><span class="cap runner">逃</span>{逃|に}げるタイル。1{回|かい}で{割|わ}れる。ボールが{近|ちか}づくと、{上下左右|じょうげさゆう}の{空|あ}いたところへ{逃|に}げる（3{回|かい}まで。{左|ひだり}はしの{点|てん}が、あと{何回|なんかい}{逃|に}げるか）。{光|ひかり}・{爆弾|ばくだん}・{火|ひ}からは{逃|に}げない。{霧|きり}がかかるか、お{助|たす}けで{光|ひか}ると、もう{逃|に}げない。「{止|と}」のあいだも{逃|に}げない</li>
+                <li data-from="233"><span class="cap uzu">渦</span>{渦|うず}。タイルではなく、{割|わ}らなくてもクリアできる。うすい{丸|まる}の{中|なか}を{通|とお}ったボールを{引|ひ}きよせて、{向|む}きを{曲|ま}げる。まん{中|なか}に{近|ちか}いほど{強|つよ}く{曲|ま}がる</li>
               </ul>
             </div>
             <div class="section group">
@@ -397,6 +400,12 @@ img{max-width:100%}
               <p class="sub">ステージ209から{落|お}ちてくるアイテム</p>
               <ul class="items one">
                 <li data-from="209"><span class="cap burst">破</span>5{回|かい}のあいだ、ボールが{当|あ}たったタイルのまわり8マスのタイルにも、1{回|かい}ぶん{当|あ}たる。{鉄|てつ}と{閉|と}じた{錠|じょう}には{効|き}かない</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ233から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="233"><span class="cap net">網</span>8{秒|びょう}のあいだ、{下|した}に{網|あみ}が{張|は}られて、ボールが{落|お}ちない。「{守|まもり}」があるときは、{網|あみ}が{先|さき}に{受|う}けとめる</li>
               </ul>
             </div>
             <div class="section group">
@@ -586,6 +595,12 @@ const BURST_N = 5, BURST_MAX = 10;
 // 逃げるタイル：向かってくるボールのふちが FLEE_NEAR（px）まで近づいたら、上下左右の空いたマスへ逃げる
 // FLEE_N 回まで。逃げたあと FLEE_COOL 秒は逃げない。となりのマスへ動いて見える長さは FLEE_SLIDE 秒
 const FLEE_NEAR = 16, FLEE_N = 3, FLEE_COOL = 0.6, FLEE_SLIDE = 0.15;
+// 渦：まん中から UZU_R（px）の内がわを通るボールを、まん中のほうへ引きよせて曲げる
+// 引く強さは、まん中で UZU_PULL（px/秒²）、ふちで0。渦のまわりを回り続けるには UZU_PULL × UZU_R / 4 が速さの2乗以上いるので、
+// いちばん遅いボール（約404）の2乗（約16万）より十分小さくしておく（今は6万）
+const UZU_R = 60, UZU_PULL = 4000;
+// 網：NET_T 秒のあいだ、下に網が張られてボールが落ちない
+const NET_T = 8;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
@@ -618,6 +633,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // < / >: やじるし（2回。当たったボールを左 / 右へななめに飛ばす。上か下かは、はね返ったとおり）
 // u: 戻し（1回。割ると、下りてきたタイルが1行ぶん上へ戻る。下りていなければ、なにも起きない）
 // n: 逃げる（1回。ボールが近づくと、上下左右の空いたマスへ逃げる。3回まで。動く行・動く列には置かない）
+// w: 渦（タイルではなく、クリアの数に入らない。近くを通ったボールを引きよせて曲げる。動く行・動く列には置かない）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
@@ -910,6 +926,15 @@ const STAGES3 = [
   {rows: ['33333333','3o.ee.O3','22222222','2n.33.n2','33333333','2O.nn.o2','22222222','11111111']},
   {rows: ['B333333B','3u.nn.u3','22222222','3>3..3<3','2n.22.n2','33333333','<3<3....','.n2..2n.','22222222'],
    loop: {3: 70, 6: -70}, bug: 60, thrower: true},
+  // 233〜240：渦（とアイテム「網」）
+  {rows: ['33333333','32222223','22....22','2.w..w.2','22....22','33333333','22222222']},
+  {rows: ['33333333','3>3333<3','2......2','2.w..w.2','2......2','3<2222>3','22222222','22222222']},
+  {rows: ['33333333','33.nn.33','2......2','2.w..w.2','2......2','2n2222n2','33333333','22222222']},
+  {rows: ['3u3333u3','33333333','22.22.22','2.w22w.2','22.22.22','2u2..2u2','22222222'], bug: 60},
+  {rows: ['33333333','3*3333*3','3333....','2.w..w.2','....2222','22222222','22222222'], move: {2: 60, 4: -60}},
+  {rows: ['33333333','3o3mm3O3','mm.33.mm','w..33..w','mm.33.mm','2O2..2o2','22222222','22222222']},
+  {rows: ['3#3333#3','3#3333#3','2......2','2.w##w.2','2......2','33333333','22222222','22222222'], thrower: true},
+  {rows: ['33333333','3n.33.n3','3>3..3<3','2.w..w.2','22.nn.22','2......2','33333333','22222222'], loop: {2: 65}, bug: 60, paint: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -929,6 +954,7 @@ const ITEMS = {
   aim:    {glyph: '狙', pop: 'ねらい',        color: 't-moegi',    weight: 9,  kind: 'good', from: 65},
   up:     {glyph: '上', pop: 'うえから',      color: 't-sora',     weight: 9,  kind: 'good', from: 73},
   burst:  {glyph: '破', pop: 'まわりも われる +' + BURST_N, color: 't-bomb', weight: 9, kind: 'good', from: 209},
+  net:    {glyph: '網', pop: 'あみ',          color: 't-chest',    weight: 8,  kind: 'good', from: 233},
   fuku:   {glyph: '福', pop: '',              color: 'gold',       weight: 2,  kind: 'rare'},
   shrink: {glyph: '縮', pop: 'みじかい いた', color: 'bad',        weight: 5,  kind: 'bad'},
   fast:   {glyph: '速', pop: 'はやい ボール', color: 'bad',        weight: 5,  kind: 'bad'},
@@ -965,6 +991,7 @@ const INTROS = {
   217: {title: '{逃|に}げるタイル'},
   225: {eyebrow: 'ステージ 225 から', title: '{組|く}み{合|あ}わせ',
         text: 'ステージ232までは、{新|あたら}しいものは{出|で}てきません。やじるし・{戻|もど}し・{逃|に}げるタイルと、これまでのタイルや{虫|むし}を{組|く}み{合|あ}わせたステージです。'},
+  233: {title: '{渦|うず}と{新|あたら}しいアイテム'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。空ならなにも出さない
 const STORY = {
@@ -1061,13 +1088,13 @@ const S = {
   score: 0, best: 0, stage: 1, pick: 1, lives: 3, combo: 0, maxCombo: 0,
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
-  bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], blinkT: 0,
+  bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], blinkT: 0,
   keyCells: [], keyWait: [], globs: [], fires: [], carrier: null,
   king: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
-  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, bolts: [],
+  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, bolts: [],
   paddle: {x: W / 2, w: 88}
 };
 let onPrimary = null, onSecondary = null;
@@ -1125,6 +1152,7 @@ function sfx(name, arg){
     case 'burst':  tone(230, 0.15, 'sawtooth', 0.04, 90); break;
     case 'lift':   tone(330, 0.18, 'triangle', 0.07, 880); break;
     case 'flee':   tone(760, 0.07, 'sine', 0.05, 1240); break;
+    case 'net':    tone(300, 0.1, 'triangle', 0.07, 520); break;
     case 'bigbomb':
       tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
       break;
@@ -1219,10 +1247,14 @@ function makeBrick(r, c, hp, bomb){
 }
 function buildStage(n){
   const def = stageDef(n);
-  const list = [], warps = [];
+  const list = [], warps = [], uzus = [];
   def.rows.forEach((row, r) => {
     [...row].forEach((ch, c) => {
       if (ch === '.') return;
+      if (ch === 'w') {
+        uzus.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2});
+        return;
+      }
       if (ch === 'o' || ch === 'O') {
         warps.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2, pair: ch === 'O' ? 1 : 0});
         return;
@@ -1260,6 +1292,7 @@ function buildStage(n){
   // ワープの穴は同じ字のもう1つへつなぐ（相手のない穴は置かない）
   for (const w of warps) w.to = warps.find(o => o !== w && o.pair === w.pair);
   S.warps = warps.filter(w => w.to);
+  S.uzus = uzus;
   // ふたごも同じ字のもう1枚と組にする（相手のないものは、ふつうのタイルにする）
   for (const b of list) if (b.twin && !list.some(o => o !== b && o.twin && o.pair === b.pair)) b.twin = false;
   // 金のタイル：3回に1回くらい、どこか1枚
@@ -1355,11 +1388,12 @@ function moveRows(dt){
     for (const b of S.bricks) if (b.row === r) b.x = b.baseX + m.off;
   }
 }
-// 盤面のタイル・ワープの穴・投げこみ中のタイルの行き先を、まとめて d だけ下へずらす
+// 盤面のタイル・ワープの穴・渦・投げこみ中のタイルの行き先を、まとめて d だけ下へずらす
 function shiftField(d){
   S.drop += d;
   for (const b of S.bricks) { b.baseY += d; if (!b.carried) b.y += d; }
   for (const w of S.warps) w.y += d;
+  for (const u of S.uzus) u.y += d;
   for (const f of S.flying) f.y1 += d;
 }
 // 割らないといけないタイルのいちばん下（運ばれているタイルは数えない）
@@ -1468,7 +1502,7 @@ function freeCell(r, c){
   // タイルが下りてくる面では、線にかかるマスには置かない（投げこまれたり生えたりしたタイルで、すぐボールがへらないように）
   if (dropSpeed(S.stage) && cellY(r) + BRICK_H >= DROP_LINE) return false;
   if (S.rowMove[r] || (S.colMove[c] && r >= top && r <= bottom)) return false;
-  if (S.warps.some(w => w.row === r && w.col === c)) return false;
+  if (S.warps.some(w => w.row === r && w.col === c) || S.uzus.some(u => u.row === r && u.col === c)) return false;
   if (S.keyCells.some(([kr, kc]) => kr === r && kc === c)) return false;
   // 運ぶ虫がタイルを置きに行くマス
   const to = S.carrier && S.carrier.to;
@@ -1804,7 +1838,7 @@ function clearEffects(){
   S.items = []; S.lasers = []; S.mists = []; S.bolts = [];
   S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = false;
   S.laserT = 0; S.laserCool = 0; S.catchT = 0; S.stopT = 0; S.magnetT = 0; S.shockT = 0;
-  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.fires = [];
+  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.fires = [];
   S.paddle.w = basePaddle(S.stage);
   S.paddle.x = clamp(S.paddle.x, S.paddle.w / 2, W - S.paddle.w / 2);
 }
@@ -2365,6 +2399,7 @@ function applyItem(type){
     case 'aim':    S.aimT = AIM_T; break;
     case 'up':     S.up = Math.min(S.up + UP_N, UP_N * 2); break;
     case 'burst':  S.burst = Math.min(S.burst + BURST_N, BURST_MAX); break;
+    case 'net':    S.netT = NET_T; break;
     case 'spray': {
       // パドルにいちばん近い列を中心に、左右1列ずつ（端でも3列にかかるようにする）
       const c = clamp(Math.round((S.paddle.x - SIDE - BRICK_W / 2) / CELL), 1, COLS - 2);
@@ -3003,13 +3038,18 @@ function physics(dt){
         shootUp(b);
       }
 
-      if (S.guard && b.vy > 0 && b.y + R >= GUARD_Y) {
+      if (S.netT > 0 && b.vy > 0 && b.y + R >= GUARD_Y) {
+        b.y = GUARD_Y - R;
+        b.vy = -Math.abs(b.vy);
+        sfx('net');
+      } else if (S.guard && b.vy > 0 && b.y + R >= GUARD_Y) {
         b.y = GUARD_Y - R;
         b.vy = -Math.abs(b.vy);
         S.guard = false;
         sfx('guard');
       }
 
+      pullBall(b, h);
       if (hitBricks(b) && S.mode !== 'play') return;
       hitBugs(b);
       if (hitKing(b) && S.mode !== 'play') return;
@@ -3019,6 +3059,21 @@ function physics(dt){
     if (lost) S.balls.splice(bi, 1);
   }
   if (S.balls.length === 0) loseLife();
+}
+// 渦の引く強さ（まん中からの距離 d で決まる）
+const uzuPull = d => d < UZU_R ? UZU_PULL * (1 - d / UZU_R) : 0;
+// 渦：近くのボールの向きを、まん中のほうへ少しずつ曲げる（速さは変えない）
+function pullBall(b, h){
+  let hit = false;
+  for (const u of S.uzus) {
+    const dx = u.x - b.x, dy = u.y - b.y, d = Math.hypot(dx, dy);
+    if (d >= UZU_R || d < 1) continue;
+    const a = uzuPull(d) * h;
+    b.vx += dx / d * a;
+    b.vy += dy / d * a;
+    hit = true;
+  }
+  if (hit) normalizeBall(b);
 }
 // 回り続けているボールの向きを、左右どちらかへ少し（9〜20度くらい）変える
 function turnBall(b){
@@ -3094,7 +3149,7 @@ function update(dt){
   S.time += dt;
   const p = S.paddle;
   if (S.mode === 'play') {
-    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
+    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT','netT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
   }
   // ボールの大きさも、なめらかに変える
   S.ballR += (BALL_R * (S.bigT > 0 ? BIG_K : 1) - S.ballR) * Math.min(1, dt * 10);
@@ -3224,6 +3279,41 @@ function drawHidden(br){
     // 強いまばたきタイルは、消えていても太いわくの角だけ見せる
     ctx.fillStyle = C.ink;
     for (const [dx, dy] of [[0, 0], [br.w - 4, 0], [0, br.h - 4], [br.w - 4, br.h - 4]]) ctx.fillRect(br.x + dx - 1, br.y + dy - 1, 5, 5);
+  }
+}
+// 渦：引きよせる広さをうすい丸で見せて、まん中でうずを回す
+function drawUzus(){
+  for (const u of S.uzus) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(u.x, u.y, UZU_R, 0, Math.PI * 2);
+    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = C['t-ai'];
+    ctx.fill();
+    ctx.globalAlpha = 0.35;
+    ctx.setLineDash([3, 5]);
+    ctx.lineWidth = 1.2;
+    ctx.strokeStyle = C['t-ai'];
+    ctx.stroke();
+    ctx.restore();
+    const a = reduceMotion.matches ? 0 : -S.time * 3;
+    ctx.save();
+    ctx.translate(u.x, u.y);
+    ctx.rotate(a);
+    ctx.strokeStyle = C['t-ai'];
+    ctx.lineWidth = 2.2;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++) {
+      ctx.rotate(Math.PI * 2 / 3);
+      ctx.beginPath();
+      for (let t = 0; t <= 1.001; t += 0.1) {
+        const r = 3 + t * 11, th = t * 2.6;
+        const px = Math.cos(th) * r, py = Math.sin(th) * r;
+        if (t === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
   }
 }
 function drawWarps(){
@@ -3746,6 +3836,17 @@ function aimPath(b){
   const passed = new Set();
   while (len < AIM_LEN && turns < AIM_TURNS) {
     x += vx * 4; y += vy * 4; len += 4;
+    // 渦で曲がるぶん（向きの変わり方は、引く強さを速さの2乗で割ったもの）。曲がっているあいだは点を細かく打って、線も曲げる
+    let bend = false;
+    for (const u of S.uzus) {
+      const dx = u.x - x, dy = u.y - y, d = Math.hypot(dx, dy);
+      if (d >= UZU_R || d < 1) continue;
+      const k = uzuPull(d) / (S.speed * S.speed) * 4;
+      vx += dx / d * k; vy += dy / d * k;
+      const n = Math.hypot(vx, vy); vx /= n; vy /= n;
+      bend = true;
+    }
+    if (bend) pts.push([x, y]);
     let turn = false;
     if (x < R) { x = R; vx = Math.abs(vx); turn = true; }
     else if (x > W - R) { x = W - R; vx = -Math.abs(vx); turn = true; }
@@ -3914,6 +4015,7 @@ function drawHud(){
   if (S.aimT > 0) chips.push(['ねらい ' + Math.ceil(S.aimT) + 'びょう', C['t-moegi']]);
   if (S.up > 0) chips.push(['うえから ×' + S.up, C['t-sora']]);
   if (S.burst > 0) chips.push(['まわりも われる ×' + S.burst, C['t-bomb']]);
+  if (S.netT > 0) chips.push(['あみ ' + Math.ceil(S.netT) + 'びょう', C['t-chest']]);
   if (!chips.length) return;
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textBaseline = 'middle';
@@ -4012,6 +4114,7 @@ function draw(){
     ctx.restore();
   }
 
+  drawUzus();
   drawWarps();
   for (const br of S.bricks) if (br.hp > 0) drawTile(br);
   drawMists();
@@ -4039,6 +4142,22 @@ function draw(){
     for (const l of S.lasers) { rr(l.x - 1.5, l.y, 3, 12, 1.5); ctx.fill(); }
   }
 
+  if (S.netT > 0) {
+    // 網：ジグザグのひも。のこり2秒からは点滅して、切れそうなことを知らせる
+    ctx.save();
+    ctx.globalAlpha = S.netT > 2 || reduceMotion.matches ? 1 : 0.4 + 0.6 * Math.abs(Math.sin(S.time * 8));
+    ctx.strokeStyle = C['t-chest'];
+    ctx.lineWidth = 2;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let x = 6, i = 0; x <= W - 6; x += 8, i++) {
+      const y = GUARD_Y + (i % 2 ? 7 : 1);
+      if (!i) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    }
+    ctx.moveTo(6, GUARD_Y + 1); ctx.lineTo(W - 6, GUARD_Y + 1);
+    ctx.stroke();
+    ctx.restore();
+  }
   if (S.guard) {
     rr(6, GUARD_Y, W - 12, 5, 2.5);
     ctx.fillStyle = C['t-yamabuki'];
