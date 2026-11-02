@@ -345,6 +345,8 @@ img{max-width:100%}
                 <li data-from="49"><span class="cap sprout strong">芽</span>{大|おお}きな{芽|め}。3{回|かい}で{割|わ}れる。5{秒|びょう}ごとに、となりの{空|あ}いたところへタイルを{生|は}やす（1{枚|まい}の{芽|め}で16{枚|まい}まで）。{生|は}えたタイルからは、アイテムがよく{出|で}る</li>
                 <li data-from="65"><span class="cap lock strong">錠</span>{強|つよ}い{錠|じょう}。{鍵|かぎ}を{全部|ぜんぶ}{割|わ}ると、ふつうの{錠|じょう}になって、{鍵|かぎ}がもう{一度|いちど}{出|で}てくる。その{鍵|かぎ}も{全部|ぜんぶ}{割|わ}ると{開|ひら}く</li>
                 <li data-from="65"><span class="cap blink strong"></span>{強|つよ}いまばたきタイル。2{回|かい}で{割|わ}れる。1.5{秒|びょう}{出|で}て、1{秒|びょう}{消|き}える</li>
+                <li data-from="249"><span class="cap arrow strong">⇄</span>{強|つよ}いやじるし。3{回|かい}で{割|わ}れる。3{秒|びょう}ごとに、やじるしの{向|む}きが{左右|さゆう}{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、やじるしが{点滅|てんめつ}する。「{止|と}」のあいだは{変|か}わらない</li>
+                <li data-from="249"><span class="cap runner strong">逃</span>{強|つよ}い{逃|に}げるタイル。1{回|かい}で{割|わ}れる。6{回|かい}まで{逃|に}げる</li>
               </ul>
             </div>
             <div class="section group">
@@ -590,6 +592,8 @@ const LIVES_MAX = 6;
 const DROP_V0 = 1, DROP_V1 = 1.8, DROP_V2 = 2, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
 // やじるしのタイルで向きを変えたボールの、縦の速さの割合（横は 0.8 で、横から約37度）
 const ARROW_VY = 0.6;
+// 強いやじるし：ARROW_FLIP 秒ごとに向きが左右入れかわる。かわる ARROW_SOON 秒前から、やじるしが点滅する
+const ARROW_FLIP = 3, ARROW_SOON = 0.6;
 // 戻し：割ると、下りてきたタイルが1行ぶん（ROW_STEP）、この速さ（px/秒）で上へ戻る
 const LIFT_V = 130;
 // 破：ボールが当たったタイルのまわり8マスにも1回ぶん当てる。1つで BURST_N 回、BURST_MAX 回までためられる
@@ -597,6 +601,8 @@ const BURST_N = 5, BURST_MAX = 10;
 // 逃げるタイル：向かってくるボールのふちが FLEE_NEAR（px）まで近づいたら、上下左右の空いたマスへ逃げる
 // FLEE_N 回まで。逃げたあと FLEE_COOL 秒は逃げない。となりのマスへ動いて見える長さは FLEE_SLIDE 秒
 const FLEE_NEAR = 16, FLEE_N = 3, FLEE_COOL = 0.6, FLEE_SLIDE = 0.15;
+// 強い逃げるタイルが逃げる回数
+const FLEE_BIG_N = 6;
 // 渦：まん中から UZU_R（px）の内がわを通るボールを、まん中のほうへ引きよせて曲げる
 // 引く強さは、まん中で UZU_PULL（px/秒²）、ふちで0。渦のまわりを回り続けるには UZU_PULL × UZU_R / 4 が速さの2乗以上いるので、
 // いちばん遅いボール（約404）の2乗（約16万）より十分小さくしておく（今は6万）
@@ -607,7 +613,7 @@ const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sang
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
@@ -636,6 +642,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // u: 戻し（1回。割ると、下りてきたタイルが1行ぶん上へ戻る。下りていなければ、なにも起きない）
 // n: 逃げる（1回。ボールが近づくと、上下左右の空いたマスへ逃げる。3回まで。動く行・動く列には置かない）
 // w: 渦（タイルではなく、クリアの数に入らない。近くを通ったボールを引きよせて曲げる。動く行・動く列には置かない）
+// [ / ]: 強いやじるし（3回。左 / 右向きで始まって、3秒ごとに向きが入れかわる）
+// N: 強い逃げる（1回。6回まで逃げる。置き方は n と同じ）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
@@ -948,6 +956,15 @@ const STAGES3 = [
   {rows: ['33333333','3o.ee.O3','2......2','2.w..w.2','2n....n2','2O.33.o2','33333333','33333333']},
   {rows: ['B333333B','3u.nn.u3','3333....','2.w..w.2','....3333','2n.22.n2','33333333','2>2..2<2','22222222'],
    move: {2: 60, 4: -60}, carry: true},
+  // 249〜256：強いやじるし・強い逃げる
+  {rows: ['33333333','3[3333]3','22.NN.22','22222222','2]2..2[2','2.n22n.2','22222222','11111111']},
+  {rows: ['33333333','3]3..3[3','2......2','2.w..w.2','2......2','3[2222]3','33333333','22222222']},
+  {rows: ['33333333','33.NN.33','22222222','N.2..2.N','33333333','2.n22n.2','22222222'], bug: 60},
+  {rows: ['3*3333*3','3]3[....','22222222','....]3[3','33333333','2]2**2[2','22222222'], move: {1: 60, 3: -60}},
+  {rows: ['33333333','3u.NN.u3','22222222','2.N22N.2','33333333','2u2..2u2','22222222','11111111'], thrower: true},
+  {rows: ['3J3333J3','33[33]33','22222222','2k2..2k2','3]3..3[3','22222222','22222222']},
+  {rows: ['33333333','3o.NN.O3','mmmmmmmm','2.w..w.2','2N....N2','2O2..2o2','33333333','22222222']},
+  {rows: ['B333333B','3u.NN.u3','3]3..3[3','22222222','2N.22.N2','22222222','[3[3....','33333333'], loop: {2: 65, 6: -65}, bug: 60, paint: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1007,6 +1024,7 @@ const INTROS = {
   233: {title: '{渦|うず}と{新|あたら}しいアイテム'},
   241: {eyebrow: 'ステージ 241 から', title: '{組|く}み{合|あ}わせ その2',
         text: 'ステージ248までは、{新|あたら}しいものは{出|で}てきません。{渦|うず}も{入|い}れて、3{周目|しゅうめ}の{新|あたら}しいタイルと、これまでのタイルや{虫|むし}を{組|く}み{合|あ}わせたステージです。'},
+  249: {title: '{強|つよ}くなったタイル'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。空ならなにも出さない
 const STORY = {
@@ -1276,7 +1294,7 @@ function buildStage(n){
       }
       const b = makeBrick(r, c, TILE_HP[ch] || +ch, ch === '*' || ch === 'B');
       // B・V・?・J・M は、爆弾・芽・宝箱・錠・まばたきの強くなったもの
-      b.big = ch === 'B' || ch === 'V' || ch === '?' || ch === 'J' || ch === 'M';
+      b.big = ch === 'B' || ch === 'V' || ch === '?' || ch === 'J' || ch === 'M' || ch === '[' || ch === ']' || ch === 'N';
       b.iron = ch === '#';
       b.regen = ch === 'r' || ch === 'R';
       b.sprout = ch === 'v' || ch === 'V';
@@ -1292,10 +1310,10 @@ function buildStage(n){
       b.fire = ch === 'f';
       b.egg = ch === 'e';
       b.eggT = EGG_T;
-      b.arrow = ch === '<' ? -1 : ch === '>' ? 1 : 0;
+      b.arrow = ch === '<' || ch === '[' ? -1 : ch === '>' || ch === ']' ? 1 : 0;
       b.back = ch === 'u';
-      b.runner = ch === 'n';
-      b.flee = b.runner ? FLEE_N : 0;
+      b.runner = ch === 'n' || ch === 'N';
+      b.flee = !b.runner ? 0 : b.big ? FLEE_BIG_N : FLEE_N;
       list.push(b);
     });
   });
@@ -2886,7 +2904,7 @@ function hitBricks(b){
       // 貫通中は跳ね返らず、硬さに関係なく1回で割る（鉄と閉じた錠だけは跳ね返る）
       if (S.feverT <= 0) S.pierce--;
       if (br.zap) dropBolt(br);
-      if (br.arrow) arrowTurn(b, br.arrow);
+      if (br.arrow) arrowTurn(b, arrowDir(br));
       damage(br, true);
       if (S.burst > 0 && S.mode === 'play') burst(br);
       return true;
@@ -2899,7 +2917,7 @@ function hitBricks(b){
       else { b.vy = Math.abs(b.vy); b.y = br.y + br.h + R; }
     }
     // やじるしは、横から当たってタイルのほうを向いているときだけ、ふつうにはね返す
-    if (br.arrow && !(ox < oy && Math.sign(b.vx) !== br.arrow)) arrowTurn(b, br.arrow);
+    if (br.arrow && !(ox < oy && Math.sign(b.vx) !== arrowDir(br))) arrowTurn(b, arrowDir(br));
     // 鉄や閉じた錠、盾に当たっても速くはしない
     if (!solid(br) && !guarded) S.speed = Math.min(S.speed + 1.5, (baseSpeed(S.stage) + 90) * speedK(S.stage));
     normalizeBall(b);
@@ -2926,6 +2944,10 @@ function burst(br){
     if (b.hp > 0) damage(b, false);
   }
 }
+// やじるしの今の向き。強いやじるしは ARROW_FLIP 秒ごとに入れかわる（まばたきと同じ時計で、「止」のあいだは止まる）
+const arrowDir = br => br.big && Math.floor(S.blinkT / ARROW_FLIP) % 2 ? -br.arrow : br.arrow;
+// 強いやじるしの向きが、もうすぐ入れかわるか
+const arrowSoon = br => br.big && S.blinkT % ARROW_FLIP > ARROW_FLIP - ARROW_SOON;
 // やじるしのタイル：ボールを dir（-1 で左、1 で右）へ、決まった角度で飛ばす。上か下かは今の向きのまま
 function arrowTurn(b, dir){
   const sp = Math.hypot(b.vx, b.vy);
@@ -3463,9 +3485,10 @@ function drawTile(br){
     ctx.fillStyle = C['on-tile'];
     ctx.fillRect(x + 4, y + h - 3.5, (w - 8) * clamp(1 - br.eggT / EGG_T, 0, 1), 2);
   } else if (br.arrow) {
-    // ボールを飛ばす向きのやじるし
-    const cx = x + w / 2, cy = y + h / 2 + 1, d = br.arrow;
+    // ボールを飛ばす向きのやじるし。強いやじるしは、向きがかわる少し前から点滅する
+    const cx = x + w / 2, cy = y + h / 2 + 1, d = arrowDir(br);
     ctx.save();
+    if (arrowSoon(br)) ctx.globalAlpha = reduceMotion.matches ? 0.45 : 0.25 + 0.75 * Math.abs(Math.cos(S.time * 14));
     ctx.strokeStyle = ctx.fillStyle = C['on-tile'];
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
@@ -3484,9 +3507,10 @@ function drawTile(br){
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('逃', x + w / 2, y + h / 2 + 1);
+    // 強いものは6つあるので、3つずつ2列にする
     for (let i = 0; i < br.flee; i++) {
       ctx.beginPath();
-      ctx.arc(x + 6, y + 6 + i * 5, 1.7, 0, Math.PI * 2);
+      ctx.arc(x + 5 + Math.floor(i / 3) * 4.5, y + 6 + (i % 3) * 5, 1.6, 0, Math.PI * 2);
       ctx.fill();
     }
   } else if (br.back) {
@@ -3881,8 +3905,8 @@ function aimPath(b){
         if (ox < oy) vx = x < br.x + br.w / 2 ? -Math.abs(vx) : Math.abs(vx);
         else vy = y < br.y + br.h / 2 ? -Math.abs(vy) : Math.abs(vy);
       }
-      if (br.arrow && (through || !(ox < oy && Math.sign(vx) !== br.arrow))) {
-        vx = br.arrow * Math.sqrt(1 - ARROW_VY * ARROW_VY);
+      if (br.arrow && (through || !(ox < oy && Math.sign(vx) !== arrowDir(br)))) {
+        vx = arrowDir(br) * Math.sqrt(1 - ARROW_VY * ARROW_VY);
         vy = (vy < 0 ? -1 : 1) * ARROW_VY;
       }
       turn = true;
