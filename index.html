@@ -357,7 +357,7 @@ img{max-width:100%}
                 <li data-from="1"><span class="cap pierce">貫</span>ボールがタイルを3{枚|まい}つきぬける</li>
                 <li data-from="1"><span class="cap wide">広</span>15{秒|びょう}のあいだ、{板|いた}が{長|なが}くなる</li>
                 <li data-from="1"><span class="cap slow">遅</span>10{秒|びょう}のあいだ、ボールがゆっくりになる</li>
-                <li data-from="1"><span class="cap guard">守</span>{下|した}に{壁|かべ}ができて、1{回|かい}だけボールをはね{返|かえ}す</li>
+                <li data-from="1"><span class="cap guard">守</span>{下|した}に{壁|かべ}ができて、ボールを1{回|かい}はね{返|かえ}す。{取|と}るたびに1{回|かい}ぶんふえる（5{回|かい}ぶんまで）</li>
                 <li data-from="1"><span class="cap life">命</span>のこりのボール +1</li>
               </ul>
             </div>
@@ -611,6 +611,8 @@ const GIFT_SOON = 40, SOON_FROM = 49;
 const GUARD_FROM = 57;
 // ボールの数の上限（「命」でもクリアでも、ここまでしか増えない）
 const LIVES_MAX = 6;
+// 「守」は1つで1回はね返す。重ねて取ると GUARD_MAX 回ぶんまでためられる
+const GUARD_MAX = 5;
 // 2周目（101面から）は、タイルが少しずつ下りてくる。速さ（px/秒）は101面の DROP_V0 から、199面の DROP_V1 まで上がっていく
 // 3周目（201面から）も下りてくる。201面の DROP_V1 から、299面の DROP_V2 まで、ほんの少しだけ上げる
 // 割らないといけないタイルのいちばん下が DROP_LINE まで来たら、ボールが1つへって、タイルは DROP_BACK の速さで元の高さへ戻る
@@ -1217,7 +1219,7 @@ const S = {
   king: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
-  pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: false,
+  pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: 0,
   laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, bolts: [],
   paddle: {x: W / 2, w: 88}
 };
@@ -1993,7 +1995,7 @@ function updateFlying(dt){
 }
 function clearEffects(){
   S.items = []; S.lasers = []; S.mists = []; S.bolts = [];
-  S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = false;
+  S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = 0;
   S.laserT = 0; S.laserCool = 0; S.catchT = 0; S.stopT = 0; S.magnetT = 0; S.shockT = 0;
   S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.fires = [];
   S.paddle.w = basePaddle(S.stage);
@@ -2028,7 +2030,7 @@ function startStage(){
   // 虫KINGとたたかう面は、いつもさいしょから守がつく
   const boss = stageDef(S.stage).king === 'boss';
   if (S.guardNext || boss) {
-    S.guard = true;
+    S.guard = 1;
     banner('まもり つき', S.guardNext ? 'のこり 1こで クリアしたから' : kingName(S.king) + 'と たたかうから', C['t-yamabuki']);
   }
   S.guardNext = false;
@@ -2544,7 +2546,10 @@ function applyItem(type){
     case 'pierce': S.pierce = Math.min(S.pierce + 3, 9); break;
     case 'wide':   S.wideT = 15; S.shrinkT = 0; break;
     case 'slow':   S.slowT = 10; S.fastT = 0; break;
-    case 'guard':  S.guard = true; break;
+    case 'guard':
+      pop = S.guard >= GUARD_MAX ? 'まもり いっぱい' : S.guard ? 'まもり ×' + (S.guard + 1) : pop;
+      S.guard = Math.min(S.guard + 1, GUARD_MAX);
+      break;
     case 'life':   S.lives = Math.min(S.lives + 1, LIVES_MAX); break;
     case 'laser':  S.laserT = LASER_T; S.laserCool = 0; break;
     case 'catch':  S.catchT = CATCH_T; break;
@@ -3201,10 +3206,10 @@ function physics(dt){
         b.y = GUARD_Y - R;
         b.vy = -Math.abs(b.vy);
         sfx('net');
-      } else if (S.guard && b.vy > 0 && b.y + R >= GUARD_Y) {
+      } else if (S.guard > 0 && b.vy > 0 && b.y + R >= GUARD_Y) {
         b.y = GUARD_Y - R;
         b.vy = -Math.abs(b.vy);
-        S.guard = false;
+        S.guard--;
         sfx('guard');
       }
 
@@ -4214,7 +4219,7 @@ function drawHud(){
   if (S.shrinkT > 0) chips.push(['みじかい いた ' + Math.ceil(S.shrinkT) + 'びょう', C.warn]);
   if (S.slowT > 0) chips.push(['ゆっくり ' + Math.ceil(S.slowT) + 'びょう', C['t-asagi']]);
   if (S.fastT > 0) chips.push(['はやい ボール ' + Math.ceil(S.fastT) + 'びょう', C.warn]);
-  if (S.guard) chips.push(['まもり', C['t-yamabuki']]);
+  if (S.guard > 0) chips.push(['まもり ×' + S.guard, C['t-yamabuki']]);
   if (S.laserT > 0) chips.push(['ひかり ' + Math.ceil(S.laserT) + 'びょう', C['t-fuji']]);
   if (S.catchT > 0) chips.push(['くっつく ' + Math.ceil(S.catchT) + 'びょう', C['t-kurumi']]);
   if (S.stopT > 0) chips.push(['とまる ' + Math.ceil(S.stopT) + 'びょう', C['t-nibi']]);
@@ -4366,10 +4371,15 @@ function draw(){
     ctx.stroke();
     ctx.restore();
   }
-  if (S.guard) {
-    rr(6, GUARD_Y, W - 12, 5, 2.5);
+  if (S.guard > 0) {
+    // ためた数だけ、下へ重ねて描く。盤面の下のはしに収まるよう、数が多いほど細くする
+    // 下の段ほど左右を少しずつ短くして、盤面の丸い角にかからないようにする
+    const gh = Math.min(5, (H - 1 - GUARD_Y - (S.guard - 1)) / S.guard);
     ctx.fillStyle = C['t-yamabuki'];
-    ctx.fill();
+    for (let i = 0; i < S.guard; i++) {
+      rr(6 + i * 3, GUARD_Y + i * (gh + 1), W - 12 - i * 6, gh, Math.min(2.5, gh / 2));
+      ctx.fill();
+    }
   }
 
   for (const it of S.items) drawItem(it);
