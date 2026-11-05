@@ -197,6 +197,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.arrow{background:var(--t-kon);border-radius:3px}
 .cap.back{background:var(--t-sora);border-radius:3px}
 .cap.fork{background:var(--t-mist);border-radius:3px}
+.cap.mesh{background:var(--t-chest);border-radius:3px}
+.cap.faller{background:var(--t-kurumi);border-radius:3px}
 .cap.runner{background:var(--t-life);border-radius:3px}
 .cap.uzu{background:var(--board);color:var(--t-ai);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.net{background:var(--t-chest)}
@@ -343,6 +345,8 @@ img{max-width:100%}
                 <li data-from="233"><span class="cap uzu">渦</span>{渦|うず}。タイルではなく、{割|わ}らなくてもクリアできる。うすい{丸|まる}の{中|なか}を{通|とお}ったボールを{引|ひ}きよせて、{向|む}きを{曲|ま}げる。まん{中|なか}に{近|ちか}いほど{強|つよ}く{曲|ま}がる</li>
                 <li data-from="301"><span class="cap kaze">風</span>かざぐるま。タイルではなく、{割|わ}らなくてもクリアできる。くるくる{回|まわ}っていて、{羽根|はね}に{当|あ}たったボールは、そのときの{羽根|はね}の{向|む}きではね{返|かえ}る。「{止|と}」のあいだは{止|と}まる</li>
                 <li data-from="333"><span class="cap fork">分</span>{分|わ}かれるタイル。2{回|かい}で{割|わ}れる。ボールが{当|あ}たるたびに、そのボールが2つに{分|わ}かれる（ボールは8つまで）。{光|ひかり}・{爆弾|ばくだん}・{火|ひ}で{割|わ}れたときは{分|わ}かれない</li>
+                <li data-from="341"><span class="cap mesh">網</span>{網|あみ}のタイル。1{回|かい}で{割|わ}れる。{割|わ}ると、8{秒|びょう}のあいだ{下|した}に{網|あみ}が{張|は}られて、ボールが{落|お}ちない（アイテムの「{網|あみ}」と{同|おな}じ）</li>
+                <li data-from="341"><span class="cap faller">落</span>{落|お}ちるタイル。2{回|かい}で{割|わ}れる。すぐ{下|した}が{空|あ}くと、{少|すこ}しゆれてから{下|した}へ{落|お}ちてくる（ステージのいちばん{下|した}の{行|ぎょう}まで）。「{止|と}」のあいだは{落|お}ちない</li>
               </ul>
             </div>
             <div class="section group">
@@ -671,11 +675,13 @@ const MIRROR_T = 10;
 const HEAVY_T = 8, HEAVY_K = 0.0013;
 // 分かれるタイル：当たったボールと、分かれてできたボールを、はね返った向きから左右へ FORK_TURN（rad）ずつ開く
 const FORK_TURN = 0.3;
+// 落ちるタイル：すぐ下のマスが空いてから、FALL_WAIT 秒ゆれて1マス落ちる（まだ空いていれば、そのまま続けて落ちる）
+const FALL_WAIT = 0.35;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
@@ -707,6 +713,9 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // [ / ]: 強いやじるし（3回。左 / 右向きで始まって、3秒ごとに向きが入れかわる）
 // N: 強い逃げる（1回。6回まで逃げる。置き方は n と同じ）
 // y: 分かれる（2回。ボールが当たるたびに、そのボールが2つに分かれる。ボールは MAX_BALLS まで。光・爆風・火で割れたときは分かれない）
+// a: 網（1回。割ると NET_T 秒のあいだ、下に網が張られる。アイテム「網」と同じ）
+// d: 落ちる（2回。すぐ下のマスが空くと、下へ落ちてくる。面のいちばん下の行まで。動く行・動く列には置かない）
+//    投げこむ虫などがタイルを置かないマス（動く行・ワープ・渦・かざぐるまのまわり・線にかかるマス）へも落ちない
 // x: かざぐるま（タイルではなく、クリアの数に入らない。回る十字の羽根にボールが当たると、そのときの羽根の向きではね返る。
 //    真上と真下のマスは空ける。動く行・動く列には置かず、すぐ上とすぐ下の行も、動く行や、動く列の動く範囲にしない（動くタイルが羽根にかからないように）。
 //    左半分の列は時計回り、右半分は反時計回り）
@@ -1142,6 +1151,16 @@ const STAGES4 = [
   {rows: ['3e3333e3','33.yy.33','2......2','w.2yy2.w','2......2','2y2..2y2','33333333','22222222'], bug: 60, paint: true},
   {rows: ['B333333B','3]3yy3[3','3333....','2......2','2X.yy.X2','2......2','....3333','2N2..2N2','33333333'],
    move: {2: 60, 6: -65}, bug: 60, thrower: true},
+  // 341〜348：網のタイル（いいもの）と落ちるタイル（じゃまなもの）。落ちるタイルは、下のタイルを割ると落ちてくるように置く
+  {rows: ['33333333','3d3dd3d3','22222222','22222222','2a2..2a2','11111111','11111111']},
+  {rows: ['33333333','3>3dd3<3','22222222','2a2..2a2','22.22.22','3<2222>3','22222222','11111111']},
+  {rows: ['3d3333d3','33333333','2......2','2.x..x.2','2......2','2a2dd2a2','33333333','22222222']},
+  {rows: ['33333333','3dNddNd3','22222222','2.2aa2.2','22222222','N.2..2.N','22222222'], bug: 60},
+  {rows: ['33333333','3d3dd3d3','22222222','2a2222a2','22222222','3333....','22222222','11111111'], move: {5: 60}},
+  {rows: ['3L3333L3','3d3kk3d3','22222222','2k2..2k2','22.aa.22','33333333','22222222','11111111'], thrower: true},
+  {rows: ['3e3333e3','3d3dd3d3','22222222','2......2','w.X..X.w','2......2','2a2aa2a2','33333333'], carry: true},
+  {rows: ['B333333B','3d3dd3d3','33333333','2......2','2.X..X.2','2......2','2a2NN2a2','[3[3....','22222222'],
+   loop: {7: -65}, bug: 60, thrower: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1222,6 +1241,7 @@ const INTROS = {
   325: {title: '{新|あたら}しいアイテム',
         text: 'いいアイテムの「{星|ほし}」と、とらないほうがいいアイテムの「{重|おも}」が{落|お}ちてくるようになります。'},
   333: {title: '{分|わ}かれるタイル'},
+  341: {title: '{網|あみ}のタイルと{落|お}ちるタイル'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへつなぐ。空ならなにも出さない
 const STORY = {
@@ -1315,7 +1335,7 @@ const solid = b => b.iron || b.lock;
 const guards = (b, ox, oy, by) => b.shield && ox >= oy && by > b.y + b.h / 2;
 // 仕掛けのない、ふつうのタイルか（かためる虫はこれだけをかたくする）
 const plain = b => b.hp > 0 && !b.gold && !b.bomb && !b.iron && !b.rust && !b.regen && !b.sprout && !b.wither &&
-  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork;
+  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
 
 const S = {
@@ -1392,6 +1412,7 @@ function sfx(name, arg){
     case 'mirror': tone(880, 0.08, 'triangle', 0.06, 1320); break;
     case 'star':   [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.12, 'sine', 0.05, null, i * 0.06)); break;
     case 'fork':   tone(660, 0.07, 'triangle', 0.06, 990); tone(990, 0.07, 'triangle', 0.04, 1320, 0.05); break;
+    case 'fall':   tone(180, 0.09, 'triangle', 0.06, 110); break;
     case 'bigbomb':
       tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
       break;
@@ -1480,7 +1501,7 @@ function makeBrick(r, c, hp, bomb){
     iron: false, rust: false, regen: false, regenT: 0, item: null,
     sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false,
     key: false, lock: false, blink: false, shown: true,
-    shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false, egg: false, eggT: 0, arrow: 0, back: false, fork: false,
+    shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false, egg: false, eggT: 0, arrow: 0, back: false, fork: false, mesh: false, faller: false, fallT: FALL_WAIT,
     runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0
   };
 }
@@ -1525,6 +1546,8 @@ function buildStage(n){
       b.arrow = ch === '<' || ch === '[' ? -1 : ch === '>' || ch === ']' ? 1 : 0;
       b.back = ch === 'u';
       b.fork = ch === 'y';
+      b.mesh = ch === 'a';
+      b.faller = ch === 'd';
       b.runner = ch === 'n' || ch === 'N';
       b.flee = !b.runner ? 0 : b.big ? FLEE_BIG_N : FLEE_N;
       list.push(b);
@@ -1545,7 +1568,7 @@ function buildStage(n){
   // 金のタイル：3回に1回くらい、どこか1枚
   if (Math.random() < 0.35) {
     const cands = list.filter(b => b.max <= 2 && !b.bomb && !b.iron && !b.regen && !b.sprout && !b.chest && !b.key && !b.lock && !b.blink &&
-      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork);
+      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller);
     if (cands.length) cands[Math.floor(Math.random() * cands.length)].gold = true;
   }
   S.rowMove = {};
@@ -1609,6 +1632,22 @@ function fleeTiles(dt){
     br.flee--;
     br.fleeT = FLEE_COOL;
     sfx('flee');
+  }
+}
+// 落ちるタイル：すぐ下のマスが空いたら、FALL_WAIT 秒ゆれてから1マス落ちる。下の行から順に見るので、続けて落ちていく
+// 当たり判定はすぐ移し、絵だけ元の場所から動いて見せる（逃げるタイルと同じ）。ボールが重なっているマスへは、離れるまで落ちない
+function fallTiles(dt){
+  const list = S.bricks.filter(b => b.faller && b.hp > 0 && !b.carried).sort((a, b) => b.row - a.row);
+  for (const br of list) {
+    if (br.slideT > 0) continue;
+    const r = br.row + 1, c = br.col;
+    if (!freeCell(r, c) || ballOverlaps(SIDE + c * CELL, cellY(r), BRICK_W, BRICK_H)) { br.fallT = FALL_WAIT; continue; }
+    if (br.fallT > 0) { br.fallT -= dt; continue; }
+    const oy = br.y;
+    br.row = r;
+    br.baseY = br.y = cellY(r);
+    br.sx = 0; br.sy = oy - br.y; br.slideT = FLEE_SLIDE;
+    sfx('fall');
   }
 }
 function moveRows(dt){
@@ -2973,7 +3012,7 @@ function tileColor(br){
   return br.gold ? GOLD.bottom : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C['t-bomb']
     : br.sprout ? C['t-sprout'] : br.wither ? C['t-nibi'] : br.zap ? C['t-zap'] : br.chest ? C['t-chest']
     : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.fire ? C['t-hi'] : br.twin ? C[br.pair ? 't-moegi' : 't-botan'] : br.egg ? C['t-egg']
-    : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.max === 3 ? C['t-hard'] : C[br.color];
+    : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.mesh ? C['t-chest'] : br.faller ? C['t-kurumi'] : br.max === 3 ? C['t-hard'] : C[br.color];
 }
 function shatter(br){
   if (reduceMotion.matches) return;
@@ -3061,6 +3100,11 @@ function damage(br, full, blast){
   if (br.bomb) explode(br);
   if (br.fire) lightFire(br);
   if (br.back) liftField(br);
+  if (br.mesh) {
+    S.netT = Math.max(S.netT, NET_T);
+    S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 20, text: 'あみ', t: 0});
+    sfx('net');
+  }
   if (mate) { sfx('twins'); damage(mate, true); }
   // 連鎖の途中で割り切ることもあるので、クリアは1回だけ。虫KINGとたたかう面は、やっつけるまでクリアにしない
   if (S.mode === 'play' && !S.bricks.some(needBreak) && !kingAlive()) stageClear();
@@ -3564,7 +3608,7 @@ function update(dt){
     if (S.mode === 'play') updateItems(dt);
     if (S.mode === 'play') updateLasers(dt);
     if (S.mode === 'play') updateMists(dt);
-    if (S.mode === 'play' && S.stopT <= 0) { regrow(dt); growSprouts(dt); hatchEggs(dt); updateChicks(dt); }
+    if (S.mode === 'play' && S.stopT <= 0) { regrow(dt); growSprouts(dt); hatchEggs(dt); updateChicks(dt); fallTiles(dt); }
     if (S.mode === 'play') updateBolts(dt);
     if (S.mode === 'play') helpers(dt);
     if (S.mode === 'play') { updateGlobs(dt); respawnKeys(); }
@@ -3766,7 +3810,9 @@ function drawKazes(){
 function drawTile(br){
   // 逃げたばかりのタイルは、元の場所から動いて見せる
   const k = br.slideT > 0 ? br.slideT / FLEE_SLIDE : 0;
-  const x = br.x + br.sx * k, y = br.y + br.sy * k, w = br.w, h = br.h;
+  // 落ちるタイルは、落ちる前の少しのあいだゆれる
+  const shake = br.faller && br.fallT > 0 && br.fallT < FALL_WAIT && !reduceMotion.matches ? Math.sin(S.time * 45) * 1.3 : 0;
+  const x = br.x + br.sx * k + shake, y = br.y + br.sy * k, w = br.w, h = br.h;
   if (br.blink && !br.shown) { drawHidden(br); return; }
   rr(x, y, w, h, 3);
   ctx.fillStyle = br.gold ? goldFill(y, h) : tileColor(br);
@@ -3903,6 +3949,31 @@ function drawTile(br){
     for (let i = 0; i < br.flee; i++) {
       ctx.beginPath();
       ctx.arc(x + 5 + Math.floor(i / 3) * 4.5, y + 6 + (i % 3) * 5, 1.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (br.mesh) {
+    tileGlyph(br, '網', C['on-tile']);
+    // 網が張られることが分かるよう、下のふちにジグザグのひも
+    ctx.strokeStyle = C['on-tile'];
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    for (let i = 0, ex = x + 5; ex <= x + w - 5; ex += 4, i++) {
+      const ey = y + h - (i % 2 ? 3 : 6);
+      if (!i) ctx.moveTo(ex, ey); else ctx.lineTo(ex, ey);
+    }
+    ctx.stroke();
+  } else if (br.faller) {
+    // 動いているあいだも字がついていくよう、ここで書く。両はしに下向きの小さな三角（戻しのタイルの反対）
+    ctx.fillStyle = C['on-tile'];
+    ctx.font = '700 12px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('落', x + w / 2, y + h / 2 + 1);
+    for (const ex of [x + 6, x + w - 6]) {
+      const cy = y + h / 2 + 1;
+      ctx.beginPath();
+      ctx.moveTo(ex, cy + 4); ctx.lineTo(ex + 3.5, cy - 2.5); ctx.lineTo(ex - 3.5, cy - 2.5);
+      ctx.closePath();
       ctx.fill();
     }
   } else if (br.fork) {
