@@ -352,6 +352,7 @@ img{max-width:100%}
                 <li data-from="65"><span class="cap blink strong"></span>{強|つよ}いまばたきタイル。2{回|かい}で{割|わ}れる。1.5{秒|びょう}{出|で}て、1{秒|びょう}{消|き}える</li>
                 <li data-from="249"><span class="cap arrow strong">⇄</span>{強|つよ}いやじるし。3{回|かい}で{割|わ}れる。3{秒|びょう}ごとに、やじるしの{向|む}きが{左右|さゆう}{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、やじるしが{点滅|てんめつ}する。「{止|と}」のあいだは{変|か}わらない</li>
                 <li data-from="249"><span class="cap runner strong">逃</span>{強|つよ}い{逃|に}げるタイル。1{回|かい}で{割|わ}れる。6{回|かい}まで{逃|に}げる</li>
+                <li data-from="309"><span class="cap kaze strong">風</span>{強|つよ}いかざぐるま。{速|はや}く{回|まわ}り、3{秒|びょう}ごとに{回|まわ}る{向|む}きが{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、{羽根|はね}が{点滅|てんめつ}する。「{止|と}」のあいだは{変|か}わらない</li>
               </ul>
             </div>
             <div class="section group">
@@ -650,6 +651,8 @@ const NET_T = 8;
 // かざぐるま：十字の羽根の、まん中から先までの長さと太さの半分（px）、回る速さ（rad/秒）、同じボールで音を鳴らす間（秒）
 // 羽根が縦になると、先が上下の行に少しかかる（中心から KAZE_L + KAZE_HW = 22.5 で、上下のタイルのふちまでは 15）。だから真上と真下のマスは空ける
 const KAZE_L = 20, KAZE_HW = 2.5, KAZE_W = 2.4, KAZE_SOUND = 0.08;
+// 強いかざぐるま：KAZE_FAST（rad/秒）で回り、KAZE_FLIP 秒ごとに回る向きが入れかわる。かわる KAZE_SOON 秒前から、羽根が点滅する
+const KAZE_FAST = 4, KAZE_FLIP = 3, KAZE_SOON = 0.6;
 // 鏡：MIRROR_T 秒のあいだ、左右反対の位置にもう1枚の板が出る
 const MIRROR_T = 10;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
@@ -689,6 +692,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // N: 強い逃げる（1回。6回まで逃げる。置き方は n と同じ）
 // x: かざぐるま（タイルではなく、クリアの数に入らない。回る十字の羽根にボールが当たると、そのときの羽根の向きではね返る。
 //    真上と真下のマスは空ける。動く行・動く列には置かない。左半分の列は時計回り、右半分は反時計回り）
+// X: 強いかざぐるま（速く回り、3秒ごとに回る向きが入れかわる。置き方は x と同じ）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
@@ -1079,6 +1083,16 @@ const STAGES4 = [
   {rows: ['3L3333L3','33.kk.33','2......2','2x.##.x2','2......2','2k2..2k2','33333333','22222222'], thrower: true},
   {rows: ['B333333B','3]3..3[3','2......2','2.x..x.2','2......2','[3[3....','2.N22N.2','33333333','22222222'],
    loop: {5: -65}, bug: 60, paint: true},
+  // 309〜316：強いかざぐるま
+  {rows: ['33333333','32222223','22....22','2.X..X.2','22....22','33333333','22222222','11111111']},
+  {rows: ['33333333','2......2','2x....x2','2......2','22X22X22','2......2','33333333','22222222']},
+  {rows: ['33333333','3]3..3[3','2......2','2X.33.X2','2......2','3[2222]3','22222222','11111111']},
+  {rows: ['33333333','33.NN.33','2......2','2.X22X.2','2......2','2N2222N2','33333333','22222222'], bug: 60},
+  {rows: ['33333333','3o3..3O3','2......2','2.X..X.2','2......2','<3<3....','2O2..2o2','33333333','22222222'], loop: {5: 65}},
+  {rows: ['3J3333J3','3f.kk.f3','2......2','2.X..X.2','2......2','2k2ee2k2','33333333','22222222'], carry: true},
+  {rows: ['B333333B','3333....','2......2','w.X..X.w','2......2','....3333','2u2..2u2','33333333','22222222'], move: {1: 60, 5: -60}},
+  {rows: ['B333333B','3.3[]3.3','2x.NN.x2','2.2222.2','[3[3....','22.22.22','2.X..X.2','22.22.22','33333333'],
+   loop: {4: -65}, bug: 60, thrower: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1150,6 +1164,7 @@ const INTROS = {
         text: '3{周目|しゅうめ}の{最後|さいご}のステージです。{虫|むし}QUEENにボールを' + QUEEN_HP + '{回|かい}{当|あ}てて、やっつけましょう。{下|した}の{盾|たて}があるうちは、{下|した}からのボールは{効|き}きません。{横|よこ}や{上|うえ}から{当|あ}てるか、{盾|たて}を{割|わ}りましょう。'},
   301: {title: 'かざぐるまと{新|あたら}しいアイテム',
         text: 'ここからは4{周目|しゅうめ}です。{新|あたら}しい{形|かたち}のステージで、タイルは3{周目|しゅうめ}と{同|おな}じように、{少|すこ}しずつ{下|お}りてきます。'},
+  309: {title: '{強|つよ}いかざぐるま'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへつなぐ。空ならなにも出さない
 const STORY = {
@@ -1420,9 +1435,10 @@ function buildStage(n){
         uzus.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2});
         return;
       }
-      if (ch === 'x') {
+      if (ch === 'x' || ch === 'X') {
         // 左半分は時計回り、右半分は反時計回り（左右対称の面で、回り方もそろって見える）
-        kazes.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2, a: 0, dir: c < COLS / 2 ? 1 : -1});
+        kazes.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2, a: 0, dir: c < COLS / 2 ? 1 : -1,
+          big: ch === 'X'});
         return;
       }
       if (ch === 'o' || ch === 'O') {
@@ -1612,9 +1628,13 @@ function moveCols(dt){
     for (const b of S.bricks) if (inCol(b, c)) b.y = b.baseY + m.off;
   }
 }
+// かざぐるまの今の回る速さ（k.a が増える向きが正）。強いかざぐるまは、まばたきと同じ時計で向きが入れかわる（「止」のあいだは時計も止まる）
+const kazeSpin = k => !k.big ? k.dir * KAZE_W : Math.floor(S.blinkT / KAZE_FLIP) % 2 ? -k.dir * KAZE_FAST : k.dir * KAZE_FAST;
+// 強いかざぐるまの向きが、もうすぐ入れかわるか
+const kazeSoon = k => k.big && S.blinkT % KAZE_FLIP > KAZE_FLIP - KAZE_SOON;
 // かざぐるまを回す（十字なので、4分の1回りで同じ形に戻る）
 function turnKazes(dt){
-  for (const k of S.kazes) k.a = (k.a + k.dir * KAZE_W * dt) % (Math.PI / 2);
+  for (const k of S.kazes) k.a = (k.a + kazeSpin(k) * dt) % (Math.PI / 2);
 }
 function bounceBug(g){
   // 跳ね返るたびに向きを少しずらす。真横・真縦には寄せない
@@ -3300,7 +3320,7 @@ function hitKazes(b, h){
     const rx = b.x - k.x, ry = b.y - k.y;
     if (rx * rx + ry * ry > (KAZE_L + reach) * (KAZE_L + reach)) continue;
     // 回る速さ（k.a が増える向きを正にする。画面は下向きが y なので、正は時計回り）。「止」のあいだは羽根も動かない
-    const w = S.stopT > 0 ? 0 : k.dir * KAZE_W;
+    const w = S.stopT > 0 ? 0 : kazeSpin(k);
     let best = null;
     for (const a of [k.a, k.a + Math.PI / 2]) {
       const ux = Math.cos(a), uy = Math.sin(a);
@@ -3601,6 +3621,7 @@ function drawWarps(){
   }
 }
 // かざぐるま：羽根の届く広さをうすい丸で見せて、色ちがいの羽根4枚と、まん中の軸を描く
+// 強いかざぐるまは、強くなったタイルと同じく太いわくで囲み、回る向きがかわる少し前から羽根を点滅させる
 function drawKazes(){
   const cols = ['t-sango', 't-yamabuki', 't-asagi', 't-wakakusa'];
   for (const k of S.kazes) {
@@ -3610,10 +3631,17 @@ function drawKazes(){
     ctx.globalAlpha = 0.08;
     ctx.fillStyle = C.ink;
     ctx.fill();
+    if (k.big) {
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = C.ink;
+      ctx.stroke();
+    }
     ctx.restore();
     ctx.save();
     ctx.translate(k.x, k.y);
     ctx.rotate(k.a);
+    if (kazeSoon(k)) ctx.globalAlpha = reduceMotion.matches ? 0.45 : 0.25 + 0.75 * Math.abs(Math.cos(S.time * 14));
     for (let i = 0; i < 4; i++) {
       rr(2, -KAZE_HW, KAZE_L - 2 + KAZE_HW, KAZE_HW * 2, KAZE_HW);
       ctx.fillStyle = C[cols[i]];
