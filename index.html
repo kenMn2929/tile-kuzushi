@@ -200,6 +200,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.uzu{background:var(--board);color:var(--t-ai);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.net{background:var(--t-chest)}
 .cap.mirror{background:var(--t-gin)}
+.cap.star{background:var(--t-zap);color:var(--t-yamabuki)}
 .cap.kaze{background:var(--board);color:var(--t-sango);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.burst{background:var(--t-bomb)}
 /* 盾のタイルは、盤面と同じく下がわに濃い板を付ける */
@@ -423,6 +424,12 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">ステージ325から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="325"><span class="cap star">星</span>{取|と}ると、{盤面|ばんめん}のタイルが{全部|ぜんぶ}1{段|だん}やわらかくなる（1{回|かい}で{割|わ}れるタイルはそのまま）。{鉄|てつ}と{閉|と}じた{錠|じょう}には{効|き}かない。めったに{出|で}ない</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">たまに{出|で}るアイテム</p>
               <ul class="items one">
                 <li data-from="1"><span class="cap fuku">福</span>8{秒|びょう}のあいだ、{点|てん}が2{倍|ばい}。{鉄|てつ}でなければ、タイルをつきぬけて{割|わ}る</li>
@@ -434,6 +441,7 @@ img{max-width:100%}
                 <li data-from="1"><span class="cap bad">縮</span>10{秒|びょう}のあいだ、{板|いた}が{短|みじか}くなる</li>
                 <li data-from="1"><span class="cap bad">速</span>10{秒|びょう}のあいだ、ボールが{速|はや}くなる</li>
                 <li data-from="1"><span class="cap bad">厄</span>のこりのボール -1（のこり1のときはへらない）</li>
+                <li data-from="325"><span class="cap bad">重</span>8{秒|びょう}のあいだ、ボールが{下|した}へ{引|ひ}っぱられて、{曲|ま}がって{落|お}ちてくる。{上|うえ}のタイルに{届|とど}きにくくなる</li>
               </ul>
             </div>
             <div class="section group">
@@ -655,6 +663,10 @@ const KAZE_L = 20, KAZE_HW = 2.5, KAZE_W = 2.4, KAZE_SOUND = 0.08;
 const KAZE_FAST = 4, KAZE_FLIP = 3, KAZE_SOON = 0.6;
 // 鏡：MIRROR_T 秒のあいだ、左右反対の位置にもう1枚の板が出る
 const MIRROR_T = 10;
+// 重：HEAVY_T 秒のあいだ、ボールを下へ引っぱる。速さは変えず、向きだけ下へ曲げる
+// 引く強さは「速さの2乗 × HEAVY_K」にして、ボールの速さによらず同じ山なりの形にする
+// 真上から30度で打つと約530px、45度で約270px、板の端（65度）で約75px のぼったところで真横を向き、落ちてくる
+const HEAVY_T = 8, HEAVY_K = 0.0013;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
@@ -1105,6 +1117,16 @@ const STAGES4 = [
   {rows: ['3e3333e3','33.NN.33','2......2','w.X..X.w','2......2','2N2..2N2','33333333','22222222'], carry: true},
   {rows: ['B333333B','3]3..3[3','3333....','2......2','2X.NN.X2','2......2','....3333','2u2..2u2','33333333'],
    move: {2: 60, 6: -65}, bug: 60, thrower: true},
+  // 325〜332：アイテム「星」（いいもの）と「重」（とらないほうがいいもの）。星が効くよう、3回のタイルを多めにする
+  {rows: ['33333333','33333333','3......3','3.x..x.3','3......3','33333333','22222222','22222222']},
+  {rows: ['3R3333R3','33333333','2......2','2X.tt.X2','2......2','3r3333r3','22222222','11111111']},
+  {rows: ['B333333B','3[3333]3','2......2','2.x**x.2','2......2','3]3..3[3','33333333','22222222']},
+  {rows: ['33333333','3g3333g3','2......2','2.X..X.2','2......2','2g2gg2g2','33333333','22222222'], bug: 60},
+  {rows: ['33333333','33333333','3]3..3[3','2......2','2x.33.x2','2......2','<3<3....','22222222','11111111'], loop: {6: 70}},
+  {rows: ['3L3333L3','3k3ff3k3','2......2','w.X..X.w','2......2','2f2..2f2','33333333','22222222'], thrower: true},
+  {rows: ['33333333','3p.33.P3','2......2','2X.33.X2','2......2','3P.33.p3','33333333','11111111'], carry: true},
+  {rows: ['3J3333J3','2k.NN.k2','2......2','2.X..X.2','2......2','[3[3....','2.2222.2','2x.ff.x2','2.2222.2'],
+   loop: {5: -65}, bug: 60, thrower: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1126,10 +1148,13 @@ const ITEMS = {
   burst:  {glyph: '破', pop: 'まわりも われる +' + BURST_N, color: 't-bomb', weight: 9, kind: 'good', from: 209},
   net:    {glyph: '網', pop: 'あみ',          color: 't-chest',    weight: 8,  kind: 'good', from: 233},
   mirror: {glyph: '鏡', pop: 'かがみ',        color: 't-gin',      weight: 8,  kind: 'good', from: 301},
+  // 星は効きが大きいので、「命」よりも出にくくする。ink は字の色
+  star:   {glyph: '星', pop: 'ほし',          color: 't-zap',      weight: 3,  kind: 'good', from: 325, ink: 't-yamabuki'},
   fuku:   {glyph: '福', pop: '',              color: 'gold',       weight: 2,  kind: 'rare'},
   shrink: {glyph: '縮', pop: 'みじかい いた', color: 'bad',        weight: 5,  kind: 'bad'},
   fast:   {glyph: '速', pop: 'はやい ボール', color: 'bad',        weight: 5,  kind: 'bad'},
   yaku:   {glyph: '厄', pop: 'ボール -1',     color: 'bad',        weight: 3,  kind: 'bad'},
+  heavy:  {glyph: '重', pop: 'おもい ボール', color: 'bad',        weight: 4,  kind: 'bad', from: 325},
 };
 
 // 始める前に説明をはさむ面。1面は最初からあるもの、その先は8面ごとに増えたものだけ（中身は説明ページの data-from）
@@ -1179,6 +1204,8 @@ const INTROS = {
   309: {title: '{強|つよ}いかざぐるま'},
   317: {eyebrow: 'ステージ 317 から', title: '{組|く}み{合|あ}わせ',
         text: 'ステージ324までは、{新|あたら}しいものは{出|で}てきません。かざぐるまと、これまでのタイルや{虫|むし}を{組|く}み{合|あ}わせたステージです。'},
+  325: {title: '{新|あたら}しいアイテム',
+        text: 'いいアイテムの「{星|ほし}」と、とらないほうがいいアイテムの「{重|おも}」が{落|お}ちてくるようになります。'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへつなぐ。空ならなにも出さない
 const STORY = {
@@ -1286,7 +1313,7 @@ const S = {
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: 0,
-  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, mirrorT: 0, bolts: [],
+  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, mirrorT: 0, heavyT: 0, bolts: [],
   paddle: {x: W / 2, w: 88}
 };
 let onPrimary = null, onSecondary = null;
@@ -1347,6 +1374,7 @@ function sfx(name, arg){
     case 'net':    tone(300, 0.1, 'triangle', 0.07, 520); break;
     case 'kaze':   tone(540, 0.05, 'square', 0.035, 380); break;
     case 'mirror': tone(880, 0.08, 'triangle', 0.06, 1320); break;
+    case 'star':   [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.12, 'sine', 0.05, null, i * 0.06)); break;
     case 'bigbomb':
       tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
       break;
@@ -2083,7 +2111,7 @@ function clearEffects(){
   S.items = []; S.lasers = []; S.mists = []; S.bolts = [];
   S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = 0;
   S.laserT = 0; S.laserCool = 0; S.catchT = 0; S.stopT = 0; S.magnetT = 0; S.shockT = 0;
-  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.mirrorT = 0; S.fires = [];
+  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.mirrorT = 0; S.heavyT = 0; S.fires = [];
   S.paddle.w = basePaddle(S.stage);
   S.paddle.x = clamp(S.paddle.x, S.paddle.w / 2, W - S.paddle.w / 2);
 }
@@ -2651,6 +2679,8 @@ function applyItem(type){
     case 'burst':  S.burst = Math.min(S.burst + BURST_N, BURST_MAX); break;
     case 'net':    S.netT = NET_T; break;
     case 'mirror': S.mirrorT = MIRROR_T; break;
+    case 'heavy':  S.heavyT = HEAVY_T; break;
+    case 'star':   starAll(); break;
     case 'spray': {
       // パドルにいちばん近い列を中心に、左右1列ずつ（端でも3列にかかるようにする）
       const c = clamp(Math.round((S.paddle.x - SIDE - BRICK_W / 2) / CELL), 1, COLS - 2);
@@ -3296,6 +3326,7 @@ function physics(dt){
       }
 
       pullBall(b, h);
+      if (S.heavyT > 0) dropBall(b, h);
       hitKazes(b, h);
       if (hitBricks(b) && S.mode !== 'play') return;
       hitBugs(b);
@@ -3358,6 +3389,30 @@ function hitKazes(b, h){
     normalizeBall(b);
     if (!(b.kazeT > 0)) { sfx('kaze'); b.kazeT = KAZE_SOUND; }
   }
+}
+// 重：ボールの向きを下へ曲げる（速さは変えない）
+// ふだんの normalizeBall は真横に近い向きを許さないが、ここでは許す（上へ飛んだボールが、山なりに落ちてこられるように）
+function dropBall(b, h){
+  b.vy += HEAVY_K * S.speed * S.speed * h;
+  const k = S.speed / (Math.hypot(b.vx, b.vy) || 1);
+  b.vx *= k; b.vy *= k;
+}
+// 星：盤面のタイルを全部1段やわらかくする（1回で割れるタイル・鉄・閉じた錠はそのまま）
+// 再生タイルは、ボールを当てたときと同じく、4秒たつと戻りはじめる
+function starAll(){
+  let n = 0;
+  for (const br of S.bricks) {
+    if (br.hp <= 1 || br.iron || br.lock) continue;
+    br.hp--;
+    if (br.regen) br.regenT = REGEN_T;
+    addCrack(br);
+    br.flash = 0.3;
+    n++;
+  }
+  if (n) addScore(5 * n);
+  banner('ほし', n ? 'タイルが やわらかく なった' : 'もう やわらかい タイルしか ない', C['t-yamabuki']);
+  sfx('star');
+  ui();
 }
 // 渦の引く強さ（まん中からの距離 d で決まる）
 const uzuPull = d => d < UZU_R ? UZU_PULL * (1 - d / UZU_R) : 0;
@@ -3449,7 +3504,10 @@ function update(dt){
   S.time += dt;
   const p = S.paddle;
   if (S.mode === 'play') {
-    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT','netT','mirrorT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
+    const heavy = S.heavyT > 0;
+    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT','netT','mirrorT','heavyT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
+    // 重が切れたら、横に寝たボールの向きを、ふだんの決まり（真横に近づけすぎない）に戻す
+    if (heavy && S.heavyT <= 0) for (const b of S.balls) if (!(b.hold > 0)) normalizeBall(b);
   }
   // ボールの大きさも、なめらかに変える
   S.ballR += (BALL_R * (S.bigT > 0 ? BIG_K : 1) - S.ballR) * Math.min(1, dt * 10);
@@ -4000,7 +4058,7 @@ function drawItem(it){
     ctx.fillStyle = 'rgba(255,255,255,.3)';
     ctx.fill();
   }
-  ctx.fillStyle = d.color === 'gold' ? GOLD.ink : d.color === 't-yamabuki' ? C['on-yamabuki'] : C['on-tile'];
+  ctx.fillStyle = d.color === 'gold' ? GOLD.ink : d.ink ? C[d.ink] : d.color === 't-yamabuki' ? C['on-yamabuki'] : C['on-tile'];
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -4198,6 +4256,12 @@ function aimPath(b){
       if (d >= UZU_R || d < 1) continue;
       const k = uzuPull(d) / (S.speed * S.speed) * 4;
       vx += dx / d * k; vy += dy / d * k;
+      const n = Math.hypot(vx, vy); vx /= n; vy /= n;
+      bend = true;
+    }
+    // 重で下へ曲がるぶん（4px 進むごとに、向きが 4 × HEAVY_K だけ下へ寄る）
+    if (S.heavyT > 0) {
+      vy += HEAVY_K * 4;
       const n = Math.hypot(vx, vy); vx /= n; vy /= n;
       bend = true;
     }
@@ -4405,6 +4469,7 @@ function drawHud(){
   if (S.burst > 0) chips.push(['まわりも われる ×' + S.burst, C['t-bomb']]);
   if (S.netT > 0) chips.push(['あみ ' + Math.ceil(S.netT) + 'びょう', C['t-chest']]);
   if (S.mirrorT > 0) chips.push(['かがみ ' + Math.ceil(S.mirrorT) + 'びょう', C['t-gin']]);
+  if (S.heavyT > 0) chips.push(['おもい ボール ' + Math.ceil(S.heavyT) + 'びょう', C.warn]);
   if (!chips.length) return;
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textBaseline = 'middle';
@@ -4614,6 +4679,17 @@ function draw(){
         ctx.arc(b.x, b.y, S.ballR + 3.5, 0, Math.PI * 2);
         ctx.lineWidth = 2;
         ctx.strokeStyle = S.feverT > 0 ? GOLD.bottom : C['t-ai'];
+        ctx.stroke();
+      }
+      if (S.heavyT > 0) {
+        // 重：ボールの下に、下向きの山形を付ける
+        const y = b.y + S.ballR + 3;
+        ctx.beginPath();
+        ctx.moveTo(b.x - 4, y); ctx.lineTo(b.x, y + 4); ctx.lineTo(b.x + 4, y);
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = C.warn;
         ctx.stroke();
       }
       ctx.beginPath();
