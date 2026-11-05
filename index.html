@@ -46,6 +46,7 @@
   --t-hi:#6b2a1a;
   --t-sora:#3b8ec4;
   --t-egg:#c2a46a;
+  --t-gin:#76739a;
   --bug:#2f5d48;
   --bad:#4b3a4f;
   --warn:#c4472f;
@@ -64,7 +65,7 @@
     --t-fuji:#9d86e0; --t-kurumi:#cf8b4d; --t-nibi:#8fa4b3; --bug:#72bf98;
     --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
     --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
-    --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455;
+    --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
     --bad:#7a5f80; --warn:#ef7b5f;
     color-scheme:dark;
   }
@@ -77,7 +78,7 @@
   --t-fuji:#9d86e0; --t-kurumi:#cf8b4d; --t-nibi:#8fa4b3; --bug:#72bf98;
   --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
   --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
-  --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455;
+  --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
   --bad:#7a5f80; --warn:#ef7b5f;
   color-scheme:dark;
 }
@@ -198,6 +199,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.runner{background:var(--t-life);border-radius:3px}
 .cap.uzu{background:var(--board);color:var(--t-ai);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.net{background:var(--t-chest)}
+.cap.mirror{background:var(--t-gin)}
+.cap.kaze{background:var(--board);color:var(--t-sango);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.burst{background:var(--t-bomb)}
 /* 盾のタイルは、盤面と同じく下がわに濃い板を付ける */
 .cap.shield{background:var(--t-sango);border-radius:3px;box-shadow:inset 0 -4px 0 var(--t-hard)}
@@ -293,7 +296,7 @@ img{max-width:100%}
           <div class="section" id="picker" hidden>
             <p class="sub">ステージ（{数字|すうじ}が{大|おお}きいほど{難|むずか}しい）</p>
             <div class="stages" id="stages"></div>
-            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGや{虫|むし}QUEENとたたかうステージです。★ はクリアしたステージです。101から200は2{周目|しゅうめ}です。1から100の{形|かたち}に{仕掛|しか}けが{加|くわ}わり、タイルが1{段|だん}かたくなって、{少|すこ}しずつ{下|お}りてきます。ボールはさいしょからいちばん{速|はや}く、{板|いた}はいちばん{短|みじか}くなります。201からは3{周目|しゅうめ}です。{新|あたら}しい{形|かたち}のステージで、タイルは2{周目|しゅうめ}と{同|おな}じように{下|お}りてきます。</p>
+            <p class="note">↔ は{横|よこ}に、↕ は{縦|たて}にタイルが{動|うご}き、↻ はタイルがぐるぐる{回|まわ}るステージ。{虫|むし} は{虫|むし}がじゃまをしてくるステージ、{王|おう} は{虫|むし}KINGや{虫|むし}QUEENとたたかうステージです。★ はクリアしたステージです。101から200は2{周目|しゅうめ}です。1から100の{形|かたち}に{仕掛|しか}けが{加|くわ}わり、タイルが1{段|だん}かたくなって、{少|すこ}しずつ{下|お}りてきます。ボールはさいしょからいちばん{速|はや}く、{板|いた}はいちばん{短|みじか}くなります。201からは3{周目|しゅうめ}、301からは4{周目|しゅうめ}です。どちらも{新|あたら}しい{形|かたち}のステージで、タイルは2{周目|しゅうめ}と{同|おな}じように{下|お}りてきます。</p>
           </div>
 
           <!-- data-from はその項目が出てくる最初の面。面の前の説明では、その面の分だけを出す -->
@@ -312,7 +315,7 @@ img{max-width:100%}
                 <li data-from="1"><span class="cap mark">↔</span>ステージ5から、タイルが{横|よこ}に{動|うご}く</li>
                 <li data-from="17"><span class="cap mark">↕</span>ステージ17から、タイルが{縦|たて}に{動|うご}く</li>
                 <li data-from="65"><span class="cap mark">↻</span>ステージ69から、タイルが{横|よこ}にぐるぐる{回|まわ}る。{端|はし}から{出|で}たタイルは、{反対|はんたい}の{端|はし}から{入|はい}ってくる</li>
-                <li data-from="101"><span class="cap mark">↓</span>ステージ101から、タイルが{少|すこ}しずつ{下|お}りてくる。{割|わ}らないといけないタイルが{赤|あか}い{点線|てんせん}まで{来|く}ると、ボールが1つへって、タイルは{元|もと}の{高|たか}さへ{戻|もど}る。{先|さき}のステージほど{速|はや}く{下|お}りてくる。「{止|と}」のあいだは{止|と}まる。ステージ200は{下|お}りてこない</li>
+                <li data-from="101"><span class="cap mark">↓</span>ステージ101から、タイルが{少|すこ}しずつ{下|お}りてくる。{割|わ}らないといけないタイルが{赤|あか}い{点線|てんせん}まで{来|く}ると、ボールが1つへって、タイルは{元|もと}の{高|たか}さへ{戻|もど}る。{先|さき}のステージほど{速|はや}く{下|お}りてくる。「{止|と}」のあいだは{止|と}まる。ステージ200と300は{下|お}りてこない</li>
               </ul>
             </div>
             <div class="section group">
@@ -336,6 +339,7 @@ img{max-width:100%}
                 <li data-from="209"><span class="cap back">戻</span>{戻|もど}しのタイル。1{回|かい}で{割|わ}れる。{割|わ}ると、{下|お}りてきたタイルが1{行|ぎょう}ぶん{上|うえ}へ{戻|もど}る。まだ{下|お}りてきていないときは、なにも{起|お}きない</li>
                 <li data-from="217"><span class="cap runner">逃</span>{逃|に}げるタイル。1{回|かい}で{割|わ}れる。ボールが{近|ちか}づくと、{上下左右|じょうげさゆう}の{空|あ}いたところへ{逃|に}げる（3{回|かい}まで。{左|ひだり}はしの{点|てん}が、あと{何回|なんかい}{逃|に}げるか）。{光|ひかり}・{爆弾|ばくだん}・{火|ひ}からは{逃|に}げない。{霧|きり}がかかるか、お{助|たす}けで{光|ひか}ると、もう{逃|に}げない。「{止|と}」のあいだも{逃|に}げない</li>
                 <li data-from="233"><span class="cap uzu">渦</span>{渦|うず}。タイルではなく、{割|わ}らなくてもクリアできる。うすい{丸|まる}の{中|なか}を{通|とお}ったボールを{引|ひ}きよせて、{向|む}きを{曲|ま}げる。まん{中|なか}に{近|ちか}いほど{強|つよ}く{曲|ま}がる</li>
+                <li data-from="301"><span class="cap kaze">風</span>かざぐるま。タイルではなく、{割|わ}らなくてもクリアできる。くるくる{回|まわ}っていて、{羽根|はね}に{当|あ}たったボールは、そのときの{羽根|はね}の{向|む}きではね{返|かえ}る。「{止|と}」のあいだは{止|と}まる</li>
               </ul>
             </div>
             <div class="section group">
@@ -409,6 +413,12 @@ img{max-width:100%}
               <p class="sub">ステージ233から{落|お}ちてくるアイテム</p>
               <ul class="items one">
                 <li data-from="233"><span class="cap net">網</span>8{秒|びょう}のあいだ、{下|した}に{網|あみ}が{張|は}られて、ボールが{落|お}ちない。「{守|まもり}」があるときは、{網|あみ}が{先|さき}に{受|う}けとめる</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ301から{落|お}ちてくるアイテム</p>
+              <ul class="items one">
+                <li data-from="301"><span class="cap mirror">鏡</span>10{秒|びょう}のあいだ、{左右|さゆう}{反対|はんたい}の{場所|ばしょ}に、もう1{枚|まい}の{板|いた}が{出|で}る。ボールははね{返|かえ}せるが、アイテムはとれない</li>
               </ul>
             </div>
             <div class="section group">
@@ -615,8 +625,9 @@ const LIVES_MAX = 6;
 const GUARD_MAX = 5;
 // 2周目（101面から）は、タイルが少しずつ下りてくる。速さ（px/秒）は101面の DROP_V0 から、199面の DROP_V1 まで上がっていく
 // 3周目（201面から）も下りてくる。201面の DROP_V1 から、299面の DROP_V2 まで、ほんの少しだけ上げる
+// 4周目（301面から）は、DROP_V2 から399面の DROP_V3 まで、また少しだけ上げる
 // 割らないといけないタイルのいちばん下が DROP_LINE まで来たら、ボールが1つへって、タイルは DROP_BACK の速さで元の高さへ戻る
-const DROP_V0 = 1, DROP_V1 = 1.8, DROP_V2 = 2, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
+const DROP_V0 = 1, DROP_V1 = 1.8, DROP_V2 = 2, DROP_V3 = 2.2, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
 // やじるしのタイルで向きを変えたボールの、縦の速さの割合（横は 0.8 で、横から約37度）
 const ARROW_VY = 0.6;
 // 強いやじるし：ARROW_FLIP 秒ごとに向きが左右入れかわる。かわる ARROW_SOON 秒前から、やじるしが点滅する
@@ -636,6 +647,11 @@ const FLEE_BIG_N = 6;
 const UZU_R = 60, UZU_PULL = 4000;
 // 網：NET_T 秒のあいだ、下に網が張られてボールが落ちない
 const NET_T = 8;
+// かざぐるま：十字の羽根の、まん中から先までの長さと太さの半分（px）、回る速さ（rad/秒）、同じボールで音を鳴らす間（秒）
+// 羽根が縦になると、先が上下の行に少しかかる（中心から KAZE_L + KAZE_HW = 22.5 で、上下のタイルのふちまでは 15）。だから真上と真下のマスは空ける
+const KAZE_L = 20, KAZE_HW = 2.5, KAZE_W = 2.4, KAZE_SOUND = 0.08;
+// 鏡：MIRROR_T 秒のあいだ、左右反対の位置にもう1枚の板が出る
+const MIRROR_T = 10;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
@@ -671,6 +687,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // w: 渦（タイルではなく、クリアの数に入らない。近くを通ったボールを引きよせて曲げる。動く行・動く列には置かない）
 // [ / ]: 強いやじるし（3回。左 / 右向きで始まって、3秒ごとに向きが入れかわる）
 // N: 強い逃げる（1回。6回まで逃げる。置き方は n と同じ）
+// x: かざぐるま（タイルではなく、クリアの数に入らない。回る十字の羽根にボールが当たると、そのときの羽根の向きではね返る。
+//    真上と真下のマスは空ける。動く行・動く列には置かない。左半分の列は時計回り、右半分は反時計回り）
 // move: { 行番号: 速さ }  その行のタイルが左右の空きを行き来する（負の値は左から動き出す）
 // vmove: { 列番号: 速さ }  その列のタイルが vband [上の行, 下の行] の中を上下する（負の値は上へ動き出す。vband 省略時は全行）
 // move の行は vband の外に置く（重ならないように）
@@ -1049,6 +1067,20 @@ const STAGES3 = [
   {rows: ['........','........','w.3333.w','3>3..3<3','.333333.','.2t22t2.','.222222.'], king: 'boss', queen: true, room: 2},
 ];
 
+// 4周目（301面から）も、新しい形の面。書き方と置き方の決まりは STAGES3 と同じ（新しい虫は出さず、タイルは下りてくる）
+const STAGES4 = [
+  // 301〜308：かざぐるま（とアイテム「鏡」）
+  {rows: ['33333333','32222223','22....22','2.x..x.2','22....22','33333333','22222222']},
+  {rows: ['33333333','3>3333<3','2......2','2x.33.x2','2......2','3<2222>3','22222222','11111111']},
+  {rows: ['33333333','33.nn.33','2......2','2.x22x.2','2......2','2n2222n2','33333333','22222222'], bug: 60},
+  {rows: ['33333333','3333....','2......2','2.x..x.2','2......2','....3333','22222222','22222222'], move: {1: 60, 5: -60}},
+  {rows: ['33333333','3u3333u3','22....22','w.x..x.w','22....22','33.33.33','22222222','11111111']},
+  {rows: ['33333333','3o3mm3O3','mm....mm','2.x..x.2','2......2','2O2..2o2','33333333','22222222']},
+  {rows: ['3L3333L3','33.kk.33','2......2','2x.##.x2','2......2','2k2..2k2','33333333','22222222'], thrower: true},
+  {rows: ['B333333B','3]3..3[3','2......2','2.x..x.2','2......2','[3[3....','2.N22N.2','33333333','22222222'],
+   loop: {5: -65}, bug: 60, paint: true},
+];
+
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
 const ITEMS = {
   split:  {glyph: '分', pop: 'ふえる',        color: 't-sango',    weight: 22, kind: 'good'},
@@ -1067,6 +1099,7 @@ const ITEMS = {
   up:     {glyph: '上', pop: 'うえから',      color: 't-sora',     weight: 9,  kind: 'good', from: 73},
   burst:  {glyph: '破', pop: 'まわりも われる +' + BURST_N, color: 't-bomb', weight: 9, kind: 'good', from: 209},
   net:    {glyph: '網', pop: 'あみ',          color: 't-chest',    weight: 8,  kind: 'good', from: 233},
+  mirror: {glyph: '鏡', pop: 'かがみ',        color: 't-gin',      weight: 8,  kind: 'good', from: 301},
   fuku:   {glyph: '福', pop: '',              color: 'gold',       weight: 2,  kind: 'rare'},
   shrink: {glyph: '縮', pop: 'みじかい いた', color: 'bad',        weight: 5,  kind: 'bad'},
   fast:   {glyph: '速', pop: 'はやい ボール', color: 'bad',        weight: 5,  kind: 'bad'},
@@ -1115,6 +1148,8 @@ const INTROS = {
         text: 'やじるしや{渦|うず}を{置|お}いていたのは、{虫|むし}KINGのお{母|かあ}さんの{虫|むし}QUEENでした。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
   300: {eyebrow: 'ステージ 300', title: '{虫|むし}QUEENとたたかう',
         text: '3{周目|しゅうめ}の{最後|さいご}のステージです。{虫|むし}QUEENにボールを' + QUEEN_HP + '{回|かい}{当|あ}てて、やっつけましょう。{下|した}の{盾|たて}があるうちは、{下|した}からのボールは{効|き}きません。{横|よこ}や{上|うえ}から{当|あ}てるか、{盾|たて}を{割|わ}りましょう。'},
+  301: {title: 'かざぐるまと{新|あたら}しいアイテム',
+        text: 'ここからは4{周目|しゅうめ}です。{新|あたら}しい{形|かたち}のステージで、タイルは3{周目|しゅうめ}と{同|おな}じように、{少|すこ}しずつ{下|お}りてきます。'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへつなぐ。空ならなにも出さない
 const STORY = {
@@ -1164,14 +1199,14 @@ const store = {
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
-// 何周目の面か。1周目は1〜100面、2周目は101〜200面、3周目は201面から
-const LAP3_FROM = STAGES.length * 2 + 1;
-const lapOf = n => n <= STAGES.length ? 1 : n < LAP3_FROM ? 2 : 3;
-// ステージ一覧は3周目の終わり（300面）まで。その先は3周目の面をくり返し、同じ形の面にクリアの印をつける
-const LAST_STAGE = LAP3_FROM - 1 + STAGES3.length;
-const listNo = n => n > LAST_STAGE ? LAP3_FROM + (n - LAP3_FROM) % STAGES3.length : n;
+// 何周目の面か。1周目は1〜100面、2周目は101〜200面、3周目は201〜300面、4周目は301面から
+const LAP3_FROM = STAGES.length * 2 + 1, LAP4_FROM = LAP3_FROM + STAGES3.length;
+const lapOf = n => n <= STAGES.length ? 1 : n < LAP3_FROM ? 2 : n < LAP4_FROM ? 3 : 4;
+// ステージ一覧は4周目のできている面まで。その先は4周目の面をくり返し、同じ形の面にクリアの印をつける
+const LAST_STAGE = LAP4_FROM - 1 + STAGES4.length;
+const listNo = n => n > LAST_STAGE ? LAP4_FROM + (n - LAP4_FROM) % STAGES4.length : n;
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
-// アイテムの出やすさやお助けの決まりで使う面の番号。2周目は1周目の同じ形の面に合わせ、3周目はそのまま（どの決まりも出そろっている）
+// アイテムの出やすさやお助けの決まりで使う面の番号。2周目は1周目の同じ形の面に合わせ、3周目からはそのまま（どの決まりも出そろっている）
 const ruleNo = n => lapOf(n) === 2 ? patternNo(n) : listNo(n);
 // どのアイテムが出るかを決める面の番号。2周目は、1周目のアイテムがさいしょから全部出る
 const itemNo = n => lapOf(n) === 2 ? STAGES.length : listNo(n);
@@ -1187,12 +1222,14 @@ const speedK = n => bugSlow(n) * lapFast(n);
 const stageSpeed = n => baseSpeed(n) * speedK(n);
 // 板の長さも、2周目からはいちばん短くする
 const basePaddle = n => lapOf(n) > 1 ? 60 : Math.max(60, 88 - (n - 1) * 1.8);
-// その面の形と仕掛け。2周目は LAP2 を重ねたもの、3周目は STAGES3
-const stageDef = n => lapOf(n) === 1 ? STAGES[n - 1] : lapOf(n) === 2 ? LAP2_STAGES[patternNo(n) - 1] : STAGES3[listNo(n) - LAP3_FROM];
-// タイルが下りてくる速さ。1周目と、虫KINGとたたかう面は下りてこない。3周目は100面ぶんで DROP_V1 から DROP_V2 まで上げる
+// その面の形と仕掛け。2周目は LAP2 を重ねたもの、3周目は STAGES3、4周目は STAGES4
+const stageDef = n => lapOf(n) === 1 ? STAGES[n - 1] : lapOf(n) === 2 ? LAP2_STAGES[patternNo(n) - 1]
+  : lapOf(n) === 3 ? STAGES3[n - LAP3_FROM] : STAGES4[listNo(n) - LAP4_FROM];
+// タイルが下りてくる速さ。1周目と、虫KINGとたたかう面は下りてこない。3周目は100面ぶんで DROP_V1 から DROP_V2 まで、4周目は DROP_V2 から DROP_V3 まで上げる
 const dropSpeed = n => lapOf(n) === 1 || stageDef(n).king === 'boss' ? 0
   : lapOf(n) === 2 ? DROP_V0 + (DROP_V1 - DROP_V0) * (patternNo(n) - 1) / (STAGES.length - 2)
-  : DROP_V1 + (DROP_V2 - DROP_V1) * Math.min(1, (listNo(n) - LAP3_FROM) / (STAGES.length - 2));
+  : lapOf(n) === 3 ? DROP_V1 + (DROP_V2 - DROP_V1) * Math.min(1, (n - LAP3_FROM) / (STAGES.length - 2))
+  : DROP_V2 + (DROP_V3 - DROP_V2) * Math.min(1, (listNo(n) - LAP4_FROM) / (STAGES.length - 2));
 // 33面からは、よけたいアイテムを半分にし、「命」と「守」を1.5倍出やすくする
 const itemWeight = (key, d, n) => n < EASE_FROM ? d.weight
   : d.kind === 'bad' ? d.weight * 0.5 : key === 'life' || key === 'guard' ? d.weight * 1.5 : d.weight;
@@ -1214,13 +1251,13 @@ const S = {
   score: 0, best: 0, stage: 1, pick: 1, lives: 3, combo: 0, maxCombo: 0,
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
-  bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], blinkT: 0,
+  bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
   keyCells: [], keyWait: [], globs: [], fires: [], carrier: null,
   king: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: 0,
-  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, bolts: [],
+  laserT: 0, laserCool: 0, catchT: 0, stopT: 0, magnetT: 0, shockT: 0, bigT: 0, aimT: 0, up: 0, burst: 0, netT: 0, mirrorT: 0, bolts: [],
   paddle: {x: W / 2, w: 88}
 };
 let onPrimary = null, onSecondary = null;
@@ -1233,7 +1270,7 @@ function readColors(){
   const cs = getComputedStyle(document.documentElement);
   ['board','grout','ink','muted','panel','line','paddle','ball','on-tile','on-yamabuki','bad','warn',
    't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard','t-bomb','t-fuji','t-kurumi','t-nibi','t-iron','t-rust','t-mist',
-   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','bug']
+   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','t-gin','bug']
     .forEach(k => { C[k] = cs.getPropertyValue('--' + k).trim(); });
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
@@ -1279,6 +1316,8 @@ function sfx(name, arg){
     case 'lift':   tone(330, 0.18, 'triangle', 0.07, 880); break;
     case 'flee':   tone(760, 0.07, 'sine', 0.05, 1240); break;
     case 'net':    tone(300, 0.1, 'triangle', 0.07, 520); break;
+    case 'kaze':   tone(540, 0.05, 'square', 0.035, 380); break;
+    case 'mirror': tone(880, 0.08, 'triangle', 0.06, 1320); break;
     case 'bigbomb':
       tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
       break;
@@ -1373,12 +1412,17 @@ function makeBrick(r, c, hp, bomb){
 }
 function buildStage(n){
   const def = stageDef(n);
-  const list = [], warps = [], uzus = [];
+  const list = [], warps = [], uzus = [], kazes = [];
   def.rows.forEach((row, r) => {
     [...row].forEach((ch, c) => {
       if (ch === '.') return;
       if (ch === 'w') {
         uzus.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2});
+        return;
+      }
+      if (ch === 'x') {
+        // 左半分は時計回り、右半分は反時計回り（左右対称の面で、回り方もそろって見える）
+        kazes.push({row: r, col: c, x: SIDE + c * CELL + BRICK_W / 2, y: cellY(r) + BRICK_H / 2, a: 0, dir: c < COLS / 2 ? 1 : -1});
         return;
       }
       if (ch === 'o' || ch === 'O') {
@@ -1419,6 +1463,7 @@ function buildStage(n){
   for (const w of warps) w.to = warps.find(o => o !== w && o.pair === w.pair);
   S.warps = warps.filter(w => w.to);
   S.uzus = uzus;
+  S.kazes = kazes;
   // ふたごも同じ字のもう1枚と組にする（相手のないものは、ふつうのタイルにする）
   for (const b of list) if (b.twin && !list.some(o => o !== b && o.twin && o.pair === b.pair)) b.twin = false;
   // 金のタイル：3回に1回くらい、どこか1枚
@@ -1514,12 +1559,13 @@ function moveRows(dt){
     for (const b of S.bricks) if (b.row === r) b.x = b.baseX + m.off;
   }
 }
-// 盤面のタイル・ワープの穴・渦・投げこみ中のタイルの行き先を、まとめて d だけ下へずらす
+// 盤面のタイル・ワープの穴・渦・かざぐるま・投げこみ中のタイルの行き先を、まとめて d だけ下へずらす
 function shiftField(d){
   S.drop += d;
   for (const b of S.bricks) { b.baseY += d; if (!b.carried) b.y += d; }
   for (const w of S.warps) w.y += d;
   for (const u of S.uzus) u.y += d;
+  for (const k of S.kazes) k.y += d;
   for (const f of S.flying) f.y1 += d;
 }
 // 割らないといけないタイルのいちばん下（運ばれているタイルは数えない）
@@ -1565,6 +1611,10 @@ function moveCols(dt){
     else if (m.off > hi) { m.off = hi; m.dir = -1; }
     for (const b of S.bricks) if (inCol(b, c)) b.y = b.baseY + m.off;
   }
+}
+// かざぐるまを回す（十字なので、4分の1回りで同じ形に戻る）
+function turnKazes(dt){
+  for (const k of S.kazes) k.a = (k.a + k.dir * KAZE_W * dt) % (Math.PI / 2);
 }
 function bounceBug(g){
   // 跳ね返るたびに向きを少しずらす。真横・真縦には寄せない
@@ -1629,6 +1679,8 @@ function freeCell(r, c){
   if (dropSpeed(S.stage) && cellY(r) + BRICK_H >= DROP_LINE) return false;
   if (S.rowMove[r] || (S.colMove[c] && r >= top && r <= bottom)) return false;
   if (S.warps.some(w => w.row === r && w.col === c) || S.uzus.some(u => u.row === r && u.col === c)) return false;
+  // かざぐるまのマスと、羽根がかかる真上・真下のマス
+  if (S.kazes.some(k => k.col === c && Math.abs(k.row - r) <= 1)) return false;
   if (S.keyCells.some(([kr, kc]) => kr === r && kc === c)) return false;
   // 運ぶ虫がタイルを置きに行くマス
   const to = S.carrier && S.carrier.to;
@@ -1997,7 +2049,7 @@ function clearEffects(){
   S.items = []; S.lasers = []; S.mists = []; S.bolts = [];
   S.pierce = 0; S.wideT = 0; S.shrinkT = 0; S.slowT = 0; S.fastT = 0; S.feverT = 0; S.guard = 0;
   S.laserT = 0; S.laserCool = 0; S.catchT = 0; S.stopT = 0; S.magnetT = 0; S.shockT = 0;
-  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.fires = [];
+  S.bigT = 0; S.ballR = BALL_R; S.aimT = 0; S.globs = []; S.up = 0; S.burst = 0; S.netT = 0; S.mirrorT = 0; S.fires = [];
   S.paddle.w = basePaddle(S.stage);
   S.paddle.x = clamp(S.paddle.x, S.paddle.w / 2, W - S.paddle.w / 2);
 }
@@ -2129,7 +2181,7 @@ function stageClear(){
     notes.push(lap === 1
       ? '{次|つぎ}は、ステージ1の{形|かたち}からもう1{周|しゅう}します。2{周目|しゅうめ}は、タイルが1{段|だん}かたくなり、{仕掛|しか}けも{増|ふ}えて、{少|すこ}しずつ{下|お}りてきます。ボールは1{周目|しゅうめ}でいちばん{速|はや}かったときより、もう{少|すこ}し{速|はや}くなり、{板|いた}はいちばん{短|みじか}いままです。'
       : lap === 2 ? '{次|つぎ}は、ステージ' + LAP3_FROM + 'から、{新|あたら}しい{形|かたち}のステージが{始|はじ}まります。タイルは2{周目|しゅうめ}と{同|おな}じように{下|お}りてきます。'
-      : '{次|つぎ}は、ステージ' + LAP3_FROM + 'の{形|かたち}からもう1{周|しゅう}します。');
+      : '{次|つぎ}は、ステージ' + LAP4_FROM + 'から4{周目|しゅうめ}が{始|はじ}まります。{新|あたら}しい{形|かたち}のステージで、タイルは{少|すこ}しずつ{下|お}りてきます。');
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる。2周目の仕掛けは、どれも1周目で出てきたものなので知らせない
     if (S.stage < STAGES.length && !INTROS[S.stage + 1]) {
@@ -2157,6 +2209,10 @@ function stageClear(){
       if (Object.values(ITEMS).some(d => d.from === nextNo)) notes.push('{新|あたら}しいアイテムも{落|お}ちてくるようになります。');
       if (nextNo === EASE_FROM) notes.push('ここからは、とらないほうがいいアイテムがへって、「{命|いのち}」と「{守|まもり}」が{出|で}やすくなります。');
     }
+    // 4周目のできている面の終わりでは、この先は4周目のはじめからくり返すことを知らせる
+    if (lap === 4 && S.stage === LAST_STAGE) {
+      notes.push('ここから{先|さき}のステージは、まだできていません。{次|つぎ}からは、ステージ' + LAP4_FROM + 'の{形|かたち}からくり{返|かえ}します。');
+    }
     const nowSlow = bugSlow(S.stage), nextSlow = bugSlow(S.stage + 1);
     if (nextSlow < nowSlow) notes.push('{虫|むし}がいるので、ボールはゆっくりです。');
     else if (stageSpeed(S.stage + 1) > stageSpeed(S.stage)) {
@@ -2166,8 +2222,8 @@ function stageClear(){
   const note = notes.join('');
   const lifeNote = (gained ? 'ボール +1' : 'ボールは' + LIVES_MAX + 'つでいっぱいです') +
     (S.guardNext ? '\n{次|つぎ}のステージは、さいしょから「{守|まもり}」がついています。' : '');
-  // 1周目と2周目は同じ形の面の一言、3周目はその面の番号の一言
-  const storyFn = STORY[lap === 3 ? listNo(S.stage) : patternNo(S.stage)];
+  // 1周目と2周目は同じ形の面の一言、3周目からはその面の番号の一言
+  const storyFn = STORY[lap >= 3 ? listNo(S.stage) : patternNo(S.stage)];
   const story = storyFn ? storyFn() : '';
   if (lastOne) {
     // 100面・200面・300面のあとは、おめでとうの画面を出してから次の面へ
@@ -2179,7 +2235,7 @@ function stageClear(){
         (lap === 1 ? STAGES.length + 'ステージ、' : lap + '{周目|しゅうめ}も、') + '{全部|ぜんぶ}クリアです。\n' +
         '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
         'クリアのごほうび +' + fmt(bonus) + '\n' + lifeNote + '\n' + note,
-      btn: lap === 2 ? 'ステージ ' + (S.stage + 1) + ' へ' : 'もう1{周|しゅう}する',
+      btn: lap === 1 ? 'もう1{周|しゅう}する' : 'ステージ ' + (S.stage + 1) + ' へ',
       primary: () => enterStage(S.stage + 1, false),
       btn2: 'ステージを{選|えら}ぶ',
       secondary: goTitle
@@ -2305,7 +2361,7 @@ function setPick(n){
   ui();
 }
 for (let n = 1; n <= LAST_STAGE; n++) {
-  if (n === STAGES.length + 1 || n === LAP3_FROM) {
+  if (n === STAGES.length + 1 || n === LAP3_FROM || n === LAP4_FROM) {
     const lap = document.createElement('p'); lap.className = 'st-lap';
     setText(lap, lapOf(n) + '{周目|しゅうめ}');
     stagesEl.appendChild(lap);
@@ -2560,6 +2616,7 @@ function applyItem(type){
     case 'up':     S.up = Math.min(S.up + UP_N, UP_N * 2); break;
     case 'burst':  S.burst = Math.min(S.burst + BURST_N, BURST_MAX); break;
     case 'net':    S.netT = NET_T; break;
+    case 'mirror': S.mirrorT = MIRROR_T; break;
     case 'spray': {
       // パドルにいちばん近い列を中心に、左右1列ずつ（端でも3列にかかるようにする）
       const c = clamp(Math.round((S.paddle.x - SIDE - BRICK_W / 2) / CELL), 1, COLS - 2);
@@ -3188,18 +3245,9 @@ function physics(dt){
       else if (b.x > W - R) { b.x = W - R; b.vx = -Math.abs(b.vx); sfx('wall'); }
       if (b.y < R) { b.y = R; b.vy = Math.abs(b.vy); sfx('wall'); }
 
-      if (b.vy > 0 && prevY + R <= PADDLE_Y + 1 && b.y + R >= PADDLE_Y &&
-          b.x >= p.x - p.w / 2 - R * 0.6 && b.x <= p.x + p.w / 2 + R * 0.6) {
-        S.combo = 0;
-        b.idle = 0;
-        if (S.catchT > 0) { catchBall(b); break; }
-        const rel = clamp((b.x - p.x) / (p.w / 2), -1, 1);
-        const ang = rel * 1.13; // 端で約65度
-        b.vx = S.speed * Math.sin(ang);
-        b.vy = -S.speed * Math.cos(ang);
-        b.y = PADDLE_Y - R;
-        sfx('paddle');
-        shootUp(b);
+      // 鏡の板は、左右反対の位置にある（ふつうの板と重なったところは、ふつうの板で打つ）
+      if (hitPaddle(b, prevY, p.x, false) || (S.mirrorT > 0 && hitPaddle(b, prevY, W - p.x, true))) {
+        if (b.hold > 0) break;
       }
 
       if (S.netT > 0 && b.vy > 0 && b.y + R >= GUARD_Y) {
@@ -3214,6 +3262,7 @@ function physics(dt){
       }
 
       pullBall(b, h);
+      hitKazes(b, h);
       if (hitBricks(b) && S.mode !== 'play') return;
       hitBugs(b);
       if (hitKing(b) && S.mode !== 'play') return;
@@ -3223,6 +3272,58 @@ function physics(dt){
     if (lost) S.balls.splice(bi, 1);
   }
   if (S.balls.length === 0) loseLife();
+}
+// 板で打ち返す。x は板のまん中、mirror は鏡の板か。当たったら true（「吸」でくっついたときは b.hold が入る）
+// 鏡の板は、くっつけずにはね返す
+function hitPaddle(b, prevY, x, mirror){
+  const p = S.paddle, R = S.ballR;
+  if (!(b.vy > 0 && prevY + R <= PADDLE_Y + 1 && b.y + R >= PADDLE_Y &&
+        b.x >= x - p.w / 2 - R * 0.6 && b.x <= x + p.w / 2 + R * 0.6)) return false;
+  S.combo = 0;
+  b.idle = 0;
+  if (S.catchT > 0 && !mirror) { catchBall(b); return true; }
+  const rel = clamp((b.x - x) / (p.w / 2), -1, 1);
+  const ang = rel * 1.13; // 端で約65度
+  b.vx = S.speed * Math.sin(ang);
+  b.vy = -S.speed * Math.cos(ang);
+  b.y = PADDLE_Y - R;
+  sfx(mirror ? 'mirror' : 'paddle');
+  shootUp(b);
+  return true;
+}
+// かざぐるま：十字を2本の線分として見て、羽根に当たったボールをはね返す
+// 羽根が動いている速さを引いてから反射させるので、羽根に打たれたように向きが変わる（速さは normalizeBall で元に戻す）
+function hitKazes(b, h){
+  const R = S.ballR, reach = R + KAZE_HW;
+  if (b.kazeT > 0) b.kazeT = Math.max(0, b.kazeT - h);
+  for (const k of S.kazes) {
+    const rx = b.x - k.x, ry = b.y - k.y;
+    if (rx * rx + ry * ry > (KAZE_L + reach) * (KAZE_L + reach)) continue;
+    // 回る速さ（k.a が増える向きを正にする。画面は下向きが y なので、正は時計回り）。「止」のあいだは羽根も動かない
+    const w = S.stopT > 0 ? 0 : k.dir * KAZE_W;
+    let best = null;
+    for (const a of [k.a, k.a + Math.PI / 2]) {
+      const ux = Math.cos(a), uy = Math.sin(a);
+      const t = clamp(rx * ux + ry * uy, -KAZE_L, KAZE_L);
+      const qx = t * ux, qy = t * uy, dx = rx - qx, dy = ry - qy, d = Math.hypot(dx, dy);
+      if (d < reach && (!best || d < best.d)) best = {d, dx, dy, qx, qy};
+    }
+    if (!best) continue;
+    // 押し出す向き（まん中にぴったり重なったときは、来た向きの反対へ）
+    let nx, ny;
+    if (best.d > 0.01) { nx = best.dx / best.d; ny = best.dy / best.d; }
+    else { const v = Math.hypot(b.vx, b.vy) || 1; nx = -b.vx / v; ny = -b.vy / v; }
+    b.x = k.x + best.qx + nx * reach;
+    b.y = k.y + best.qy + ny * reach;
+    // 羽根のその点の速さ
+    const bx = -w * best.qy, by = w * best.qx;
+    const vx = b.vx - bx, vy = b.vy - by, dot = vx * nx + vy * ny;
+    if (dot >= 0) continue;
+    b.vx = vx - 2 * dot * nx + bx;
+    b.vy = vy - 2 * dot * ny + by;
+    normalizeBall(b);
+    if (!(b.kazeT > 0)) { sfx('kaze'); b.kazeT = KAZE_SOUND; }
+  }
 }
 // 渦の引く強さ（まん中からの距離 d で決まる）
 const uzuPull = d => d < UZU_R ? UZU_PULL * (1 - d / UZU_R) : 0;
@@ -3314,7 +3415,7 @@ function update(dt){
   S.time += dt;
   const p = S.paddle;
   if (S.mode === 'play') {
-    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT','netT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
+    for (const k of ['wideT','shrinkT','slowT','fastT','feverT','laserT','catchT','stopT','magnetT','shockT','bigT','aimT','netT','mirrorT']) if (S[k] > 0) S[k] = Math.max(0, S[k] - dt);
   }
   // ボールの大きさも、なめらかに変える
   S.ballR += (BALL_R * (S.bigT > 0 ? BIG_K : 1) - S.ballR) * Math.min(1, dt * 10);
@@ -3327,7 +3428,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); moveBugs(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
+    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
   if (S.mode === 'play' || S.mode === 'ready') lowerField(dt);
   if (S.king) for (const key of ['hurtT', 'flash', 'noT', 'plateFlash']) if (S.king[key] > 0) S.king[key] = Math.max(0, S.king[key] - dt);
@@ -3497,6 +3598,36 @@ function drawWarps(){
     ctx.beginPath();
     ctx.arc(w.x, w.y, 5.5, a, a + 3.6);
     ctx.stroke();
+  }
+}
+// かざぐるま：羽根の届く広さをうすい丸で見せて、色ちがいの羽根4枚と、まん中の軸を描く
+function drawKazes(){
+  const cols = ['t-sango', 't-yamabuki', 't-asagi', 't-wakakusa'];
+  for (const k of S.kazes) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(k.x, k.y, KAZE_L + KAZE_HW, 0, Math.PI * 2);
+    ctx.globalAlpha = 0.08;
+    ctx.fillStyle = C.ink;
+    ctx.fill();
+    ctx.restore();
+    ctx.save();
+    ctx.translate(k.x, k.y);
+    ctx.rotate(k.a);
+    for (let i = 0; i < 4; i++) {
+      rr(2, -KAZE_HW, KAZE_L - 2 + KAZE_HW, KAZE_HW * 2, KAZE_HW);
+      ctx.fillStyle = C[cols[i]];
+      ctx.fill();
+      ctx.rotate(Math.PI / 2);
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, 4, 0, Math.PI * 2);
+    ctx.fillStyle = C.board;
+    ctx.fill();
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = C.ink;
+    ctx.stroke();
+    ctx.restore();
   }
 }
 function drawTile(br){
@@ -4036,6 +4167,8 @@ function aimPath(b){
     if (vy > 0 && y + R >= PADDLE_Y) { pts.push([x, PADDLE_Y - R]); return pts; }
     // ワープの穴に入るところで止める
     if (S.warps.some(w => Math.hypot(x - w.x, y - w.y) < WARP_IN)) { pts.push([x, y]); return pts; }
+    // かざぐるまの羽根が届くところでも止める（その先は、当たるときの羽根の向きで変わる）
+    if (S.kazes.some(k => Math.hypot(x - k.x, y - k.y) < KAZE_L + KAZE_HW + R)) { pts.push([x, y]); return pts; }
     for (const br of S.bricks) {
       if (br.hp <= 0 || (br.blink && !br.shown)) continue;
       const cx = clamp(x, br.x, br.x + br.w), cy = clamp(y, br.y, br.y + br.h);
@@ -4229,6 +4362,7 @@ function drawHud(){
   if (S.up > 0) chips.push(['うえから ×' + S.up, C['t-sora']]);
   if (S.burst > 0) chips.push(['まわりも われる ×' + S.burst, C['t-bomb']]);
   if (S.netT > 0) chips.push(['あみ ' + Math.ceil(S.netT) + 'びょう', C['t-chest']]);
+  if (S.mirrorT > 0) chips.push(['かがみ ' + Math.ceil(S.mirrorT) + 'びょう', C['t-gin']]);
   if (!chips.length) return;
   ctx.font = '700 11px "Zen Maru Gothic", "Hiragino Sans", "Noto Sans JP", sans-serif';
   ctx.textBaseline = 'middle';
@@ -4329,6 +4463,7 @@ function draw(){
 
   drawUzus();
   drawWarps();
+  drawKazes();
   for (const br of S.bricks) if (br.hp > 0) drawTile(br);
   drawMists();
   drawFires();
@@ -4387,6 +4522,23 @@ function draw(){
 
   // パドル（しびれているあいだは小きざみにふるえる）
   const p = S.paddle;
+  if (S.mirrorT > 0) {
+    // 鏡の板：左右反対の位置に、うすく塗って点線のわくをつける。のこり2秒からは点滅して、消えそうなことを知らせる
+    // ふつうの板と重なったときは、ふつうの板を上に描く
+    ctx.save();
+    ctx.globalAlpha = S.mirrorT > 2 || reduceMotion.matches ? 1 : 0.4 + 0.6 * Math.abs(Math.sin(S.time * 8));
+    rr(W - p.x - p.w / 2, PADDLE_Y, p.w, PADDLE_H, 6);
+    ctx.save();
+    ctx.globalAlpha *= 0.75;
+    ctx.fillStyle = C['t-gin'];
+    ctx.fill();
+    ctx.restore();
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = C['t-gin'];
+    ctx.stroke();
+    ctx.restore();
+  }
   const px = p.x - p.w / 2 + (S.shockT > 0 && !reduceMotion.matches ? Math.sin(S.time * 70) * 1.5 : 0);
   rr(px, PADDLE_Y, p.w, PADDLE_H, 6);
   ctx.fillStyle = C.paddle;
