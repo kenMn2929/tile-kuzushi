@@ -8,7 +8,7 @@ src_path = os.path.join(here, '..', 'index.html')
 out_dir = sys.argv[1] if len(sys.argv) > 1 else '.'
 s = open(src_path, encoding='utf-8').read()
 hook = """
-window.__T = {S, stageClear, update, loadStage, startGame, startStage, launch, stageDef, applyItem, enterStage, LAST_STAGE, LAP5_FROM, lapOf, dropSpeed, stageSpeed, W, H, PADDLE_Y, draw, showHelp, showTitle, setPick, goTitle,
+window.__T = {S, stageClear, update, loadStage, startGame, startStage, launch, stageDef, applyItem, enterStage, freeCell, LAST_STAGE, LAP5_FROM, lapOf, dropSpeed, stageSpeed, W, H, PADDLE_Y, draw, showHelp, showTitle, setPick, goTitle,
   get onPrimary(){ return onPrimary; }, get COLS(){ return COLS; }, get BRICK_W(){ return BRICK_W; }};
 if (window.claude && window.claude.hot && typeof window.claude.hot.snapshot === 'function') {"""
 old = "\nif (window.claude && window.claude.hot && typeof window.claude.hot.snapshot === 'function') {"
