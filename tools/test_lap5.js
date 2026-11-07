@@ -1,5 +1,5 @@
 // 5周目の仕掛けの動きを確かめる。使い方：node tools/test_lap5.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
-// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）を試す
+// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）、筒（441面）を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -205,6 +205,63 @@ const { chromium } = require('playwright');
     laser(gem); away();
     const after = chains();
     ok(after.length > 0 && after.some(b => b.hp === 1), '爆風で割れた鎖からも伝わる（残り ' + after.length + ' 枚）');
+    }
+    // ---- 筒 ----
+    {
+    const step = (k = 1) => { for (let i = 0; i < k; i++) T.update(1 / 60); };
+    // 441面：(9,2) と (9,7) が筒。真上の (8,2) と (8,7) は空いている
+    const fromBelow = (b, t) => { b.x = t.x + t.w / 2; b.y = t.y + t.h + 8; b.vx = 0; b.vy = -400; };
+    const fromAbove = (b, t) => { b.x = t.x + t.w / 2; b.y = t.y - 12; b.vx = 0; b.vy = 400; };
+    T.startGame(441); S.mode = 'play';
+    let t1 = at(9, 2), t2 = at(9, 7), b = S.balls[0];
+    ok(t1 && t1.tube && t1.iron && t2 && t2.tube, '441面の (9,2) と (9,7) は筒');
+    ok(!S.bricks.filter(x => x.hp > 0 && !x.iron).some(x => x.tube), '筒はクリアの数に入らない');
+    fromBelow(b, t1); step(3);
+    ok(b.tubeT > 0 && b.tube === t1, '下から当てると筒に入る');
+    step(20);
+    ok(b.tubeT > 0 && Math.abs(b.x - (t1.x + t1.w / 2)) < 0.01 && Math.abs(b.y - (t1.y + t1.h / 2)) < 0.01, '0.3秒ではまだ筒の中にいて、筒といっしょに動く');
+    ok(S.lives === 3 && S.mode === 'play', '筒の中にいるあいだは、ボールを失わない');
+    step(12);
+    ok(!(b.tubeT > 0) && b.vy < 0 && b.y < t1.y, '0.5秒ほどで、筒の口から上へ撃ち出す');
+    const tilt = Math.asin(Math.abs(b.vx) / Math.hypot(b.vx, b.vy));
+    ok(tilt > 0.099 && tilt < 0.201, '向きは真上から少しだけかたむく（' + tilt.toFixed(3) + ' rad）');
+    // 撃ち出してすぐは、同じ筒にははね返る。ほかの筒には入る
+    fromAbove(b, t1); step(3);
+    ok(!(b.tubeT > 0) && b.vy < 0, '撃ち出してすぐは、同じ筒に上から当ててもはね返る');
+    fromAbove(b, t2); step(3);
+    ok(b.tubeT > 0 && b.tube === t2, 'ほかの筒には、すぐに入る');
+    // 1秒たつと、同じ筒にもまた入る
+    T.startGame(441); S.mode = 'play';
+    t1 = at(9, 2); b = S.balls[0];
+    fromBelow(b, t1); step(40);
+    ok(!(b.tubeT > 0), '撃ち出した');
+    for (let i = 0; i < 62; i++) { away(); step(); }
+    fromAbove(b, t1); step(3);
+    ok(b.tubeT > 0 && b.tube === t1, '1秒たつと、同じ筒にもまた入る');
+    // 筒の中にいるときに「分」を取ると、ふえたボールは筒の口から上へ出る
+    T.applyItem('split');
+    const nb = S.balls.find(x => x !== b);
+    ok(nb && nb.vy < 0 && nb.y < t1.y && nb.tubeFrom === t1, 'ふえたボールは筒の口から上へ出る');
+    step();
+    ok(nb && !(nb.tubeT > 0), 'ふえたボールは、すぐには同じ筒に入らない');
+    // 光は止まり、爆風でも壊れない。火も止まる。霧でもさびない
+    T.startGame(441); S.mode = 'play'; away();
+    t1 = at(9, 2);
+    S.lasers.push({x: t1.x + t1.w / 2, y: t1.y + t1.h + 2}); step();
+    ok(S.lasers.length === 0 && t1.hp > 0 && t1.tube, '光は筒で止まり、筒は壊れない');
+    const g = at(10, 1); g.bomb = true; g.big = true; g.hp = 1; g.max = 1;
+    S.lasers.push({x: g.x + g.w / 2, y: g.y + g.h + 2}); step();
+    ok(g.hp <= 0 && at(9, 2) === t1 && t1.tube, '大爆弾の爆風でも筒は壊れない');
+    S.fires.push({x: 1, y: t1.y + t1.h / 2, dir: 1, t: 0, hit: new Set()});
+    let maxX = 0;
+    for (let i = 0; i < 90; i++) { away(); step(); for (const f of S.fires) maxX = Math.max(maxX, f.x); }
+    ok(S.fires.length === 0 && maxX < t1.x + t1.w, '火は筒で止まる');
+    S.paddle.x = t1.x + t1.w / 2;
+    T.applyItem('spray');
+    for (let i = 0; i < 120; i++) { away(); step(); }
+    ok(t1.tube && t1.iron && !t1.rust, '霧で筒はさびない');
+    // 筒の真上のマスには、投げこむ虫などがタイルを置かない
+    ok(!T.freeCell(8, 2) && !T.freeCell(8, 7) && T.freeCell(8, 4), '筒の真上のマスは、タイルを置けるマスに入らない');
     }
     return log;
   });

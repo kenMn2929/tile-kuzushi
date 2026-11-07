@@ -3,7 +3,8 @@
 #   - 壁がどちらの向きでも、割るタイルに下から届くか。スイッチに下から当てられるか（ボールが閉じこめられないか）
 #   - 動く行・動く列（の動く範囲）に、置いてはいけないものがないか
 #   - かざぐるまの真上と真下が空いているか、ワープが4行目までか、落ちるタイルの下にタイルがあるか、ふたごとワープが2つずつか
-#   - 割れないもの（スイッチ・壁・鉄・錠）が、割るタイルのいちばん下の行より下にないか
+#   - 筒の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
+#   - 割れないもの（スイッチ・壁・鉄・錠・筒）が、割るタイルのいちばん下の行より下にないか
 #   - tint の字と長さ
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
 import re, sys, os
@@ -27,12 +28,14 @@ for i, (rows_s, rest) in enumerate(defs):
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhc' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
                     if 0 <= rr < R and (rows[rr][c] != '.' or rr in moving or inv(rr, c)):
                         print(n, 'kaze needs empty still cell above/below', r, c); ok = False
+            if ch == 'i' and (r == 0 or rows[r - 1][c] != '.' or (r - 1) in moving or inv(r - 1, c)):
+                print(n, 'tube needs an empty still cell above', r, c); ok = False
             if ch in 'oO' and r > 4:
                 print(n, 'warp below row 4', r, c); ok = False
             if ch == 'd' and (r + 1 >= R or rows[r + 1][c] in '.+-'):
@@ -43,7 +46,7 @@ for i, (rows_s, rest) in enumerate(defs):
     for side in (0, 1):
         def block_(r, c):
             ch = rows[r][c]
-            if ch in '#LJsS': return True
+            if ch in '#LJsSi': return True
             if ch == '+': return side == 0
             if ch == '-': return side == 1
             return False
@@ -74,10 +77,10 @@ for i, (rows_s, rest) in enumerate(defs):
                 if ch == '.': continue
                 if ch not in 'RYGABSPVK': print(n, 'bad tint letter', r, c, ch); ok = False
                 elif c < len(row) and row[c] == '.': print(n, 'tint on empty cell', r, c); ok = False
-    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoO')
-    # 割れないもの（スイッチ・壁・鉄・錠）は、割るタイルのいちばん下の行より下に置かない
-    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJ' for ch in row))
-    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJ' for ch in row)] or [-1])
+    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOi')
+    # 割れないもの（スイッチ・壁・鉄・錠・筒）は、割るタイルのいちばん下の行より下に置かない
+    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJi' for ch in row))
+    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJi' for ch in row)] or [-1])
     if low_hard > low_tile:
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False
     shape = lambda r: ''.join('.' if ch == '.' else 'X' for ch in r)
