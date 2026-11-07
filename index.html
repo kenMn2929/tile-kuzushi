@@ -374,6 +374,7 @@ img{max-width:100%}
                 <li data-from="249"><span class="cap arrow strong">⇄</span>{強|つよ}いやじるし。3{回|かい}で{割|わ}れる。3{秒|びょう}ごとに、やじるしの{向|む}きが{左右|さゆう}{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、やじるしが{点滅|てんめつ}する。「{止|と}」のあいだは{変|か}わらない</li>
                 <li data-from="249"><span class="cap runner strong">逃</span>{強|つよ}い{逃|に}げるタイル。1{回|かい}で{割|わ}れる。6{回|かい}まで{逃|に}げる</li>
                 <li data-from="309"><span class="cap kaze strong">風</span>{強|つよ}いかざぐるま。{速|はや}く{回|まわ}り、3{秒|びょう}ごとに{回|まわ}る{向|む}きが{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、{羽根|はね}が{点滅|てんめつ}する。「{止|と}」のあいだは{変|か}わらない</li>
+                <li data-from="409"><span class="cap switch strong"></span>{強|つよ}いスイッチ。4{秒|びょう}ごとに、{勝手|かって}に{赤|あか}い{壁|かべ}と{青|あお}い{壁|かべ}が{入|い}れかわる。かわる{少|すこ}し{前|まえ}に、つまみと{出|で}てくる{壁|かべ}が{点滅|てんめつ}する。ボールを{当|あ}てても{入|い}れかわり、そこから4{秒|びょう}を{数|かぞ}えなおす。「{止|と}」のあいだは{変|か}わらない</li>
               </ul>
             </div>
             <div class="section group">
@@ -734,11 +735,14 @@ const FORK_TURN = 0.3;
 const FALL_WAIT = 0.35;
 // 炎：FLAME_N 回のあいだ、ボールが当たったタイルから左右へ火が走る（火のタイルを割ったときと同じ）。重ねて取ると FLAME_MAX 回までためられる
 const FLAME_N = 3, FLAME_MAX = 6;
+// 強いスイッチ：SWITCH_FLIP 秒ごとに、勝手に壁が入れかわる。かわる SWITCH_SOON 秒前から、つまみと出てくる壁が点滅する
+// ボールか光を当てても入れかわり、そこから SWITCH_FLIP 秒を数えなおす。「止」のあいだは数えない
+const SWITCH_FLIP = 4, SWITCH_SOON = 0.8;
 const ROW_COLORS = ['t-sango','t-yamabuki','t-wakakusa','t-asagi','t-ai','t-sango','t-yamabuki'];
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, '+': 1, '-': 1};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 const BEST_KEY = 'tile-kuzushi-best', SOUND_KEY = 'tile-kuzushi-sound';
 const PICK_KEY = 'tile-kuzushi-pick', CLEARED_KEY = 'tile-kuzushi-cleared';
@@ -778,6 +782,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //    左半分の列は時計回り、右半分は反時計回り）
 // X: 強いかざぐるま（速く回り、3秒ごとに回る向きが入れかわる。置き方は x と同じ）
 // s: スイッチ（割れない。クリアの数に入らない。ボールか光が当たるたびに、赤い壁と青い壁の出入りが入れかわる。爆風と火では切りかわらない）
+// S: 強いスイッチ（4秒ごとに、勝手に壁が入れかわる。当てても入れかわり、そこから4秒を数えなおす。置き方は s と同じ。s と同じ面には置かない）
 // + / -: 赤い壁 / 青い壁（割れない。クリアの数に入らない。はじめは + が出ていて、- が引っこんでいる。出ている壁は鉄と同じくはね返し、爆風・霧でも変わらない。
 //    引っこんでいる壁は、ボール・光・火が通りぬける。スイッチのない面には置かない。動く行・動く列には置かない。
 //    壁で囲んだタイルは、スイッチを当てれば割りに行けるようにする（スイッチを壁で囲まない））
@@ -1326,11 +1331,13 @@ const STAGES4 = [
 // 割らないといけないタイルは、8列の面と同じく1面40〜55枚くらいにする（マスが増えたぶんは、すき間にして形を作る）
 // 壁で囲むところは、割れるタイルか、赤い壁と青い壁の両方でふちを作る（どちらの壁が出ていても、ボールが出入りできるように）。スイッチも、どちらのときも下から当てられるところに置く
 // ワープの穴は、組の2つとも上のほう（4行目まで）に置く（タイルといっしょに下りてきた穴から、ボールが板の近くへ急に出てこないように）
+// スイッチ・壁・鉄は、割るタイルのいちばん下の行より下に置かない（割れないので線に届いても止まらず、板のすぐ上まで下りてきて、はね返ったボールを受けにくくなる）
+// クリアまでが長いと、タイルが下りきって線に届き、そこでもボールがへる。自動の板で遊ばせて、だいたい2分までで終わるようにする（虫のいる面はボールが遅いので、タイルを少しやわらかくする）
 const STAGES5 = [
   // 401〜408：スイッチと赤い壁・青い壁（とアイテム「炎」）
   {rows: ['3333..3333','2222..2222','2222..2222','1111..1111','++++..----','..........','...s..s...','2.2.2.2.2.','.2.2.2.2.2']},
   {rows: ['....33....','...3223...','..322223..','.3>2..2<3.','322....223','22++--++22','..........','.s......s.','1.<2222>.1','11......11']},
-  {rows: ['333.3333..','+--+3223..','-nn+2332..','+--+3223..','222...+--+','..3223-nn+','..2332+--+','..3223..22','.s......s.'], bug: 60},
+  {rows: ['222.3333..','+--+2112..','-nn+1221..','+--+2112..','222.s.+--+','..2112-nn+','..1221+--+','.s2112..22']},
   {rows: ['33..33..33','22..22..22','22+-22-+22','..........','3333......','..s....s..','......3333','2..2..2..2','2..2..2..2','11..11..11'],
    move: {4: 60, 6: -60}},
   {rows: ['...3333...','..322223..','.32-++-23.','.2u+..-u2.','.2u-.w+u2.','.32+--+23.','..322223..','...3333...','..........','..s....s..','22......22']},
@@ -1338,6 +1345,16 @@ const STAGES5 = [
   {rows: ['1....33333','.k...3L3L3','..2..33333','+-+..#2222','.k...22222','......-+-.','..s..s....','222222....','2k2222....'], thrower: true},
   {rows: ['B3333333..','3222222z..','.s...+22..','....+22-..','...+22-...','..+22-....','..22-...s.','[3[3......','..32222223','..N.]..[N.'],
    loop: {7: -65}, bug: 60, eat: true},
+  // 409〜416：強いスイッチ（4秒ごとに壁が入れかわる）
+  {rows: ['..3.......','.323...3..','32223.323.','.323.32223','..3...323.','.+-+.S.3..','...3..-+-.','..323.....','.32223..S.','..323.....','...3...11.']},
+  {rows: ['..11.33333','....+22]22','...33333-.','..+22222..','.33333-...','+22222....','3333-.S...','2[22....S.']},
+  {rows: ['3......33.','22....2222','.22..22..2','..2222....','-+.NN.S+-.','3......33.','22....2222','.22..22..2','..2222....','.S.22.....'], bug: 60},
+  {rows: ['...33..333','.X.22...22','...22.+-..','..+22-....','3333333333','2222222222','...22-+...','...22...x.','.S.22.....','..333...S.']},
+  {rows: ['33..22..2o','3233....22','32.233....','32.+-o.333','32.233....','3233....22','33..S...S.','3333..33..'], loop: {7: 60}},
+  {rows: ['.2222f2222','....k.+..2','.3333333.2','S3.....3.2','.3.333.3.2','.3.3.J.3.2','.3.33333.2','S3..-.k..2','.222f22222']},
+  {rows: ['.B33......','.2u2......','.222..33B.','.333..2u2.','.2u2..222.','.333.w333.','.+-+.S2u2.','......333.','.S....-+-.','....3333..'], move: {9: -60}},
+  {rows: ['33...33...','3...dy...3','...22...M2','..d2...2y.','.22+-.22..','N2...a2.-+','2.S.22...2','...M2...22','..22..S22.','3.3.3.3...'],
+   loop: {9: 65}, bug: 60, thrower: true},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1430,6 +1447,7 @@ const INTROS = {
         text: '4{周目|しゅうめ}の{最後|さいご}のステージです。{先|さき}に{虫|むし}KINGとたたかい、やっつけると{虫|むし}QUEENが{出|で}てきます。どちらもボールを' + DUO_HP + '{回|かい}{当|あ}てると、やっつけられます。{虫|むし}QUEENの{下|した}の{盾|たて}があるうちは、{下|した}からのボールは{効|き}きません。'},
   401: {title: 'スイッチと{新|あたら}しいアイテム',
         text: 'ここからは5{周目|しゅうめ}です。タイルが{少|すこ}し{小|ちい}さくなって、{横|よこ}に10{枚|まい}ならびます。{新|あたら}しい{形|かたち}のステージで、タイルは4{周目|しゅうめ}と{同|おな}じように、{少|すこ}しずつ{下|お}りてきます。'},
+  409: {title: '{強|つよ}いスイッチ'},
 };
 // 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへ、397〜399面は400面の2匹へつなぐ。空ならなにも出さない
 const STORY = {
@@ -1539,7 +1557,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], carrier: null, wallSide: 0,
+  keyCells: [], keyWait: [], globs: [], fires: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0,
   king: null, kingGone: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -1609,6 +1627,7 @@ function sfx(name, arg){
     case 'fork':   tone(660, 0.07, 'triangle', 0.06, 990); tone(990, 0.07, 'triangle', 0.04, 1320, 0.05); break;
     case 'fall':   tone(180, 0.09, 'triangle', 0.06, 110); break;
     case 'switch': tone(900, 0.04, 'square', 0.03, 700); tone(520, 0.1, 'triangle', 0.06, 780, 0.04); break;
+    case 'switch2': tone(620, 0.08, 'triangle', 0.035, 760); break;
     case 'bigbomb':
       tone(120, 0.45, 'sawtooth', 0.07, 35); tone(80, 0.5, 'square', 0.04, 30, 0.02); tone(200, 0.3, 'sawtooth', 0.03, 50, 0.12);
       break;
@@ -1724,9 +1743,9 @@ function buildStage(n){
       }
       const b = makeBrick(r, c, TILE_HP[ch] || +ch, ch === '*' || ch === 'B');
       // B・V・?・J・M は、爆弾・芽・宝箱・錠・まばたきの強くなったもの
-      b.big = ch === 'B' || ch === 'V' || ch === '?' || ch === 'J' || ch === 'M' || ch === '[' || ch === ']' || ch === 'N';
+      b.big = ch === 'B' || ch === 'V' || ch === '?' || ch === 'J' || ch === 'M' || ch === '[' || ch === ']' || ch === 'N' || ch === 'S';
       // スイッチと壁は、鉄と同じく割れずにクリアの数に入らない（爆風で壊れないところだけ、damage で分ける）
-      b.toggle = ch === 's';
+      b.toggle = ch === 's' || ch === 'S';
       b.wall = ch === '+' ? 1 : ch === '-' ? 2 : 0;
       b.iron = ch === '#' || b.toggle || b.wall > 0;
       b.shown = b.wall !== 2;
@@ -1754,8 +1773,10 @@ function buildStage(n){
       list.push(b);
     });
   });
-  // 壁は、はじめは赤い壁（+）が出ている
+  // 壁は、はじめは赤い壁（+）が出ている。強いスイッチがある面は、時間でも切りかわる
   S.wallSide = 0;
+  S.switchAuto = list.some(b => b.toggle && b.big);
+  S.switchT = SWITCH_FLIP;
   // 鍵のない面に錠があっても、閉じこめないように最初から開けておく
   if (!list.some(b => b.key)) for (const b of list) b.lock = false;
   // 強い錠がある面は、鍵をもう一度出すマスを覚えておく
@@ -3140,13 +3161,22 @@ function raiseWalls(){
     br.flash = 0.15;
   }
 }
-// スイッチ：壁の出入りを入れかえる
+// スイッチ：壁の出入りを入れかえる。br は当たったスイッチ（時間で切りかわったときは null で、スイッチを全部光らせる）
 function flipWalls(br){
   S.wallSide = 1 - S.wallSide;
-  br.flash = 0.2;
-  sfx('switch');
+  S.switchT = SWITCH_FLIP;
+  for (const b of S.bricks) if (b.toggle && b.hp > 0 && (!br || b === br)) b.flash = 0.2;
+  sfx(br ? 'switch' : 'switch2');
   raiseWalls();
 }
+// 強いスイッチの時計。「止」のあいだは呼ばれない
+function tickSwitch(dt){
+  if (!S.switchAuto) return;
+  S.switchT -= dt;
+  if (S.switchT <= 0) flipWalls(null);
+}
+// 強いスイッチで、壁がもうすぐ入れかわるか
+const switchSoon = () => S.switchAuto && S.switchT < SWITCH_SOON;
 function regrow(dt){
   for (const br of S.bricks) {
     if (!br.regen || br.hp <= 0 || br.hp >= br.max) continue;
@@ -3889,6 +3919,7 @@ function update(dt){
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
     moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
+  if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
   if (S.mode === 'play' || S.mode === 'ready') lowerField(dt);
   if (S.king) for (const key of ['hurtT', 'flash', 'noT', 'plateFlash']) if (S.king[key] > 0) S.king[key] = Math.max(0, S.king[key] - dt);
@@ -4010,15 +4041,16 @@ function drawHidden(br){
     for (const [dx, dy] of [[0, 0], [br.w - 4, 0], [0, br.h - 4], [br.w - 4, br.h - 4]]) ctx.fillRect(br.x + dx - 1, br.y + dy - 1, 5, 5);
   }
 }
-// 引っこんでいる壁は、うすい色と点線のわく（出てきたときの場所がわかるように）
+// 引っこんでいる壁は、うすい色と点線のわく（出てきたときの場所がわかるように）。
+// 強いスイッチで、もうすぐ出てくる壁は、わくを濃くして点滅させる
 function drawWallDown(br){
-  const col = tileColor(br);
+  const col = tileColor(br), soon = switchSoon();
   rr(br.x + 1, br.y + 1, br.w - 2, br.h - 2, 3);
   ctx.save();
-  ctx.globalAlpha = 0.14;
+  ctx.globalAlpha = soon ? 0.3 : 0.14;
   ctx.fillStyle = col;
   ctx.fill();
-  ctx.globalAlpha = 0.7;
+  ctx.globalAlpha = !soon ? 0.7 : reduceMotion.matches ? 1 : 0.55 + 0.45 * Math.abs(Math.cos(S.time * 14));
   ctx.setLineDash([4, 3]);
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = col;
@@ -4168,10 +4200,13 @@ function drawTile(br){
     ctx.fillStyle = C['t-ao'];
     ctx.fillRect(cx, cy - 5, 12, 10);
     ctx.restore();
+    ctx.save();
+    if (br.big && switchSoon()) ctx.globalAlpha = reduceMotion.matches ? 0.45 : 0.25 + 0.75 * Math.abs(Math.cos(S.time * 14));
     ctx.beginPath();
     ctx.arc(cx + (S.wallSide === 0 ? -6.5 : 6.5), cy, 4, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
     ctx.fill();
+    ctx.restore();
   } else if (br.wall) {
     // ななめのしまで、割れるタイルと見分ける
     ctx.save();
