@@ -1,5 +1,6 @@
 // 5周目の仕掛けの動きを確かめる。使い方：node tools/test_lap5.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
-// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）、筒（441面）を試す
+// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）、筒（441面）、
+// 虫JOKER（498面・499面）と500面の連戦、続きから遊ぶときの戻し方を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -263,6 +264,77 @@ const { chromium } = require('playwright');
     // 筒の真上のマスには、投げこむ虫などがタイルを置かない
     ok(!T.freeCell(8, 2) && !T.freeCell(8, 7) && T.freeCell(8, 4), '筒の真上のマスは、タイルを置けるマスに入らない');
     }
+    // ---- 虫JOKERと500面の連戦 ----
+    {
+      const dt = 1 / 60, R = 24;
+      const step = (n = 1) => { for (let i = 0; i < n; i++) { away(); T.update(dt); } };
+      // 下からボールを当てる（当たるまで数フレーム進める）
+      const hit = k => {
+        const b = S.balls[0], hp = k.hp, n = S.kings.length, w = S.wave;
+        b.x = k.x; b.y = k.y + R + S.ballR + 3; b.vx = 0; b.vy = -S.speed;
+        for (let i = 0; i < 6 && k.hp === hp && k.flash <= 0.2 && S.kings.length === n && S.wave === w; i++) T.update(dt);
+      };
+      const thrownPush = () => S.bricks.filter(b => b.push && b.thrown && b.hp > 0).length + S.flying.filter(f => f.pusher).length;
+      // 498面：残りが6割になったら虫JOKERが通りかかって、押されるタイルを3枚投げていく
+      T.startGame(498); S.mode = 'play'; away();
+      const j8 = S.kings[0];
+      ok(j8 && j8.joker && j8.state === 'wait' && j8.lay === 'pusher', '498面の虫JOKERは、はじめは出てこない');
+      const plain = S.bricks.filter(b => b.hp > 0 && !b.iron);
+      for (const b of plain.slice(0, Math.ceil(plain.length * 0.45))) b.hp = 0;
+      step(60 * 6);
+      ok(S.kingSeen && thrownPush() === 3, '虫JOKERが通りかかって、押されるタイルを3枚投げた（' + thrownPush() + '）');
+      // 499面：歩いている虫JOKERは、当ててもへらないが、少しして離れたところへ消えて出てくる
+      T.startGame(499); S.mode = 'play'; away();
+      const j9 = S.kings[0];
+      ok(j9.joker && j9.state === 'walk' && !j9.boss, '499面の虫JOKERは歩いていて、やっつけられない');
+      const x0 = j9.x;
+      hit(j9);
+      ok(j9.warpT > 0 && j9.hp === j9.max, '当てると、消える用意をする（体力はへらない）');
+      step(30);
+      // 499面では、当たっても止まらずに0.4秒歩いてから消える（そのぶん、当てた場所からは少し近いことがある）
+      ok(Math.abs(j9.x - x0) >= 90 && j9.warpCool > 0, '0.5秒のうちに、離れたところへ出てきた（' + Math.round(x0) + '→' + Math.round(j9.x) + '）');
+      const x1 = j9.x;
+      hit(j9); step(30);
+      ok(Math.abs(j9.x - x1) < 30, '出てきてすぐは、当てても消えない');
+      T.startGame(499); S.mode = 'play'; away();
+      step(60 * 25);
+      ok(thrownPush() >= 2, '歩きながら、押されるタイルを投げる（25秒で ' + thrownPush() + ' 枚）');
+      // 500面：虫KING → 虫QUEEN → 2匹同時 → 虫JOKER
+      T.startGame(500); S.mode = 'play'; away();
+      let k = S.kings[0];
+      ok(S.kings.length === 1 && !k.queen && !k.joker && k.boss && k.hp === 12 && k.lay === 'egg', '500面は、はじめに虫KING（体力12、たまご）');
+      k.hp = 1; hit(k);
+      k = S.kings[0];
+      ok(S.mode === 'play' && S.wave === 1 && k.queen && k.state === 'in' && k.lay === 'runner' && S.kingsGone.length === 1, '虫KINGをやっつけると、虫QUEEN（逃げるタイル）が歩いてくる');
+      step(60 * 3);
+      ok(k.state === 'walk', '虫QUEENが歩きはじめた');
+      k.plate = 0; k.plateT = 99; k.hp = 1; hit(k);
+      ok(S.wave === 2 && S.kings.length === 2 && S.kings.every(q => q.lay === 'faller' && q.hp === 12 && q.state === 'in'), '次は虫KINGと虫QUEENが2匹同時に歩いてくる（2匹とも落ちるタイル）');
+      ok(S.kings[0].x < 0 && S.kings[1].x > T.W, '2匹は左右から歩いてくる');
+      step(60 * 3);
+      let near = Infinity;
+      for (let i = 0; i < 60 * 30; i++) {
+        step();
+        const [a, c] = S.kings;
+        if (a.state === 'walk' && c.state === 'walk') near = Math.min(near, Math.abs(a.x - c.x));
+      }
+      ok(near >= R * 2, '2匹は重ならずに歩く（いちばん近づいて ' + Math.round(near) + '）');
+      const [kk, qq] = S.kings;
+      kk.hurtT = 0; kk.hp = 1; hit(kk);
+      ok(S.mode === 'play' && S.wave === 2 && S.kings.length === 1 && S.kings[0] === qq, '1匹やっつけても、もう1匹とのたたかいは続く');
+      qq.plate = 0; qq.plateT = 99; qq.hurtT = 0; qq.hp = 1; hit(qq);
+      k = S.kings[0];
+      ok(S.wave === 3 && S.kings.length === 1 && k.joker && k.boss && k.lay === 'pusher' && k.hp === 12, '2匹ともやっつけると、虫JOKER（体力12、押されるタイル）が出てくる');
+      step(60 * 3);
+      const xj = k.x;
+      hit(k); step(30);
+      ok(k.hp === 11 && Math.abs(k.x - xj) >= 110, '虫JOKERは当たると体力がへって、離れたところへ消えて出てくる');
+      step(60 * 3);
+      k.hurtT = 0; k.hp = 1; hit(k);
+      ok(S.mode === 'finale', '虫JOKERをやっつけると、終わりの演出になる');
+      for (let i = 0; i < 60 * 15 && S.mode === 'finale'; i++) T.update(dt);
+      ok(S.mode === 'clear' && document.getElementById('ovText').textContent.includes('JOKER'), '全部クリアの画面に虫JOKERが出てくる');
+    }
     return log;
   });
   // マウスでの逆：右へ動かすと左へ
@@ -272,6 +344,29 @@ const { chromium } = require('playwright');
   await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.5);
   const r2 = await page.evaluate(() => window.__T.S.paddle.x);
   out.push((r2 < r ? 'OK ' : 'NG ') + 'マウスを右へ動かすと、逆のあいだは板が左へ動く（' + Math.round(r) + '→' + Math.round(r2) + '）');
+  // 続きから：500面の2匹同時で、虫KINGをやっつけて虫QUEENが残り5のとき
+  const page2 = await browser.newPage();
+  page2.on('pageerror', e => errs.push('pageerror: ' + e.message));
+  await page2.addInitScript(() => {
+    window.claude = {hot: {data: {mode: 'play', stage: 500, bricks: [], lives: 3, score: 0, kingWave: 2, kingLeft: [['queen', 5]]},
+      snapshot: f => { window.__snap = f; }}};
+  });
+  await page2.goto('file://' + require('path').resolve(dir) + '/test.html');
+  await page2.waitForTimeout(300);
+  const rs = await page2.evaluate(() => {
+    const S = window.__T.S, k = S.kings[0], sn = window.__snap();
+    return {n: S.kings.length, wave: S.wave, queen: !!(k && k.queen), hp: k && k.hp, lay: k && k.lay, snap: JSON.stringify([sn.kingWave, sn.kingLeft])};
+  });
+  out.push((rs.n === 1 && rs.wave === 2 && rs.queen && rs.hp === 5 && rs.lay === 'faller' && rs.snap === '[2,[["queen",5]]]' ? 'OK ' : 'NG ') +
+    '続きから遊ぶと、500面の2匹同時の残りの虫QUEEN（体力5）から始まる ' + JSON.stringify(rs));
+  // 前の形のデータ（400面で虫QUEENが残り7）
+  const page3 = await browser.newPage();
+  page3.on('pageerror', e => errs.push('pageerror: ' + e.message));
+  await page3.addInitScript(() => { window.claude = {hot: {data: {mode: 'play', stage: 400, bricks: [], lives: 3, score: 0, kingHp: 7, kingQueen: true}}}; });
+  await page3.goto('file://' + require('path').resolve(dir) + '/test.html');
+  await page3.waitForTimeout(300);
+  const r3 = await page3.evaluate(() => { const S = window.__T.S, k = S.kings[0]; return {n: S.kings.length, queen: !!(k && k.queen), hp: k && k.hp}; });
+  out.push((r3.n === 1 && r3.queen && r3.hp === 7 ? 'OK ' : 'NG ') + '前の形のデータでも、400面の虫QUEEN（体力7）から続けられる ' + JSON.stringify(r3));
   console.log(out.join('\n'));
   const ng = out.filter(l => l.startsWith('NG')).length;
   console.log(errs.length ? errs.join('\n') : 'no errors');
