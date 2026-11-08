@@ -1,23 +1,24 @@
-# 5周目（STAGES5）の面の並べ方を調べる。使い方：python3 tools/check_stages.py [index.html]
+# 5周目（STAGES5）と6周目（STAGES6）の面の並べ方を調べる。使い方：python3 tools/check_stages.py [index.html]
 # 調べること：
 #   - 壁がどちらの向きでも、割るタイルに下から届くか。スイッチに下から当てられるか（ボールが閉じこめられないか）
 #   - 動く行・動く列（の動く範囲）に、置いてはいけないものがないか
 #   - かざぐるまの真上と真下が空いているか、ワープが4行目までか、落ちるタイルの下にタイルがあるか、ふたごとワープが2つずつか
 #   - 筒の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
-#   - 割れないもの（スイッチ・壁・鉄・錠・筒）が、割るタイルのいちばん下の行より下にないか
-#   - tint の字と長さ
+#   - 割れないもの（スイッチ・壁・鉄・錠・筒）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
+#   - tint の字と長さ。gold（金のタイルにするマス）の字と長さ
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
 import re, sys, os
 path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'index.html')
 src = open(path, encoding='utf-8').read()
-block = src[src.index('const STAGES5 = ['):]
-block = block[:block.index('\n];')] + '\n'
-defs = re.findall(r"\{rows: \[((?:'[^']*',?\s*)*)\](.*?)\},?\n", block, re.S)
-start = 401
+def stage_defs(name):
+    block = src[src.index('const ' + name + ' = ['):]
+    block = block[:block.index('\n];')] + '\n'
+    return re.findall(r"\{rows: \[((?:'[^']*',?\s*)*)\](.*?)\},?\n", block, re.S)
+defs = [(401 + i, d) for i, d in enumerate(stage_defs('STAGES5'))]
+defs += [(501 + i, d) for i, d in enumerate(stage_defs('STAGES6'))]
 ok = True
 stats = {'top': 0, 'bottom': 0, 'sym': 0, 'frame': 0}
-for i, (rows_s, rest) in enumerate(defs):
-    n = start + i
+for n, (rows_s, rest) in defs:
     rows = re.findall(r"'([^']*)'", rows_s)
     moving = set(int(k) for k in re.findall(r"(\d+):", ' '.join(re.findall(r"(?<![a-z])(?:move|loop): \{([^}]*)\}", rest))))
     vcols = set(int(k) for k in re.findall(r"(\d+):", ' '.join(re.findall(r"vmove: \{([^}]*)\}", rest))))
@@ -77,11 +78,22 @@ for i, (rows_s, rest) in enumerate(defs):
                 if ch == '.': continue
                 if ch not in 'RYGABSPVK': print(n, 'bad tint letter', r, c, ch); ok = False
                 elif c < len(row) and row[c] == '.': print(n, 'tint on empty cell', r, c); ok = False
+    g = re.search(r"gold: \[((?:'[^']*',?\s*)*)\]", rest)
+    if g:
+        gold = re.findall(r"'([^']*)'", g.group(1))
+        if len(gold) > R: print(n, 'gold has more rows than rows'); ok = False
+        for r, (gr, row) in enumerate(zip(gold, rows)):
+            if len(gr) != len(row): print(n, 'gold row length', r); ok = False
+            for c, ch in enumerate(gr):
+                if ch == '.': continue
+                if ch != '$': print(n, 'bad gold letter', r, c, ch); ok = False
+                elif c < len(row) and row[c] in '.+-sS#wxXoOLJi': print(n, 'gold on a cell without a breakable tile', r, c); ok = False
     tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOi')
     # 割れないもの（スイッチ・壁・鉄・錠・筒）は、割るタイルのいちばん下の行より下に置かない
     low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJi' for ch in row))
     low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJi' for ch in row)] or [-1])
-    if low_hard > low_tile:
+    # 6周目のボーナスステージ（501面から）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
+    if low_hard > low_tile and n < 501:
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False
     shape = lambda r: ''.join('.' if ch == '.' else 'X' for ch in r)
     top = '.' not in rows[0]
