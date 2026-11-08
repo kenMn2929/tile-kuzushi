@@ -853,6 +853,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //   'boss' 体力があって、やっつけるとクリア。タイルは割り切らなくてよい。さいしょから「守」がつき、ボールは虫のいる面と同じく遅い
 // room: 行数  いちばん上からこの行数には、タイルもたまごも投げこまない（虫KINGのまわりをボールが通れるように）
 // more: [アイテム]  その面だけ、書いたアイテムを MORE_K 倍出やすくする
+// moreK: 倍率  more に書いたアイテムを、MORE_K のかわりにこの倍率で出やすくする
+// still: true  2周目からの面でも、タイルが下りてこない
 // tint: [行の字]  マスごとのタイルの色（rows と同じ形で書く）。. はふつうの色（行ごとの色）。3回のタイルと、字のある仕掛けのタイルは、それぞれの色のまま
 //   R 赤（さんご）  Y 黄（やまぶき）  G 緑（わかくさ）  A 青緑（あさぎ）  B 青（あい）  S 空色  P 桃色  V 紫（ふじ）  K 茶色（くるみ）
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
@@ -1761,11 +1763,14 @@ const STAGES6 = [
   // （まん中に入り口を置くと、さいしょに打ち上げたボールがそのまま当たって、1秒でクリアになることが多かった）
   {rows: ['.#33#33#..','3*22*22*3.','#*##*##*#.','3*22*22*3.','#*##*##*#.','3*22*22*3.','#*##*##*#.','3*22*22*3.','#*##*##*#.','#*******#.','#######.#.'],
    tint: ['..........','..SS.SS...','..........','..SS.SS...','..........','..SS.SS...','..........','..SS.SS...','..........','..........','..........']},
-  // うずまき（入り口は下の行の1か所だけ。左・上・右・下と時計回りにぐるぐる回って、真ん中の金のかたまりへ。抜け道は作らない。「分」を出やすくする）
-  {rows: ['2222222222','2........2','2.222222.2','2.2....2.2','2.2.22.2.2','2.2.22.2.2','2.2.2222.2','2.2......2','2.22222222','2.......22','2222222.22'],
-   tint: ['RRRRRRRRRR','R........R','R.GAAAAA.R','R.G....B.R','R.G....B.R','R.G....B.R','R.G....B.R','R.G......R','R.YYYYYYYR','R.......RR','RRRRRRR.RR'],
-   gold: ['..........','..........','..........','..........','....$$....','....$$....','....$$$...'],
-   more: ['split']},
+  // うずまき（外のふちは鉄で、入れるのは左下の入り口だけ。入り口は2列の縦の通り道で、上まで行くと右へ曲がり、
+  // 時計回りにぐるぐる回って真ん中の金のタイルへ。通り道を曲がった先は1本道で、抜け道はない）
+  // 横の通り道は1行の高さなので、入ったボールは天井と床のあいだを細かく跳ねながら横へ進み、壁を続けて当てていく
+  // 壁は3回のタイルで固くし、分かれるタイルを上・左・右・右下の壁にちらす。「分」のアイテムは4倍出やすくする
+  // タイルが下りてくると、50秒ほどで線に届いてボールがへり、1回あたり1.4個失った（下りてこなければ0個）。この面はタイルを下ろさない
+  {rows: ['##########','#........#','#..33y33.#','#..3...3.#','#..3.2.3.#','#..y.2.y.#','#..3.2.3.#','#..3.2.3.#','#..3.33y.#','#..3.....#','#..#######'],
+   gold: ['..........','..........','..........','..........','.....$....','.....$....','.....$....','.....$....'],
+   more: ['split'], moreK: 4, still: true},
   // 金の延べ棒（全部が金のタイルで、鎖でつながっている。3回当てると全部割れて、点数がどっと入る）
   {rows: ['..........','..........','....cc....','...cccc...','..cccccc..','.cccccccc.','cccccccccc','cccccccccc'],
    gold: ['..........','..........','....$$....','...$$$$...','..$$$$$$..','.$$$$$$$$.','$$$$$$$$$$','$$$$$$$$$$']},
@@ -1967,10 +1972,10 @@ const basePaddle = n => lapOf(n) > 1 ? 60 : Math.max(60, 88 - (n - 1) * 1.8);
 const stageDef = n => lapOf(n) === 1 ? STAGES[n - 1] : lapOf(n) === 2 ? LAP2_STAGES[patternNo(n) - 1]
   : lapOf(n) === 3 ? STAGES3[n - LAP3_FROM] : lapOf(n) === 4 ? STAGES4[n - LAP4_FROM] : lapOf(n) === 5 ? STAGES5[n - LAP5_FROM]
   : STAGES6[listNo(n) - LAP6_FROM];
-// タイルが下りてくる速さ。1周目と、虫KINGとたたかう面は下りてこない
+// タイルが下りてくる速さ。1周目と、虫KINGとたたかう面と、still の面は下りてこない
 // 3周目は100面ぶんで DROP_V1 から DROP_V2 まで、4周目は DROP_V2 から DROP_V3 まで、5周目は DROP_V3 から DROP_V4 まで上げる。6周目は DROP_V4 のまま
 const lapDrop = (n, from, v0, v1) => v0 + (v1 - v0) * Math.min(1, (listNo(n) - from) / (STAGES.length - 2));
-const dropSpeed = n => lapOf(n) === 1 || stageDef(n).king === 'boss' ? 0
+const dropSpeed = n => lapOf(n) === 1 || stageDef(n).king === 'boss' || stageDef(n).still ? 0
   : lapOf(n) === 2 ? DROP_V0 + (DROP_V1 - DROP_V0) * (patternNo(n) - 1) / (STAGES.length - 2)
   : lapOf(n) === 3 ? lapDrop(n, LAP3_FROM, DROP_V1, DROP_V2)
   : lapOf(n) === 4 ? lapDrop(n, LAP4_FROM, DROP_V2, DROP_V3) : lapOf(n) === 5 ? lapDrop(n, LAP5_FROM, DROP_V3, DROP_V4) : DROP_V4;
@@ -3496,8 +3501,8 @@ window.addEventListener('keyup', e => {
 function pickItem(ok){
   const n = ruleNo(S.stage), last = itemNo(S.stage);
   const pool = Object.entries(ITEMS).filter(([, d]) => (!d.from || last >= d.from) && (!ok || ok(d)));
-  const more = stageDef(S.stage).more || [];
-  const ws = pool.map(([key, d]) => itemWeight(key, d, n) * (more.includes(key) ? MORE_K : 1));
+  const more = stageDef(S.stage).more || [], moreK = stageDef(S.stage).moreK || MORE_K;
+  const ws = pool.map(([key, d]) => itemWeight(key, d, n) * (more.includes(key) ? moreK : 1));
   // 鉄のある面は霧吹き、盾のある面は「上」の出る割合を、決めた分だけ上げる（6% なら 16% に）
   for (const [k, plus, on] of [['spray', SPRAY_IRON_PLUS, hasIron(S.stage)], ['up', UP_SHIELD_PLUS, hasShield(S.stage)]]) {
     const i = pool.findIndex(([key]) => key === k);
