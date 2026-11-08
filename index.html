@@ -238,6 +238,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.bug{background:var(--bug);color:var(--board)}
 .cap.king{background:var(--bug);color:var(--t-yamabuki)}
 .cap.queen{background:var(--t-fuji);color:var(--t-yamabuki);font-size:.62rem}
+.cap.joker{background:var(--t-ai);color:var(--t-yamabuki);font-size:.62rem}
 /* たまごは、盤面と同じく白いたまごに虫の色の点 */
 .cap.egg{position:relative;background:var(--t-egg);border-radius:3px}
 .cap.egg::before{
@@ -554,6 +555,20 @@ img{max-width:100%}
               <p class="note" data-from="400">ステージ400も、さいしょから「{守|まもり}」がついていて、ボールが{少|すこ}しゆっくりになります。</p>
             </div>
             <div class="section group">
+              <p class="sub">ステージ498から{出|で}てくる{虫|むし}</p>
+              <ul class="items one">
+                <li data-from="499"><span class="cap joker">道化</span>{虫|むし}JOKER。{上|うえ}を{歩|ある}きながら、{空|あ}いたところへ{押|お}されるタイルを{投|な}げこむ。ボールか{光|ひかり}が{当|あ}たると、{少|すこ}しして{別|べつ}のところへ{消|き}えて、また{出|で}てくる。ボールをはね{返|かえ}す。ステージ499では、まだやっつけられない</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ500の{虫|むし}たち</p>
+              <ul class="items one">
+                <li data-from="500"><span class="cap king">王</span>{虫|むし}KING（たまごを{産|う}む）、{虫|むし}QUEEN（{逃|に}げるタイルを{投|な}げる。{下|した}に{盾|たて}がある）、{虫|むし}KINGと{虫|むし}QUEENの2{匹|ひき}いっしょ（2{匹|ひき}とも{落|お}ちるタイルを{投|な}げる）、{虫|むし}JOKERの{順|じゅん}に{出|で}てくる。どれもボールか{光|ひかり}を12{回|かい}{当|あ}てると、やっつけられる。タイルは{全部|ぜんぶ}{割|わ}らなくてよい</li>
+                <li data-from="500"><span class="cap joker">道化</span>どれも、のこり8{回|かい}でタイルも{投|な}げこみ、のこり4{回|かい}でおこって{速|はや}く{歩|ある}き、はね{返|かえ}す{虫|むし}をよぶ。おこった{虫|むし}JOKERは、{前|まえ}より{早|はや}く{消|き}えて{出|で}てくる</li>
+              </ul>
+              <p class="note" data-from="500">ステージ500も、さいしょから「{守|まもり}」がついていて、ボールが{少|すこ}しゆっくりになります。</p>
+            </div>
+            <div class="section group">
               <p class="sub">お{助|たす}け</p>
               <ul class="notes">
                 <li data-from="1">1{分|ぷん}ごとに、どれか1{枚|まい}のタイルにいいアイテムが{入|はい}ります（{右|みぎ}がわの{丸|まる}い{印|しるし}）。{割|わ}ると、かならずそのアイテムが{落|お}ちてきます。</li>
@@ -687,6 +702,11 @@ const QUEEN_PLATE = 2, QUEEN_PLATE_BACK = 10, QUEEN_PLATE_MAD = 6, QUEEN_BELOW =
 // 398面では、虫KINGが残り KING_PASS_AT、虫QUEENが残り DUO_PASS_AT2 で通りかかる。399面では、残りが DUO_SWAP_AT になったら虫KINGが帰って虫QUEENと交代する
 // 400面では、先に虫KING、やっつけると虫QUEENが出てくる。体力はそれぞれ DUO_HP。のこり DUO_PHASE2 でタイルも投げこみ、DUO_PHASE3 でおこる
 const DUO_FALLERS = 4, DUO_PASS_AT2 = 0.3, DUO_SWAP_AT = 0.5, DUO_HP = 12, DUO_PHASE2 = 8, DUO_PHASE3 = 4;
+// 虫JOKER（498〜500面）：たまごのかわりに押されるタイルを投げる。盤面と飛んでいるものをあわせて JOKER_PUSHERS 枚まで
+// ボールか光が当たると JOKER_WARP_T 秒後に、JOKER_WARP_FAR より離れたところへ消えて出てくる。出てから JOKER_WARP_COOL 秒（おこったあとは JOKER_WARP_MAD 秒）は消えない
+const JOKER_PUSHERS = 4, JOKER_WARP_T = 0.4, JOKER_WARP_FAR = 110, JOKER_WARP_COOL = 2.5, JOKER_WARP_MAD = 1.5;
+// 500面（rush）：虫KING → 虫QUEEN → 虫KINGと虫QUEENの2匹同時 → 虫JOKER の順に出てくる。体力はどれも RUSH_HP。のこり RUSH_PHASE2 でタイルも投げこみ、RUSH_PHASE3 でおこる
+const RUSH_HP = 12, RUSH_PHASE2 = 8, RUSH_PHASE3 = 4;
 // 板にも割れるタイルにも当たらないまま、この秒数がたったボールは向きを少し変える（同じ道筋を回り続けないように）
 const LOOP_T = 10;
 // 鉄のある面で、霧吹きが出る割合に足す分
@@ -825,6 +845,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // king: 上を歩く虫KING（thrower・carry と同じ面には出さない）
 // queen: true  king の虫を虫QUEENにする（たまごのかわりに逃げるタイルを投げる。'boss' では下に盾がある）
 // duo: true  king の虫を、虫KINGと虫QUEENの2匹にする（1匹ずつ順に出てくる。2匹とも落ちるタイルを投げる）
+// joker: true  king の虫を虫JOKERにする（たまごのかわりに押されるタイルを投げる。ボールが当たると、ほかの場所へ消えて出てくる）
+// rush: true  'boss' の面で、虫KING → 虫QUEEN → 2匹同時 → 虫JOKER の順にたたかう（500面）
 //   'pass' 残りのタイルが6割になったら通りかかって、たまごを産んでいく  'nest' ずっと歩いてたまごを産む（やっつけられない）
 //   'boss' 体力があって、やっつけるとクリア。タイルは割り切らなくてよい。さいしょから「守」がつき、ボールは虫のいる面と同じく遅い
 // room: 行数  いちばん上からこの行数には、タイルもたまごも投げこまない（虫KINGのまわりをボールが通れるように）
@@ -1686,6 +1708,26 @@ const STAGES5 = [
   {rows: ['..2222....','.222222...','22222222..','222..222..','RR....RR..','...3.3....','....3.....','.......333','....X.3222','.w....2222','1111..1111'],
    tint: ['..RRRR....','.RYYYYR...','RYBBBBYR..','RYB..BYR..','..........','..........','..........','..........','......KYYY','......KYYY','GGGG..GGGG'],
    move: {5: 50, 6: 50}, thrower: true},
+  // 497〜500：虫JOKER（押されるタイルを投げる。498面で通りかかり、499面では歩いていてまだやっつけられず、500面で虫KING・虫QUEENとの連戦のあとにたたかう）
+  // 397〜400面と同じ流れ（497面は虫なし → 498面は回る行と虫と通りかかる虫JOKER → 499面は歩く虫JOKER → 500面はたたかう）
+  // トランプ（表のカードのスペードと角の印が3回のタイル。裏返しのカードの裏の模様が赤い壁と青い壁で、まん中のスイッチで入れかわる。チップが押されるタイル）
+  // カードのふちを2回のタイルにすると、397面より長引いて失うボールもふえた（0.8個・100秒）。ふちを1回にして、表のカードの左のふちだけ2回にした
+  {rows: ['......1111','.111..1+-1','23..1.1-+1','2.3.1.1+-1','23331.1-+1','23331.1s-1','2.3.1.1111','2..31.....','.111......','......h...','..h.h...h.'],
+   tint: ['......SSSS','.SSS..S..S','S...S.S..S','S...S.S..S','S...S.S..S','S...S.S..S','S...S.SSSS','S...S.....','.SSS......']},
+  // 手品（万国旗が回る行。さかさまのシルクハットの口が筒、帽子から顔を出すうさぎ、ステッキ、虫、通りかかる虫JOKER）
+  // 帽子を11行目まで下げると、50秒ほどで線に届いて1.7個になった。帽子を1段へらして10行にした
+  {rows: ['2.2.2.2...','........1.','....1.1..1','....1.1..3','....111..3','.........1','.3i333333.','..222222..','..222222..','..222222..'],
+   tint: ['R.Y.G.B...','........Y.','....P.P..Y','....P.P...','....PPP...','.........Y','..........','..RRRRRR..','..VVVVVV..','..VVVVVV..'],
+   loop: {0: 60}, bug: 60, king: 'pass', joker: true},
+  // びっくり箱（ばねが鎖。箱のふたが赤い壁と青い壁で、開いたふたと閉じたふたが、箱の横のハンドルのスイッチで入れかわる。箱の「？」がびっくり箱のタイル、歩く虫JOKER）
+  // 箱に足をつけて11行にすると1.6個になった。足を外して10行にし、箱の底を1回にした。箱のふちとえりは3回（黒）
+  {rows: ['....2..2..','....2222..','....2222..','...333333.','.+....cc..','.+...cc...','.+---.cc..','.33333333.','.222?2222s','.11111111.'],
+   tint: ['....R..Y..','....RRYY..','....YRYY..','..........','..........','..........','..........','..........','.BRB.BRBR.','.YYYYYYYY.'],
+   king: 'nest', joker: true},
+  // 王冠（山の先と帯の宝石、山と山のあいだの筒が、上を歩く虫へボールを撃ち上げる。虫KING → 虫QUEEN → 2匹同時 → 虫JOKER の連戦）
+  {rows: ['..........','..........','.1..11..1.','.2..22..2.','.22.22.22.','.22i22i22.','.31311313.','..222222..'],
+   tint: ['..........','..........','.R..BB..G.','.Y..YY..Y.','.YY.YY.YY.','.YY.YY.YY.','..G.RR.G..','..YYYYYY..'],
+   king: 'boss', rush: true, room: 2},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -1790,8 +1832,12 @@ const INTROS = {
         text: 'ステージ456までは、{新|あたら}しいものは{出|で}てきません。ステージ401から{出|で}てきた スイッチ・{赤|あか}と{青|あお}の{壁|かべ}・{押|お}されるタイル・{鎖|くさり}のタイル・{筒|つつ}を、たくさん{重|かさ}ねたステージです。「{炎|ほのお}」「{逆|ぎゃく}」のアイテムも、いつもより{出|で}やすくなります。'},
   457: {eyebrow: 'ステージ 457 から', title: '{組|く}み{合|あ}わせ その3',
         text: 'ここからも、{新|あたら}しいものは{出|で}てきません。これまでの{助|たす}けになるタイルと、じゃまになるタイルや{虫|むし}を、1つのステージにたくさん{詰|つ}めこみました。{先|さき}のステージほど{難|むずか}しくなります。'},
+  499: {eyebrow: 'ステージ 499', title: '{虫|むし}JOKER',
+        text: 'スイッチや{押|お}されるタイルを{置|お}いていたのは、{虫|むし}JOKERでした。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
+  500: {eyebrow: 'ステージ 500', title: '3{匹|びき}とたたかう',
+        text: '5{周目|しゅうめ}の{最後|さいご}のステージです。{虫|むし}KING、{虫|むし}QUEEN、{虫|むし}KINGと{虫|むし}QUEENの2{匹|ひき}いっしょ、{虫|むし}JOKERの{順|じゅん}にたたかいます。どれもボールを' + RUSH_HP + '{回|かい}{当|あ}てると、やっつけられます。'},
 };
-// 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへ、397〜399面は400面の2匹へつなぐ。空ならなにも出さない
+// 97〜99面をクリアしたときの一言（100面の虫KINGへつなぐ）。297〜299面は300面の虫QUEENへ、397〜399面は400面の2匹へ、497〜499面は500面の3匹へつなぐ。空ならなにも出さない
 const STORY = {
   97: () => S.hatched ? 'ちび{虫|むし}たちは、みんな{上|うえ}のほうへ{飛|と}んでいきました。' : 'このたまごを{産|う}んだのは、だれだろう。',
   98: () => S.kingSeen ? 'いまの{大|おお}きな{虫|むし}は、だれだろう。' : '',
@@ -1802,6 +1848,9 @@ const STORY = {
   397: () => 'かざぐるまや{落|お}ちるタイルを{置|お}いていったのは、だれだろう。',
   398: () => S.kingSeen ? 'いまの2{匹|ひき}は、{虫|むし}KINGと{虫|むし}QUEENみたいです。' : '',
   399: () => '2{匹|ひき}がおこっています。{次|つぎ}は2{匹|ひき}とたたかいます。',
+  497: () => 'スイッチや{押|お}されるタイルを{置|お}いていったのは、だれだろう。',
+  498: () => S.kingSeen ? 'いまの{大|おお}きな{虫|むし}は、{虫|むし}KINGとも{虫|むし}QUEENともちがうみたいです。' : '',
+  499: () => '{虫|むし}JOKERが、{虫|むし}KINGと{虫|むし}QUEENをよびました。{次|つぎ}は3{匹|びき}と{順|じゅん}にたたかいます。',
 };
 
 const $ = id => document.getElementById(id);
@@ -1900,7 +1949,7 @@ const S = {
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
   keyCells: [], keyWait: [], globs: [], fires: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
-  king: null, kingGone: null, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
+  kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
   pierce: 0, wideT: 0, shrinkT: 0, slowT: 0, fastT: 0, feverT: 0, guard: 0,
@@ -2175,8 +2224,9 @@ function buildStage(n){
     ? {x: W / 2, y: THROW_Y, dir: Math.random() < 0.5 ? -1 : 1, stock: CARRY_STOCK, cool: 4, stunT: 0, leaving: false, step: 0,
        state: 'walk', br: null, to: null}
     : null;
-  S.king = def.king ? makeKing(def) : null;
-  S.kingGone = null;
+  S.wave = 0;
+  S.kings = !def.king ? [] : def.king === 'boss' ? spawnWave(def, 0, true) : [makeKing(def)];
+  S.kingsGone = [];
   S.kingFrom = list.filter(needBreak).length;
   S.kingSeen = false;
   S.chicks = [];
@@ -2393,11 +2443,11 @@ function throwTarget(){
   for (let r = 0; r < rows; r++) for (let c = 0; c < COLS; c++) if (freeCell(r, c)) cells.push([r, c]);
   return cells.length ? cells[Math.floor(Math.random() * cells.length)] : null;
 }
-// (x, y) から r 行 c 列へタイルを投げる。kind が true か 'egg' ならたまご、'runner' なら逃げるタイル、'faller' なら落ちるタイルになる
+// (x, y) から r 行 c 列へタイルを投げる。kind が true か 'egg' ならたまご、'runner' なら逃げるタイル、'faller' なら落ちるタイル、'pusher' なら押されるタイルになる
 function tossTo(r, c, x, y, kind){
   const x1 = SIDE + c * CELL + BRICK_W / 2, y1 = cellY(r) + BRICK_H / 2;
   S.flying.push({row: r, col: c, x0: x, y0: y, x1, y1, t: 0, dur: 0.5 + Math.hypot(x1 - x, y1 - y) / 900,
-    egg: kind === true || kind === 'egg', runner: kind === 'runner', faller: kind === 'faller'});
+    egg: kind === true || kind === 'egg', runner: kind === 'runner', faller: kind === 'faller', pusher: kind === 'pusher'});
 }
 // どこかの空いたマスへ投げる。空きがなければ false
 function toss(x, y, kind){
@@ -2515,25 +2565,59 @@ function moveCarrier(dt){
   }
 }
 // 虫KING：上を歩きながら、たまごを産む。100面だけは体力があって、やっつけられる
-function makeKing(def){
-  const pass = def.king === 'pass', queen = !!def.queen, duo = !!def.duo;
-  const max = duo ? DUO_HP : queen ? QUEEN_HP : KING_HP;
+// who は 'king'（虫KING）・'queen'（虫QUEEN）・'joker'（虫JOKER）。省くと面の queen・joker で決める
+// lay は投げるもの（'egg' たまご・'runner' 逃げる・'faller' 落ちる・'pusher' 押される）。省くと、2匹で出る面は落ちるタイル、ほかはそれぞれの虫のもの
+function makeKing(def, who, lay){
+  who = who || (def.joker ? 'joker' : def.queen ? 'queen' : 'king');
+  const pass = def.king === 'pass', queen = who === 'queen', joker = who === 'joker', duo = !!def.duo, rush = !!def.rush;
+  const max = rush ? RUSH_HP : duo ? DUO_HP : queen ? QUEEN_HP : KING_HP;
   return {
     x: pass ? W + KING_R * 3 : W / 2, y: KING_Y, dir: Math.random() < 0.5 ? -1 : 1,
     state: pass ? 'wait' : 'walk', boss: def.king === 'boss', hp: max, max, phase: 1,
-    ph2: duo ? DUO_PHASE2 : queen ? QUEEN_PHASE2 : KING_PHASE2, ph3: duo ? DUO_PHASE3 : queen ? QUEEN_PHASE3 : KING_PHASE3,
-    queen, duo, plate: queen ? QUEEN_PLATE : 0, plateT: 0, plateFlash: 0,
-    // 通りかかる残りの割合と、右から歩いてきて真ん中に着いたあと（'lay' でたまごを産む、'walk' で歩きはじめる）
-    passAt: KING_PASS_AT, after: 'lay',
-    step: 0, stunT: 0, hurtT: 0, flash: 0, noT: 0, windup: 0, layT: 0, laid: 0, downT: 0,
+    ph2: rush ? RUSH_PHASE2 : duo ? DUO_PHASE2 : queen ? QUEEN_PHASE2 : KING_PHASE2,
+    ph3: rush ? RUSH_PHASE3 : duo ? DUO_PHASE3 : queen ? QUEEN_PHASE3 : KING_PHASE3,
+    queen, joker, duo, rush, lay: lay || (duo ? 'faller' : joker ? 'pusher' : queen ? 'runner' : 'egg'),
+    plate: queen ? QUEEN_PLATE : 0, plateT: 0, plateFlash: 0,
+    // 通りかかる残りの割合と、歩いてきて inX に着いたあと（'lay' でたまごを産む、'walk' で歩きはじめる）
+    passAt: KING_PASS_AT, after: 'lay', inX: W / 2,
+    step: 0, stunT: 0, hurtT: 0, flash: 0, noT: 0, windup: 0, layT: 0, laid: 0, downT: 0, warpT: 0, warpCool: 0,
     eggT: def.king === 'nest' ? KING_EGG_NEST : KING_EGG, throwT: KING_THROW
   };
 }
+// たたかう面で出てくる順番。1つの組は同時に出てくる虫（[だれ, 投げるもの]）
+// 400面は虫KING → 虫QUEEN（2匹とも落ちるタイル）。500面は虫KING（たまご）→ 虫QUEEN（逃げる）→ 2匹同時（落ちる）→ 虫JOKER（押される）
+const RUSH_WAVES = [[['king', 'egg']], [['queen', 'runner']], [['king', 'faller'], ['queen', 'faller']], [['joker', 'pusher']]];
+const DUO_WAVES = [[['king']], [['queen']]];
+const bossWaves = def => def.rush ? RUSH_WAVES : def.duo ? DUO_WAVES : [[[null]]];
+// i 番目の組を出す。here が true なら、はじめから盤面にいる（面の始めと、続きから遊ぶとき）。ちがうときは、横から歩いてくる
+function spawnWave(def, i, here){
+  const wave = bossWaves(def)[i];
+  return wave.map(([who, lay], j) => {
+    const k = makeKing(def, who, lay);
+    // 2匹同時のときは、虫KINGが左、虫QUEENが右
+    const x = wave.length === 1 ? W / 2 : j === 0 ? W * 0.3 : W * 0.7;
+    if (here) k.x = x;
+    else {
+      const left = wave.length > 1 && j === 0;
+      k.state = 'in'; k.x = left ? -KING_R * 3 : W + KING_R * 3; k.inX = x; k.after = 'walk';
+      k.dir = left ? 1 : -1;
+    }
+    return k;
+  });
+}
+// 盤面にいる虫を入れかえる（n が null なら、いなくなる）
+function replaceKing(k, n){
+  const i = S.kings.indexOf(k);
+  if (i < 0) return;
+  if (n) S.kings[i] = n;
+  else S.kings.splice(i, 1);
+}
 // 虫の名前（知らせの字は、盤面に出すのでひらがなとアルファベット）
-const kingName = k => k && k.queen ? 'むしQUEEN' : 'むしKING';
-const kingAlive = () => !!(S.king && S.king.boss && S.king.hp > 0);
-// ボールが当たる虫KINGがいるか（通りかかる前と、やっつけたあとは当たらない）
-const kingHere = () => !!(S.king && S.king.state !== 'wait' && S.king.state !== 'down');
+const kingName = k => k && k.joker ? 'むしJOKER' : k && k.queen ? 'むしQUEEN' : 'むしKING';
+const kingWho = k => k.joker ? 'joker' : k.queen ? 'queen' : 'king';
+const kingAlive = () => S.kings.some(k => k.boss && k.hp > 0);
+// ボールが当たる虫KINGか（通りかかる前と、やっつけたあとは当たらない）
+const kingHere = k => !!(k && k.state !== 'wait' && k.state !== 'down');
 const kingPhase = k => k.hp > k.ph2 ? 1 : k.hp > k.ph3 ? 2 : 3;
 const leftCount = () => S.bricks.reduce((a, b) => a + (needBreak(b) ? 1 : 0), 0);
 // 盤面にあるたまごと、飛んでいるたまごの数
@@ -2542,12 +2626,17 @@ const eggCount = () => S.bricks.reduce((a, b) => a + (b.egg && b.hp > 0 ? 1 : 0)
 const runnerCount = () => S.bricks.reduce((a, b) => a + (b.runner && b.thrown && b.hp > 0 ? 1 : 0), 0) + S.flying.filter(f => f.runner).length;
 // 2匹で出る面で、虫KINGと虫QUEENが投げた落ちるタイルの数（飛んでいるものもあわせる）
 const fallerCount = () => S.bricks.reduce((a, b) => a + (b.faller && b.thrown && b.hp > 0 ? 1 : 0), 0) + S.flying.filter(f => f.faller).length;
-// 虫KINGはたまご、虫QUEENは逃げるタイル、2匹で出る面では2匹とも落ちるタイルを産む（投げる）。まだ投げられるか
-const canLay = k => k.duo ? fallerCount() < DUO_FALLERS : k.queen ? runnerCount() < QUEEN_RUNNERS : eggCount() < KING_EGGS_MAX;
-const layKind = k => k.duo ? 'faller' : k.queen ? 'runner' : 'egg';
+// 虫JOKERが投げた押されるタイルの数（飛んでいるものもあわせる）
+const pusherCount = () => S.bricks.reduce((a, b) => a + (b.push && b.thrown && b.hp > 0 ? 1 : 0), 0) + S.flying.filter(f => f.pusher).length;
+// 虫KINGはたまご、虫QUEENは逃げるタイル、2匹で出る面では2匹とも落ちるタイル、虫JOKERは押されるタイルを産む（投げる）。まだ投げられるか
+const canLay = k => k.lay === 'faller' ? fallerCount() < DUO_FALLERS : k.lay === 'runner' ? runnerCount() < QUEEN_RUNNERS
+  : k.lay === 'pusher' ? pusherCount() < JOKER_PUSHERS : eggCount() < KING_EGGS_MAX;
+const layKind = k => k.lay;
 function moveKing(dt){
-  const k = S.king;
-  if (!k || k.state === 'down') return;
+  for (const k of S.kings.slice()) moveOneKing(k, dt);
+}
+function moveOneKing(k, dt){
+  if (k.state === 'down') return;
   // 虫QUEENの割れた盾は、しばらくすると張り直す
   if (k.queen && k.boss && k.plate <= 0 && S.mode === 'play' && (k.plateT -= dt) <= 0) {
     k.plate = QUEEN_PLATE;
@@ -2556,6 +2645,8 @@ function moveKing(dt){
     sfx('shield');
   }
   if (k.stunT > 0) { k.stunT = Math.max(0, k.stunT - dt); return; }
+  // 虫JOKERは、ボールが当たると少しして、ほかの場所へ消えて出てくる
+  if (k.warpT > 0 && (k.warpT -= dt) <= 0) warpJoker(k);
   // ボールが当たったあとは、少しのあいだ目を回して止まる
   if (k.hurtT > 0) return;
   if (k.state !== 'walk') { passKing(k, dt); return; }
@@ -2577,6 +2668,10 @@ function moveKing(dt){
   k.x += k.dir * (k.phase === 3 ? KING_FAST : KING_V) * dt;
   if (k.x < KING_EDGE) { k.x = KING_EDGE; k.dir = 1; }
   else if (k.x > W - KING_EDGE) { k.x = W - KING_EDGE; k.dir = -1; }
+  // 2匹同時のときは、ぶつかりそうになったら向きを変える
+  for (const o of S.kings) {
+    if (o !== k && kingHere(o) && Math.sign(o.x - k.x) === k.dir && Math.abs(o.x - k.x) < KING_R * 2 + 8) k.dir = -k.dir;
+  }
   if (S.mode !== 'play') return;
   k.eggT -= dt;
   if (k.eggT <= 0) {
@@ -2591,8 +2686,36 @@ function moveKing(dt){
     k.windup = 0.45;
   }
 }
-// 98面・298面・398面：残りが6割（398面の虫QUEENは3割）になったら右から歩いてきて、真ん中でたまご（虫QUEENは逃げるタイル、398面は落ちるタイル）を産み、左へ去る
-// 399面・400面の虫QUEENも、右から歩いてきて、真ん中に着いたら歩きはじめる（after が 'walk'）
+// 虫JOKER：いまの場所から JOKER_WARP_FAR より離れたところへ、消えて出てくる（ボールに重ならないところ）
+function warpJoker(k){
+  if (k.state !== 'walk' || S.mode !== 'play') return;
+  // いまの場所の左と右の、JOKER_WARP_FAR より離れたところ（歩ける端まで）から選ぶ
+  const spans = [[KING_EDGE, k.x - JOKER_WARP_FAR], [k.x + JOKER_WARP_FAR, W - KING_EDGE]].filter(([a, b]) => b > a);
+  const total = spans.reduce((a, [p, q]) => a + q - p, 0);
+  let nx = null;
+  for (let i = 0; i < 12 && nx === null && total > 0; i++) {
+    let u = Math.random() * total, x = 0;
+    for (const [p, q] of spans) { if (u <= q - p) { x = p + u; break; } u -= q - p; }
+    if (S.balls.some(b => Math.hypot(b.x - x, b.y - k.y) < KING_R + S.ballR + 20)) continue;
+    if (S.kings.some(o => o !== k && kingHere(o) && Math.abs(o.x - x) < KING_R * 2 + 8)) continue;
+    nx = x;
+  }
+  if (nx === null) return;
+  if (!reduceMotion.matches) {
+    S.blasts.push({x: k.x, y: k.y, t: 0, size: 30, color: C['t-fuji']});
+    S.blasts.push({x: nx, y: k.y, t: 0, size: 30, color: C['t-fuji']});
+  }
+  k.x = nx;
+  k.dir = Math.random() < 0.5 ? -1 : 1;
+  k.flash = 0.25;
+  k.windup = 0;
+  k.warpCool = k.phase === 3 ? JOKER_WARP_MAD : JOKER_WARP_COOL;
+  S.pops.push({x: k.x, y: k.y + KING_R + 18, text: 'こっちだよ', t: 0, bad: true});
+  sfx('warp');
+}
+// 98面・298面・398面・498面：残りが6割（398面の虫QUEENは3割）になったら右から歩いてきて、真ん中でたまご（虫QUEENは逃げるタイル、398面は落ちるタイル、
+// 虫JOKERは押されるタイル）を産み、左へ去る
+// 399面・400面の虫QUEENと、500面であとから出てくる虫も、横から歩いてきて、inX に着いたら歩きはじめる（after が 'walk'）
 function passKing(k, dt){
   if (k.state === 'wait') {
     if (S.mode === 'play' && leftCount() <= S.kingFrom * k.passAt) {
@@ -2604,8 +2727,8 @@ function passKing(k, dt){
   }
   if (k.state === 'in') {
     k.step += dt;
-    k.x = Math.max(W / 2, k.x - KING_PASS_V * dt);
-    if (k.x === W / 2) {
+    k.x += clamp(k.inX - k.x, -KING_PASS_V * dt, KING_PASS_V * dt);
+    if (k.x === k.inX) {
       if (k.after === 'walk') { k.state = 'walk'; k.dir = Math.random() < 0.5 ? -1 : 1; }
       else { k.state = 'lay'; k.layT = 0; k.laid = 0; }
     }
@@ -2617,30 +2740,32 @@ function passKing(k, dt){
   } else {
     k.step += dt;
     k.x -= KING_PASS_V * dt;
-    if (k.x < -KING_R * 3) S.king = duoNext(k);
+    if (k.x < -KING_R * 3) replaceKing(k, duoNext(k));
   }
 }
-// 2匹で出る面：虫KINGがいなくなったら、虫QUEENを出す（398面は通りかかるのを待ち、399面・400面は右から歩いてくる）
+// 2匹で出る面（398面・399面）：虫KINGがいなくなったら、虫QUEENを出す（398面は通りかかるのを待ち、399面は右から歩いてくる）
 function duoNext(k){
   if (!k.duo || k.queen) return null;
   const def = stageDef(S.stage);
-  const q = makeKing({...def, queen: true});
+  const q = makeKing(def, 'queen');
   if (def.king === 'pass') q.passAt = DUO_PASS_AT2;
   else { q.state = 'in'; q.x = W + KING_R * 3; q.after = 'walk'; }
   if (q.state === 'in') sfx('king');
   return q;
 }
-// 400面で先にやっつけた虫KINGは、目を回してから上へ逃げていく（ボールは当たらない）
+// 先にやっつけた虫は、目を回してから上へ逃げていく（ボールは当たらない）
 function updateKingGone(dt){
-  const g = S.kingGone;
-  g.downT += dt;
-  if (g.downT > 1) g.y -= 170 * dt;
-  if (g.y < -KING_R * 3) S.kingGone = null;
+  for (const g of S.kingsGone) {
+    g.downT += dt;
+    if (g.downT > 1) g.y -= 170 * dt;
+  }
+  S.kingsGone = S.kingsGone.filter(g => g.y >= -KING_R * 3);
 }
 // ボールか光が当たった。100面だけ体力が1減る（当たったあと KING_HURT 秒は減らない）
-function hurtKing(){
-  const k = S.king;
+function hurtKing(k){
   k.flash = 0.25;
+  // 虫JOKERは、当たるとほかの場所へ消える（やっつけられない面でも）
+  if (k.joker && k.warpCool <= 0 && k.warpT <= 0) k.warpT = JOKER_WARP_T;
   if (!k.boss) {
     if (k.noT <= 0) { S.pops.push({x: k.x, y: k.y + KING_R + 18, text: 'きかない', t: 0, bad: true}); k.noT = 1; }
     sfx('kingno');
@@ -2653,7 +2778,7 @@ function hurtKing(){
   addScore(50);
   sfx('kinghit');
   ui();
-  if (k.hp <= 0) { defeatKing(); return; }
+  if (k.hp <= 0) { defeatKing(k); return; }
   S.pops.push({x: k.x, y: k.y + KING_R + 24, text: 'あと ' + k.hp, t: 0});
   const ph = kingPhase(k);
   if (ph === k.phase) return;
@@ -2691,8 +2816,11 @@ function callBug(k){
 }
 // ボールを虫KINGではね返す。当たったら true
 function hitKing(b){
-  if (!kingHere()) return false;
-  const k = S.king, R = S.ballR, reach = KING_R + R;
+  for (const k of S.kings) if (kingHere(k) && bounceKing(b, k)) return true;
+  return false;
+}
+function bounceKing(b, k){
+  const R = S.ballR, reach = KING_R + R;
   const dx = b.x - k.x, dy = b.y - k.y, d2 = dx * dx + dy * dy;
   if (d2 >= reach * reach) return false;
   const d = Math.sqrt(d2);
@@ -2710,20 +2838,30 @@ function hitKing(b){
   if (k.boss) b.idle = 0;
   // 虫QUEENは、盾があるうちは下からのボールが効かない（盾がへる）
   if (k.queen && k.boss && k.plate > 0 && ny > QUEEN_BELOW) { hitPlate(k); return true; }
-  hurtKing();
+  hurtKing(k);
   return true;
 }
 // やっつけた：ボールを消して、虫KINGが目を回して上へ逃げるあいだに、残りのタイルを端の列から順に割る
-function defeatKing(){
-  const k = S.king;
+// 400面・500面で、まだあとから出てくる虫がいるときは、ボールもタイルもそのままで、次の虫が歩いてくる
+function defeatKing(k){
   k.state = 'down';
   k.downT = 0;
-  // 400面で先にやっつけた虫KINGは逃げていき、そのまま虫QUEENが出てくる（ボールもタイルもそのまま）
-  if (k.duo && !k.queen) {
-    S.kingGone = k;
-    S.king = duoNext(k);
-    banner('やっつけた', 'つぎは むしQUEEN', GOLD.text);
+  replaceKing(k, null);
+  S.kingsGone.push(k);
+  // 500面の2匹同時で、もう1匹が残っているとき
+  if (kingAlive()) {
+    banner('やっつけた', 'あと 1ぴき', GOLD.text);
     sfx('win');
+    ui();
+    return;
+  }
+  const def = stageDef(S.stage), waves = bossWaves(def);
+  if (S.wave < waves.length - 1) {
+    S.wave++;
+    S.kings = spawnWave(def, S.wave, false);
+    banner('やっつけた', 'つぎは ' + (S.kings.length > 1 ? '2ひき いっしょ' : kingName(S.kings[0])), GOLD.text);
+    sfx('win');
+    sfx('king');
     ui();
     return;
   }
@@ -2740,12 +2878,6 @@ function defeatKing(){
 }
 function updateFinale(dt){
   S.finaleT += dt;
-  const k = S.king;
-  if (k) {
-    k.downT += dt;
-    if (k.downT > 1) k.y -= 170 * dt;
-    if (k.y < -KING_R * 3) S.king = null;
-  }
   // よばれた虫もいっしょに上へ逃げる
   for (const g of S.bugs) g.y -= 220 * dt;
   S.bugs = S.bugs.filter(g => g.y > -BUG_R * 3);
@@ -2760,7 +2892,7 @@ function updateFinale(dt){
     S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: '+' + got, t: 0});
     sfx('break', br.row);
   }
-  if (!S.finaleQ.length && !S.king && !S.kingGone && !S.bugs.length && S.finaleT > 1.5) stageClear();
+  if (!S.finaleQ.length && !S.kings.length && !S.kingsGone.length && !S.bugs.length && S.finaleT > 1.5) stageClear();
 }
 function ballOverlaps(x, y, w, h){
   return S.balls.some(b => {
@@ -2781,6 +2913,7 @@ function updateFlying(dt){
     if (f.egg) { nb.egg = true; nb.eggT = EGG_T; }
     if (f.runner) { nb.runner = true; nb.flee = FLEE_N; }
     if (f.faller) { nb.faller = true; nb.hp = nb.max = TILE_HP.d; }
+    if (f.pusher) nb.push = true;
     S.bricks.push(nb);
     S.flying.splice(i, 1);
     sfx('land');
@@ -2824,7 +2957,7 @@ function startStage(){
   const boss = stageDef(S.stage).king === 'boss';
   if (S.guardNext || boss) {
     S.guard = 1;
-    banner('まもり つき', S.guardNext ? 'のこり 1こで クリアしたから' : (S.king.duo ? 'むしKINGと むしQUEEN' : kingName(S.king)) + 'と たたかうから', C['t-yamabuki']);
+    banner('まもり つき', S.guardNext ? 'のこり 1こで クリアしたから' : (stageDef(S.stage).rush ? '3びき' : S.kings[0].duo ? 'むしKINGと むしQUEEN' : kingName(S.kings[0])) + 'と たたかうから', C['t-yamabuki']);
   }
   S.guardNext = false;
   ui();
@@ -2909,7 +3042,7 @@ function stageClear(){
   S.cleared.add(listNo(S.stage));
   store.set(CLEARED_KEY, [...S.cleared].join(','));
   saveBest();
-  // 虫KINGをやっつけた面（100面と200面）と、虫QUEENをやっつけた面（300面）、2匹をやっつけた面（400面）は、おめでとうの画面にする
+  // 虫KINGをやっつけた面（100面と200面）と、虫QUEENをやっつけた面（300面）、2匹をやっつけた面（400面）、3匹をやっつけた面（500面）は、おめでとうの画面にする
   const lastOne = stageDef(S.stage).king === 'boss';
   const lap = lapOf(S.stage);
   sfx(lastOne ? 'fanfare' : 'clear');
@@ -2965,14 +3098,13 @@ function stageClear(){
   const storyFn = STORY[lap >= 3 ? listNo(S.stage) : patternNo(S.stage)];
   const story = storyFn ? storyFn() : '';
   if (lastOne) {
-    // 100面・200面・300面・400面のあとは、おめでとうの画面を出してから次の面へ。5周目の最後の面のあとは、全部クリアの画面を出してタイトルへ戻る
-    // （全部クリアの画面の文は、5周目の最後の面を作るときに、そこで出てくるボスに合わせて直す）
+    // 100面・200面・300面・400面のあとは、おめでとうの画面を出してから次の面へ。5周目の最後の面（500面）のあとは、全部クリアの画面を出してタイトルへ戻る
     if (!reduceMotion.matches) confetti();
     if (lap === 5) {
       showOverlay({
         eyebrow: 'ステージ ' + S.stage + ' クリア',
         title: 'おめでとう！',
-        text: '{虫|むし}KINGと{虫|むし}QUEENをやっつけました。\n' + S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
+        text: '{虫|むし}KINGと{虫|むし}QUEEN、それに{虫|むし}JOKERをやっつけました。\n' + S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
           '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
           'クリアのごほうび +' + fmt(bonus),
         btn: 'タイトルへ',
@@ -3150,7 +3282,7 @@ function renderPicker(){
       : def.bug && def.paint ? '（タイルをかためる虫が出る）'
       : def.bug ? '（ボールを跳ね返す虫が出る）' : def.thrower ? '（タイルを投げ込む虫が出る）'
       : def.carry ? '（タイルを運ぶ虫が出る）' : '';
-    const who = def.duo ? '虫KINGと虫QUEEN' : def.queen ? '虫QUEEN' : '虫KING';
+    const who = def.rush ? '虫KINGと虫QUEENと虫JOKER' : def.duo ? '虫KINGと虫QUEEN' : def.joker ? '虫JOKER' : def.queen ? '虫QUEEN' : '虫KING';
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
     b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + moves + bugs + king + (done ? '（クリア済み）' : ''));
   }
@@ -3495,8 +3627,8 @@ function updateMists(dt){
       m.hit.add(k);
       stunWalker(k, SPRAY_STUN);
     }
-    const kg = S.king;
-    if (kingHere() && !m.hit.has(kg) && kg.y + KING_R >= m.y && Math.abs(kg.x - m.x) < SPRAY_W + KING_R) {
+    for (const kg of S.kings) {
+      if (!kingHere(kg) || m.hit.has(kg) || kg.y + KING_R < m.y || Math.abs(kg.x - m.x) >= SPRAY_W + KING_R) continue;
       m.hit.add(kg);
       kg.stunT = Math.max(kg.stunT, SPRAY_STUN);
       kg.windup = 0;
@@ -4326,11 +4458,11 @@ function updateLasers(dt){
       if (Math.abs(l.x - g.x) > BUG_R) continue;
       if (g.y - BUG_R <= y0 && g.y + BUG_R >= l.y && g.y + BUG_R > low) { bug = g; low = g.y + BUG_R; }
     }
-    const kg = S.king;
-    if (kingHere() && Math.abs(l.x - kg.x) <= KING_R && kg.y - KING_R <= y0 && kg.y + KING_R >= l.y && kg.y + KING_R > low) {
+    const kg = S.kings.find(kg => kingHere(kg) && Math.abs(l.x - kg.x) <= KING_R && kg.y - KING_R <= y0 && kg.y + KING_R >= l.y && kg.y + KING_R > low);
+    if (kg) {
       S.lasers.splice(i, 1);
       if (kg.queen && kg.boss && kg.plate > 0) hitPlate(kg);
-      else hurtKing();
+      else hurtKing(kg);
       if (S.mode !== 'play') return;
     } else if (bug) {
       if (bug.walker) stunWalker(bug.walker);
@@ -4372,7 +4504,7 @@ function update(dt){
   if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
   if (S.mode === 'play' || S.mode === 'ready') lowerField(dt);
-  if (S.king) for (const key of ['hurtT', 'flash', 'noT', 'plateFlash']) if (S.king[key] > 0) S.king[key] = Math.max(0, S.king[key] - dt);
+  for (const kg of S.kings) for (const key of ['hurtT', 'flash', 'noT', 'plateFlash', 'warpCool']) if (kg[key] > 0) kg[key] = Math.max(0, kg[key] - dt);
   if (S.mode === 'ready') placeBall();
   else if (S.mode === 'play') {
     fleeTiles(dt);
@@ -4390,7 +4522,7 @@ function update(dt){
   } else if (S.mode === 'finale') {
     updateFinale(dt);
   }
-  if (S.kingGone) updateKingGone(dt);
+  if (S.kingsGone.length) updateKingGone(dt);
   if (S.mode === 'play' || S.mode === 'ready') updateFlying(dt);
 
   for (const br of S.bricks) {
@@ -5106,7 +5238,8 @@ function sparkle(x, y, s){
   ctx.closePath();
   ctx.fill();
 }
-// o.crown は触角のかわりに金の冠、o.color は体の色、o.angry はおこった眉、o.look は目を向ける向き（[dx, dy]）
+// o.crown は触角のかわりに金の冠、o.tiara は虫QUEENのティアラ、o.jester は虫JOKERの道化の帽子とにやりとした口
+// o.color は体の色、o.angry はおこった眉、o.look は目を向ける向き（[dx, dy]）
 function drawBug(x, y, o){
   const r = BUG_R, still = reduceMotion.matches || o.stun > 0 || S.stopT > 0, col = o.color || C.bug;
   ctx.save();
@@ -5143,7 +5276,7 @@ function drawBug(x, y, o){
     ctx.fillStyle = C.muted;
     ctx.fill();
     ctx.fillStyle = col;
-  } else if (!o.crown && !o.tiara) {
+  } else if (!o.crown && !o.tiara && !o.jester) {
     // 触角
     ctx.beginPath();
     ctx.moveTo(x - 4, y - r + 2); ctx.lineTo(x - 8, y - r - 6);
@@ -5188,6 +5321,32 @@ function drawBug(x, y, o){
     ctx.fillStyle = C['t-sora'];
     for (const [dx, dy, rad] of [[0, -8, 1.8], [-6, -3.5, 1.2], [6, -3.5, 1.2]]) { ctx.beginPath(); ctx.arc(x + dx, cy + dy, rad, 0, Math.PI * 2); ctx.fill(); }
   }
+  if (o.jester) {
+    // 虫JOKERの道化の帽子：左は赤、右は黄で、外へ垂れた2つの先。先には金の鈴
+    const cy = y - r + 5, swing = reduceMotion.matches || still ? 0 : Math.sin(o.step * 8) * 1.2;
+    const tips = [[-1, cy + 1 + swing, C['t-sango']], [1, cy + 1 - swing, C['t-yamabuki']]];
+    for (const [sd, ty, col2] of tips) {
+      ctx.beginPath();
+      ctx.moveTo(x, cy);
+      ctx.quadraticCurveTo(x + sd * 6, cy - 15, x + sd * 16, ty);
+      ctx.quadraticCurveTo(x + sd * 9, cy - 5, x + sd * 9, cy);
+      ctx.closePath();
+      ctx.fillStyle = col2;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#1b3241';
+      ctx.stroke();
+    }
+    rr(x - 10, cy - 1.5, 20, 4, 2);
+    ctx.fillStyle = C['t-yamabuki'];
+    ctx.fill();
+    for (const [sd, ty] of tips) {
+      ctx.beginPath();
+      ctx.arc(x + sd * 16, ty, 2.1, 0, Math.PI * 2);
+      ctx.fillStyle = goldFill(ty - 2, 4);
+      ctx.fill();
+    }
+  }
   if (o.stun > 0) {
     // 目を回している
     ctx.strokeStyle = C.board;
@@ -5214,6 +5373,14 @@ function drawBug(x, y, o){
       ctx.fillStyle = '#ffffff'; ctx.fill();
       ctx.beginPath(); ctx.arc(ex + dx / d * 1.6, ey + dy / d * 1.6, 2, 0, Math.PI * 2);
       ctx.fillStyle = '#1b3241'; ctx.fill();
+    }
+    if (o.jester) {
+      // にやりとした口
+      ctx.strokeStyle = '#1b3241';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y + 4, 6, Math.PI * 0.2, Math.PI * 0.8);
+      ctx.stroke();
     }
     if (o.angry) {
       // つり上がった眉
@@ -5383,7 +5550,7 @@ function drawThrower(){
     if (!reduceMotion.matches) ctx.rotate((1 - k) * 6.28);
     ctx.scale(sc, sc);
     rr(-BRICK_W / 2, -BRICK_H / 2, BRICK_W, BRICK_H, 3);
-    ctx.fillStyle = f.egg ? C['t-egg'] : f.faller ? C['t-kurumi'] : C[ROW_COLORS[f.row % ROW_COLORS.length]];
+    ctx.fillStyle = f.egg ? C['t-egg'] : f.faller ? C['t-kurumi'] : f.pusher ? C['t-oshi'] : C[ROW_COLORS[f.row % ROW_COLORS.length]];
     ctx.fill();
     if (f.egg) eggShape(0, 0, 0, false);
     ctx.restore();
@@ -5400,7 +5567,7 @@ function drawCarrier(){
   const bob = reduceMotion.matches || k.stunT > 0 || S.stopT > 0 || k.state !== 'walk' ? 0 : Math.abs(Math.sin(k.step * 9)) * 1.5;
   drawBug(k.x, k.y - bob, {step: k.step, stun: k.stunT, grab: k.state === 'carry'});
 }
-// 虫KING：ふつうの虫を大きくして、触角のかわりに金の冠をのせる。おこると赤くなる
+// 虫KING：ふつうの虫を大きくして、触角のかわりに金の冠をのせる。おこると赤くなる（虫QUEENはティアラで紫、虫JOKERは道化の帽子で青。おこると色が変わる）
 function drawKing(k){
   if (!k || k.state === 'wait') return;
   const b = S.balls[0], moving = k.state === 'walk' || k.state === 'in' || k.state === 'out';
@@ -5411,8 +5578,8 @@ function drawKing(k){
   ctx.save();
   ctx.translate(k.x + shake, k.y - bob);
   ctx.scale(KING_R / BUG_R, KING_R / BUG_R);
-  drawBug(0, 0, {step: k.step * 0.6, stun: k.stunT + k.hurtT + (k.state === 'down' ? 1 : 0), crown: !k.queen, tiara: k.queen,
-    color: k.queen ? C[k.phase === 3 ? 't-botan' : 't-fuji'] : k.phase === 3 ? C['t-sango'] : null,
+  drawBug(0, 0, {step: k.step * 0.6, stun: k.stunT + k.hurtT + (k.state === 'down' ? 1 : 0), crown: !k.queen && !k.joker, tiara: k.queen, jester: k.joker,
+    color: k.joker ? C[k.phase === 3 ? 't-bomb' : 't-ai'] : k.queen ? C[k.phase === 3 ? 't-botan' : 't-fuji'] : k.phase === 3 ? C['t-sango'] : null,
     angry: k.phase === 3, look: b ? [b.x - k.x, b.y - k.y] : null});
   if (k.flash > 0) {
     ctx.beginPath();
@@ -5769,8 +5936,8 @@ function draw(){
   if (S.mode === 'play' || S.mode === 'ready' || S.mode === 'paused') drawHud();
   drawThrower();
   drawCarrier();
-  drawKing(S.kingGone);
-  drawKing(S.king);
+  for (const g of S.kingsGone) drawKing(g);
+  for (const k of S.kings) drawKing(k);
   drawChicks();
   drawBanner();
   drawConfetti();
@@ -5790,7 +5957,7 @@ function snapshot(){
   return {
     score: S.score, best: S.best, stage: S.stage, pick: S.pick, lives: S.lives, mode: S.mode,
     maxCombo: S.maxCombo, paddleX: S.paddle.x, bricks: S.bricks.filter(b => !b.thrown && !b.leaf && !b.again).map(b => b.hp),
-    kingHp: S.king && S.king.boss ? S.king.hp : null, kingQueen: !!(S.king && S.king.duo && S.king.queen)
+    kingWave: S.wave, kingLeft: S.kings.filter(k => k.boss).map(k => [kingWho(k), k.hp])
   };
 }
 
@@ -5830,11 +5997,19 @@ function start(data){
         });
         if (!S.bricks.some(b => b.key && b.hp > 0)) openLocks(true);
       }
-      // 400面で虫QUEENとたたかっていたときは、虫QUEENから続ける
-      if (S.king && S.king.duo && S.king.boss && data.kingQueen) S.king = makeKing({...stageDef(S.stage), queen: true});
-      if (S.king && S.king.boss && data.kingHp > 0) {
-        S.king.hp = clamp(data.kingHp, 1, S.king.max);
-        S.king.phase = kingPhase(S.king);
+      // 400面・500面で、あとから出てくる虫とたたかっていたときは、その虫から続ける（2匹同時で1匹やっつけていたら、残りの1匹から）
+      // 前の形の続きのデータ（体力の kingHp と、400面で虫QUEENとたたかっていたかの kingQueen）も読む
+      const def = stageDef(S.stage), newer = Array.isArray(data.kingLeft);
+      const left = newer ? data.kingLeft : data.kingHp > 0 ? [[null, data.kingHp]] : [];
+      if (kingAlive() && left.length) {
+        S.wave = clamp(newer ? +data.kingWave || 0 : data.kingQueen ? 1 : 0, 0, bossWaves(def).length - 1);
+        const all = spawnWave(def, S.wave, true);
+        S.kings = all.length > 1 ? all.filter(k => left.some(([who]) => who === kingWho(k))) : all;
+        if (!S.kings.length) S.kings = all;
+        S.kings.forEach((k, i) => {
+          const hp = +((left.find(([who]) => who === kingWho(k)) || left[i] || [])[1]);
+          if (hp > 0) { k.hp = clamp(hp, 1, k.max); k.phase = kingPhase(k); }
+        });
       }
       S.paddle.x = clamp(data.paddleX || W / 2, S.paddle.w / 2, W - S.paddle.w / 2);
       placeBall();

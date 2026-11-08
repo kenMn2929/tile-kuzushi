@@ -1,19 +1,22 @@
 // 板を自動で動かして面を遊ばせ、失ったボールの数とクリアまでの時間を測る
-// 使い方：node tools/autoplay.js 写しのフォルダ 面の番号（,区切り） [回数] [面の書きかえ（JSON）] [--trail]
+// 使い方：node tools/autoplay.js 写しのフォルダ 面の番号（,区切り） [回数] [面の書きかえ（JSON）] [--trail] [--max=秒]
 //   写しのフォルダ：tools/make_test_page.py で test.html を作ったフォルダ
 //   面の書きかえ：最初の面の定義をこの JSON に置きかえて遊ばせる（形を試すとき。例：'{"rows":[...],"bug":60}'）
 //   --trail：ボールを失うたびに、その前の1.5秒のボールの動き（[秒, x, y, vx, vy, 板のx]）を出す
+//   --max=秒：打ち切るまでの秒数（はじめは600。500面のように長い面を測るとき）
 // 出力：面 clear クリアできた回数 lost 1回あたりの失ったボール time 平均の秒数 flips スイッチが切りかわった回数 | 回ごとの「失った数/秒」
 // 板の動かし方：いちばん先に落ちてくるボールの落ちる場所へ、毎秒560pxで動く（壁ではね返るのだけ考え、タイルや虫は考えない）
 // ボールがないときは、いいアイテムを取りに行く。「逆」などの効き目は受けない（板の位置を直接動かすため）
-// ボールは6つから始め、3つより少なくなったら6つに戻す（終わらせずに、失った数を数えるため）。600秒で打ち切る
+// ボールは6つから始め、3つより少なくなったら6つに戻す（終わらせずに、失った数を数えるため）。600秒（--max で変えられる）で打ち切る
 const { chromium } = require('playwright');
 (async () => {
   const dir = process.argv[2];
   const stages = process.argv[3].split(',').map(Number);
   const runs = +(process.argv[4] || 8);
-  const over = process.argv[5] && process.argv[5] !== '--trail' ? JSON.parse(process.argv[5]) : null;
+  const over = process.argv[5] && !process.argv[5].startsWith('--') ? JSON.parse(process.argv[5]) : null;
   const trail = process.argv.includes('--trail');
+  const maxArg = process.argv.find(a => a.startsWith('--max='));
+  const maxT = maxArg ? +maxArg.slice(6) : 600;
   const browser = await chromium.launch();
   const page = await browser.newPage();
   page.on('console', m => { const t = m.text(); if (t.startsWith('LEFT') || t.startsWith('LOSS')) console.log(t); });
@@ -21,7 +24,7 @@ const { chromium } = require('playwright');
   page.on('pageerror', e => errs.push('pageerror: ' + e.message + '\n' + e.stack));
   await page.goto('file://' + require('path').resolve(dir) + '/test.html');
   await page.waitForTimeout(300);
-  const res = await page.evaluate(({stages, runs, over, trail}) => {
+  const res = await page.evaluate(({stages, runs, over, trail, maxT}) => {
     const T = window.__T, S = T.S, dt = 1 / 60;
     if (over) { const d = T.stageDef(stages[0]); for (const k of Object.keys(d)) delete d[k]; Object.assign(d, over); }
     const landX = b => {
@@ -39,7 +42,7 @@ const { chromium } = require('playwright');
         T.startGame(n);
         S.lives = 6;
         let t = 0, lost = 0, prev = S.lives, aimOff = 0, wait = 0, flips = 0, side = S.wallSide, hist = [];
-        while (t < 600) {
+        while (t < maxT) {
           if (S.mode === 'ready') { wait += dt; if (wait > 0.3) { wait = 0; T.launch(); aimOff = (Math.random() - 0.5) * S.paddle.w * 0.6; } }
           const p = S.paddle;
           let best = null, bt = Infinity;
@@ -86,7 +89,7 @@ const { chromium } = require('playwright');
         each: rs.map(r => r.lost + '/' + r.t + (r.clear ? '' : 'x')).join(' ')});
     }
     return out;
-  }, {stages, runs, over, trail});
+  }, {stages, runs, over, trail, maxT});
   for (const r of res) console.log(r.n, 'clear', r.clear, 'lost', r.lost, 'time', r.t, 'flips', r.flips, '|', r.each);
   if (errs.length) console.log(errs.join('\n'));
   await browser.close();
