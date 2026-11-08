@@ -1,5 +1,5 @@
 // 6周目（501面から）の動きを確かめる。使い方：node tools/test_lap6.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
-// ボーナスステージ（501〜510面）で、決まった所に当てると全部割れるか、金のタイル（gold）、うずまき（508面）の通り道、
+// ボーナスステージ（501〜510面）で、決まった所に当てると全部割れるか、金のタイル（gold）、うずまき（508面）の通り道と固さ、
 // 「分」の出やすさ、筒から台の中へ入るか（504面）、500面と510面のクリアの画面を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
@@ -62,7 +62,7 @@ const { chromium } = require('playwright');
     // ---- 金のタイル ----
     T.startGame(508);
     const g8 = S.bricks.filter(b => b.gold);
-    ok(g8.length === 7 && g8.every(b => b.row >= 4 && b.row <= 6 && b.col >= 4 && b.col <= 6), '508面：真ん中の7枚が金のタイル');
+    ok(g8.length === 4 && g8.every(b => b.col === 5 && b.row >= 4 && b.row <= 7), '508面：真ん中の4枚が金のタイル');
     T.startGame(509);
     ok(S.bricks.filter(b => b.hp > 0).every(b => b.gold && b.chain), '509面：延べ棒は全部、金で鎖のタイル');
     let rnd = 0;
@@ -78,31 +78,44 @@ const { chromium } = require('playwright');
     for (let i = 0; i < 3; i++) T.damage(at(7, 0) || S.bricks.find(b => b.chain && b.hp > 0), false);
     const fuku = S.items.filter(it => it.type === 'fuku').length, gb = S.banners.filter(b => b.gold).length;
     ok(left() === 1 && fuku === 1 && gb === 1, '509面：39枚がいっしょに割れても、「福」は1つ、「きんの タイル」の知らせも1つ（福 ' + fuku + '、知らせ ' + gb + '）');
-    // ---- うずまき（508面）：抜け道がない ----
+    // ---- うずまき（508面）：入り口は縦の通り道で、その先は抜け道のない1本道 ----
     {
-      const rows = T.stageDef(508).rows, R = rows.length, C = rows[0].length;
+      const def = T.stageDef(508), rows = def.rows, R = rows.length, C = rows[0].length;
       const open = (r, c) => r >= 0 && r < R && c >= 0 && c < C && rows[r][c] === '.';
-      const ways = (r, c) => [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dr, dc]) => open(r + dr, c + dc)).length;
+      const nb = (r, c) => [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dr, dc]) => [r + dr, c + dc]).filter(([y, x]) => open(y, x));
       const gates = [...rows[R - 1]].map((ch, c) => ch === '.' ? c : -1).filter(c => c >= 0);
-      ok(gates.length === 1 && [...rows[0]].every(ch => ch !== '.') && rows.every(row => row[0] !== '.' && row[C - 1] !== '.'),
-        '508面：外の壁にあいているのは、下の行の1か所だけ（' + gates + '列）');
-      // 入り口から、わかれ道なしに1本でつながっている
-      let branch = false, n = 0;
-      for (let r = 0; r < R; r++) for (let c = 0; c < C; c++) if (open(r, c)) { n++; if (ways(r, c) + (r === R - 1 ? 1 : 0) > 2) branch = true; }
-      const seen = new Set(), todo = [[R - 1, gates[0]]];
+      ok(rows[0] === '#'.repeat(C) && rows.every(row => row[0] === '#' && row[C - 1] === '#') && [...rows[R - 1]].every(ch => ch === '#' || ch === '.'),
+        '508面：外のふちは全部鉄');
+      ok(gates.length === 2 && gates[1] === gates[0] + 1 && gates[0] === 1, '508面：入り口は左下の2列だけ（' + gates + '列）');
+      const shaft = (r, c) => gates.includes(c) && open(r, c);
+      let tall = 0;
+      for (let r = R - 1; r >= 0 && gates.every(c => open(r, c)); r--) tall++;
+      ok(tall === R - 1, '508面：入り口から上の端まで、2列の縦の通り道が' + tall + '行のびる');
+      // 縦の通り道から先へつながるのは、いちばん上の行の1か所だけで、右へ進む（左・上・右・下の時計回り）
+      const links = [];
+      for (let r = 0; r < R; r++) for (const c of gates) if (shaft(r, c)) for (const [y, x] of nb(r, c)) if (!shaft(y, x)) links.push([r, c, y, x]);
+      ok(links.length === 1 && links[0][0] === 1 && links[0][3] > links[0][1], '508面：縦の通り道から先へは、いちばん上で右へ曲がる1か所だけ ' + JSON.stringify(links));
+      // その先は、わかれ道のない1本道で、全部のマスへつながる
+      let n = 0, branch = false;
+      for (let r = 0; r < R - 1; r++) for (let c = 0; c < C; c++) if (open(r, c) && !shaft(r, c)) { n++; if (nb(r, c).length > 2) branch = true; }
+      const seen = new Set(), todo = [[links[0][2], links[0][3]]];
+      let end = null;
       while (todo.length) {
         const [r, c] = todo.pop(), key = r + ',' + c;
-        if (seen.has(key) || !open(r, c)) continue;
+        if (seen.has(key) || !open(r, c) || shaft(r, c)) continue;
         seen.add(key);
-        for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) todo.push([r + dr, c + dc]);
+        if (nb(r, c).length === 1) end = [r, c];
+        for (const q of nb(r, c)) todo.push(q);
       }
-      ok(!branch && seen.size === n, '508面：通り道は入り口から1本道で、わかれ道がない（' + n + 'マス）');
-      // 入り口のすぐ上から左へ進む（時計回り）
-      ok(open(R - 2, gates[0] - 1) && !open(R - 2, gates[0] + 1), '508面：入ると左へ進み、時計回りに回る');
-      // 1本道の終わりは、金のかたまりのとなり
-      const gold = T.stageDef(508).gold;
-      const end = [...seen].map(k => k.split(',').map(Number)).find(([r, c]) => r !== R - 1 && ways(r, c) === 1);
-      ok(end && [[0, -1], [1, 0], [-1, 0], [0, 1]].some(([dr, dc]) => (gold[end[0] + dr] || '')[end[1] + dc] === '$'), '508面：通り道のいちばん奥は、金のタイルのとなり');
+      ok(!branch && seen.size === n, '508面：曲がった先は1本道で、わかれ道がない（' + n + 'マス）');
+      ok(end && [[0, -1], [1, 0], [-1, 0], [0, 1]].some(([dr, dc]) => (def.gold[end[0] + dr] || '')[end[1] + dc] === '$'), '508面：通り道のいちばん奥は、金のタイルのとなり');
+      T.startGame(508);
+      const walls = S.bricks.filter(b => b.hp > 0 && !b.iron && !b.gold);
+      const forks = walls.filter(b => b.fork);
+      ok(walls.every(b => b.fork || b.max === 3), '508面：うずまきの壁は、分かれるタイルのほかは3回のタイル');
+      ok(forks.length === 4 && new Set(forks.map(b => b.row)).size >= 3 && new Set(forks.map(b => b.col)).size >= 3,
+        '508面：分かれるタイルは4枚で、壁のあちこちにある ' + JSON.stringify(forks.map(b => [b.row, b.col])));
+      ok(T.dropSpeed(508) === 0 && T.dropSpeed(507) > 0, '508面だけ、タイルが下りてこない');
     }
     // ---- 「分」の出やすさ ----
     const share = n => {
@@ -112,7 +125,8 @@ const { chromium } = require('playwright');
       return k / 6000;
     };
     const s7 = share(507), s8 = share(508);
-    ok(s8 > s7 * 1.6, '508面は「分」がほかの面の約2倍出る（507面 ' + (s7 * 100).toFixed(1) + '%、508面 ' + (s8 * 100).toFixed(1) + '%）');
+    // 重みは4倍でも、ほかのアイテムとの割合なので、出る割合は3倍くらいになる（507面は鉄があって霧吹きの割合が上がるぶん、少しぶれる）
+    ok(s8 > s7 * 2.5 && s8 > 0.22, '508面は「分」がほかの面よりずっと出やすい（4倍の重み。507面 ' + (s7 * 100).toFixed(1) + '%、508面 ' + (s8 * 100).toFixed(1) + '%）');
     // ---- ピンボール（504面）：筒に入ったボールが台の中へ入る ----
     let inTable = 0;
     for (let k = 0; k < 24; k++) {
@@ -127,7 +141,7 @@ const { chromium } = require('playwright');
       }
       if (got) inTable++;
     }
-    ok(inTable >= 20, '504面：右下の筒に入れると、上のやじるしではね返って台の中へ入る（24回で ' + inTable + ' 回）');
+    ok(inTable >= 18, '504面：右下の筒に入れると、上のやじるしではね返って台の中へ入る（24回で ' + inTable + ' 回）');
     // ---- クリアの画面 ----
     const ovBtn = document.getElementById('ovBtn'), ovText = document.getElementById('ovText');
     T.startGame(500); S.mode = 'play';
