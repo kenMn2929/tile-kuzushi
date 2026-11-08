@@ -1,5 +1,5 @@
 // 5周目の仕掛けの動きを確かめる。使い方：node tools/test_lap5.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
-// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）、筒（441面）を試す
+// スイッチと壁・炎・10列（401面）、強いスイッチ（409面）、押されるタイルと「逆」と tint（425面・426面）、鎖（433面・434面）、筒（441面）、組み合わせ その2（449〜456面）を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -262,6 +262,13 @@ const { chromium } = require('playwright');
     ok(t1.tube && t1.iron && !t1.rust, '霧で筒はさびない');
     // 筒の真上のマスには、投げこむ虫などがタイルを置かない
     ok(!T.freeCell(8, 2) && !T.freeCell(8, 7) && T.freeCell(8, 4), '筒の真上のマスは、タイルを置けるマスに入らない');
+    }
+    // ---- 組み合わせ その2（449〜456面）----
+    {
+    const all = [449, 450, 451, 452, 453, 454, 455, 456].map(n => T.stageDef(n));
+    ok(all.every(d => d && d.more && d.more.includes('flame') && d.more.includes('rev')), '449〜456面は「炎」と「逆」が出やすい');
+    // s と S は同じ面に置かない。壁のある面には、どちらかのスイッチがある
+    ok(all.every(d => { const t = d.rows.join(''); return !(t.includes('s') && t.includes('S')) && (!/[+-]/.test(t) || /[sS]/.test(t)); }), 'スイッチと強いスイッチを同じ面に置かず、壁のある面にはスイッチがある');
     }
     return log;
   });
