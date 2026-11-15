@@ -865,11 +865,13 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //   'boss' 体力があって、やっつけるとクリア。タイルは割り切らなくてよい。さいしょから「守」がつき、ボールは虫のいる面と同じく遅い
 // room: 行数  いちばん上からこの行数には、タイルもたまごも投げこまない（虫KINGのまわりをボールが通れるように）
 // more: [アイテム]  その面だけ、書いたアイテムを MORE_K 倍出やすくする
+// without: [アイテム]  その面では、書いたアイテムを出さない（518面の霧。鉄のうずまきがさびて、3回のタイルが何十枚も残るので）
 // moreK: 倍率  more に書いたアイテムを、MORE_K のかわりにこの倍率で出やすくする
 // still: true  2周目からの面でも、タイルが下りてこない
 // maxBalls: 数  分かれるタイルや「分」でボールがふえるのを、MAX_BALLS のかわりにこの数までにする
 // tint: [行の字]  マスごとのタイルの色（rows と同じ形で書く）。. はふつうの色（行ごとの色）。3回のタイルと、字のある仕掛けのタイルは、それぞれの色のまま
 //   R 赤（さんご）  Y 黄（やまぶき）  G 緑（わかくさ）  A 青緑（あさぎ）  B 青（あい）  S 空色  P 桃色  V 紫（ふじ）  K 茶色（くるみ）
+// scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -1804,7 +1806,46 @@ const STAGES6 = [
   // 導火線に当てると、火が4すみの大爆弾へ進み、続けて爆発して、たるごと割れる。導火線の横の板だけ1回のタイルにして、横から入る口にする）
   // （はじめに試した、導火線が上へむき出しの爆弾の絵は、さいしょの8秒ほどで火がついた。たがを横いっぱいの鉄にすると、低い鉄にはね返されて1回あたり3個ほどボールを失った）
   {rows: ['..222222..','.3######3.','.32B22B23.','.32~22~23.','.31~~~~13.','.32~22~23.','.32B22B23.','.3######3.','..222222..'],
-   tint: ['..KKKKKK..','..........','..K.KK.K..','..K.KK.K..','..K....K..','..K.KK.K..','..K.KK.K..','..........','..KKKKKK..']},
+   tint: ['..KKKKKK..','..........','..K.KK.K..','..K.KK.K..','..K....K..','..K.KK.K..','..K.KK.K..','..........','..KKKKKK..'],
+   scene: 'sparrow'},
+  // 暖炉（火を入れるところのまわりは鉄で、入り口は下の焚き口の3回のタイル（火よけの格子）だけ。中のまき（導火線）に火がつくと、
+  // 4すみの大爆弾が爆発して、暖炉ごと割れる。煙突だけは残る。虫がいる）
+  {rows: ['......33..','......22..','.33333333.','.2######2.','.2#B~~B#2.','.2#~22~#2.','.2#~22~#2.','.2#B~~B#2.','.2##33##2.','.22222222.'],
+   tint: ['..........','......RR..','..........','.R......R.','.R......R.','.R..KK..R.','.R..KK..R.','.R......R.','.R......R.','.YYYYYYYY.'],
+   bug: 50},
+  // ポップコーンの機械（ガラスのケースのわくは鉄。下の2つの扉は錠で、台車の鍵を2つ割ると開く。
+  // 扉の上の導火線（熱くなる板）に火がつくと、ケースの中のとうもろこしの粒（爆弾）が続けてはじけて、ケースごと割れる）
+  {rows: ['.#######..','.#*1*1*#..','.#1*1*1#..','.#~~~~~#..','.#L###L#..','..k222k...','..22222...','..3...3...'],
+   tint: ['..........','..Y.Y.Y...','..Y.Y.Y...','..........','..........','...RRR....','..RRRRR...','..........']},
+  // 鉱山（坑道は鉄でかこまれて、行ったり来たりしながら下へおりる。坑道の床が導火線で、とちゅうの3つの大爆弾（ダイナマイト）につながる。
+  // 入れるのは、左上の坑道の入り口の板（2回）と、右の岩（3回）から。火は坑道をジグザグに進む。虫がいる）
+  {rows: ['...2222...','.3######..','.2~~~~~~3.','.#B####~3.','.#~~~~~~3.','.#~####B3.','.#~~~~~~3.','.#####B33.','..222222..'],
+   tint: ['...KKKK...','..........','.K........','..........','..........','..........','..........','..........','..GGGGGG..'],
+   bug: 60},
+  // ナイアガラの花火（橋の下につるした仕掛け花火。橋とはしらは鉄。いちばん上のつなが導火線で、そこから2本の導火線がたれている。
+  // 火がたれた導火線を下りていくと、となりの火のタイルから横に火が走り、4行の火花が上から順に落ちる。いちばん下の大爆弾で、下の3回のタイルも割れる。
+  // 入れるのは、下の川と3回のタイルを割ったところから。虫がいる）
+  {rows: ['.########.','#~~~~~~~~#','#f~f2f~f2#','#f~f2f~f2#','#f~f2f~f2#','#f~fBf~fB#','##3333333#','..2222222.'],
+   tint: ['..........','..........','....Y...Y.','....Y...Y.','....Y...Y.','..........','..........','..BBBBBBB.'],
+   bug: 60},
+  // 爆竹（鉄のわくにつるした爆竹。まん中のひもが導火線で、左右にかわりばんこに爆竹（爆弾）がついている。
+  // 火がつくと、ひもを伝って上下へ進みながら、爆竹がパンパンと続けてはじける。下の台は3回のタイル。わくの中へは下から入る）
+  {rows: ['.#######..','.#22~22#..','.#2*~22#..','.#22~*2#..','.#2*~22#..','.#22~*2#..','.#2*~22#..','.#22222#..','..33333...'],
+   tint: ['..........','..YY.YY...','..R..YY...','..YY..R...','..R..YY...','..YY..R...','..R..YY...','..YYYYY...','..........']},
+  // 花火の倉庫（下のシャッターは赤い壁で、左下のスイッチで開く。開けると、屋根の空気穴（青い壁）がふさがる。
+  // 中の導火線に火がつくと、4つの大爆弾（花火の玉の箱）が爆発して、倉庫ごと割れる。虫がいる）
+  {rows: ['...2222...','..2-22-2..','.32222223.','.32B~~B23.','.322~~223.','.32B~~B23.','.32222223.','s3++++++3.','.22....22.'],
+   tint: ['...RRRR...','..R.RR.R..','..KKKKKK..','..K....K..','..KK..KK..','..K....K..','..KKKKKK..','..........','.KK....KK.'],
+   bug: 60},
+  // かたつむり（17列の小さいタイル。殻は鉄で、うずまきの中を導火線が2周半まわって、まん中の大爆弾へ行く。
+  // 入れるのは、殻のてっぺんの大爆弾か、頭と体のほうの口から。口の導火線は、頭の中の大爆弾と、体の下の大爆弾にもつながる
+  // （体の下の大爆弾を口の真下に置くと、爆風がうずの内がわの導火線にとどいて、近道になった）。
+  // 火がつくと、うずまきをぐるぐる回って進み（5秒ほど）、まん中で爆発する。下の葉っぱは1回のタイル。虫がいる）
+  {rows: ['.................','.....#####B#####.','.....#~~~~~~~~~#.','.....#~#######~#.','.....#~#~~~~~#~#.','.....#~#~###~#~#.','.....#~#~#B#~#~#.',
+          '..2.2#~#~#~#~#~#.','..2.2#~#~#~~~#~#.','..2B2#~#~#####~#.','..2~~#~#~~~~~~~#.','..22~~~#########.','...2B22..........','..11111111111111.'],
+   tint: ['.................','.................','.................','.................','.................','.................','.................',
+          '..Y.Y............','..Y.Y............','..Y.Y............','..Y..............','..YY.............','...Y.YY..........','..GGGGGGGGGGGGGG.'],
+   bug: 60, without: ['spray']},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -2034,7 +2075,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], scene: null, carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -2325,6 +2366,7 @@ function buildStage(n){
   S.globs = [];
   S.fires = [];
   S.fuses = [];
+  S.scene = def.scene ? {t: 0, kind: def.scene} : null;
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -3534,7 +3576,8 @@ window.addEventListener('keyup', e => {
 /* ---------- アイテム ---------- */
 function pickItem(ok){
   const n = ruleNo(S.stage), last = itemNo(S.stage);
-  const pool = Object.entries(ITEMS).filter(([, d]) => (!d.from || last >= d.from) && (!ok || ok(d)));
+  const without = stageDef(S.stage).without || [];
+  const pool = Object.entries(ITEMS).filter(([key, d]) => (!d.from || last >= d.from) && !without.includes(key) && (!ok || ok(d)));
   const more = stageDef(S.stage).more || [], moreK = stageDef(S.stage).moreK || MORE_K;
   const ws = pool.map(([key, d]) => itemWeight(key, d, n) * (more.includes(key) ? moreK : 1));
   // 鉄のある面は霧吹き、盾のある面は「上」の出る割合を、決めた分だけ上げる（6% なら 16% に）
@@ -4652,6 +4695,7 @@ function update(dt){
   }
   if (S.kingsGone.length) updateKingGone(dt);
   if (S.mode === 'play' || S.mode === 'ready') updateFlying(dt);
+  if (S.scene && (S.mode === 'play' || S.mode === 'ready')) updateScene(dt);
 
   for (const br of S.bricks) {
     if (br.flash > 0) br.flash = Math.max(0, br.flash - dt);
@@ -5829,6 +5873,95 @@ function drawPlate(k, x, y){
   }
 }
 // かえったちび虫（上へ飛んでいく）
+// 511面の始めの場面：虫が上を左から歩いてきて、右から飛んできたスズメがくわえて、左上へ飛んでいく
+// SCENE_CATCH 秒でくわえて、SCENE_END 秒で終わる。遊びには関わらない
+const SCENE_CATCH = 3.2, SCENE_END = 5;
+function sceneAt(t){
+  const bugX = Math.min(-20 + t * 60, -20 + SCENE_CATCH * 60), bugY = THROW_Y + 6;
+  const bug = {x: bugX, y: bugY};
+  let bird = null;
+  if (t >= 1.8 && t < SCENE_CATCH) {
+    // 右上から、虫のところへ弧をえがいて下りてくる
+    const k = (t - 1.8) / (SCENE_CATCH - 1.8), e = k * k * (3 - 2 * k);
+    bird = {x: W + 30 + (bugX - W - 30 + 14) * e, y: -20 + (bugY - 10 + 20) * e - Math.sin(k * Math.PI) * 14, dir: -1};
+  } else if (t >= SCENE_CATCH) {
+    // 虫をくわえて、左上へ飛んでいく
+    const k = Math.min(1, (t - SCENE_CATCH) / (SCENE_END - SCENE_CATCH - 0.3));
+    const sx = bugX + 14, sy = bugY - 10;
+    bird = {x: sx + (-50 - sx) * k, y: sy + (-40 - sy) * k * k - Math.sin(k * Math.PI) * 10, dir: -1};
+  }
+  return {bug, bird};
+}
+function updateScene(dt){
+  const q = S.scene, before = q.t;
+  q.t += dt;
+  if (before < SCENE_CATCH && q.t >= SCENE_CATCH) {
+    const {bug} = sceneAt(q.t);
+    S.pops.push({x: bug.x, y: bug.y + 18, text: 'ぱくっ', t: 0});
+    sfx('flee');
+  }
+  if (q.t >= SCENE_END) S.scene = null;
+}
+// スズメ。dir は向き（1 右、-1 左）。flap は羽ばたき（0〜1）
+function drawSparrow(x, y, dir, flap){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir, 1);
+  // しっぽ
+  ctx.fillStyle = '#5a3d22';
+  ctx.beginPath();
+  ctx.moveTo(-9, -1); ctx.lineTo(-20, -6); ctx.lineTo(-19, 1); ctx.closePath();
+  ctx.fill();
+  // 体とおなか
+  ctx.fillStyle = '#a8703c';
+  ctx.beginPath(); ctx.ellipse(0, 0, 12, 8.5, -0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#efe3cb';
+  ctx.beginPath(); ctx.ellipse(2, 3.5, 8, 4.5, -0.1, 0, Math.PI * 2); ctx.fill();
+  // 頭（茶色の帽子）と白いほお、黒いほおの点、目、くちばし
+  ctx.fillStyle = '#7a4a24';
+  ctx.beginPath(); ctx.arc(9, -5, 6.5, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#f6f1e7';
+  ctx.beginPath(); ctx.arc(10, -2.5, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#1e1a16';
+  ctx.beginPath(); ctx.arc(10.6, -2.2, 1.2, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(11.2, -6.3, 1.4, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#3b2e22';
+  ctx.beginPath(); ctx.moveTo(15, -6.5); ctx.lineTo(19.5, -4.5); ctx.lineTo(15, -3); ctx.closePath(); ctx.fill();
+  // 羽。しまもよう
+  ctx.save();
+  ctx.translate(-2, -2);
+  ctx.rotate(-0.5 + flap * 1.1);
+  ctx.fillStyle = '#5a3d22';
+  ctx.beginPath(); ctx.ellipse(-3, -3, 10, 5, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#c99a63';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-10, -3); ctx.lineTo(3, -4); ctx.moveTo(-9, -0.5); ctx.lineTo(2, -1); ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+}
+function drawScene(){
+  const q = S.scene;
+  if (!q) return;
+  const {bug, bird} = sceneAt(q.t);
+  const flap = reduceMotion.matches ? 0.5 : 0.5 + 0.5 * Math.sin(q.t * 28);
+  if (q.t < SCENE_CATCH) {
+    ctx.save();
+    ctx.translate(bug.x, bug.y);
+    ctx.scale(0.6, 0.6);
+    drawBug(0, 0, {step: q.t, look: [1, 0]});
+    ctx.restore();
+  }
+  if (!bird) return;
+  if (q.t >= SCENE_CATCH) {
+    // くわえた虫はくちばしの先にぶら下がる
+    ctx.save();
+    ctx.translate(bird.x + bird.dir * 19, bird.y + 6);
+    ctx.scale(0.45, 0.45);
+    drawBug(0, 0, {step: q.t * 3, look: [0, 1]});
+    ctx.restore();
+  }
+  drawSparrow(bird.x, bird.y, bird.dir, flap);
+}
 function drawChicks(){
   for (const q of S.chicks) {
     ctx.save();
@@ -6138,6 +6271,7 @@ function draw(){
   for (const g of S.kingsGone) drawKing(g);
   for (const k of S.kings) drawKing(k);
   drawChicks();
+  drawScene();
   drawBanner();
   drawConfetti();
 }
