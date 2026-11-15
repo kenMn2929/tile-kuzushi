@@ -364,4 +364,4 @@ python3 tools/grid.py <画像フォルダ> <出力ファイル>.png 441:大砲 4
 | 連戦（出てくる順番、次の組を出す） | `const RUSH_WAVES`、`function spawnWave`、`function defeatKing` |
 | 虫JOKER（消えて出てくる、帽子の絵） | `function warpJoker`、`drawBug` の `o.jester` |
 
-新しいタイルを足すときに直すところ：`TILE_HP`、字の決まりのコメント、`makeBrick` の項目、`buildStage`、`tileColor`、`drawTile`、当たったときの動き（`hitBricks` か `damage`）、かためる虫と金のタイルの対象から外す（`const plain` と `buildStage` の金のタイルの候補）、霧（`soften`）とお助け（`assist`）での扱い、説明ページの項目、`INTROS`、色が要れば `:root` と暗い画面の両方の色と `readColors`。
+新しいタイルを足すときに直すところ：`TILE_HP`、字の決まりのコメント、`makeBrick` の項目、`buildStage`、`tileColor`、`drawTile`、当たったときの動き（`hitBricks` か `damage`）、かためる虫と金のタイルの対象から外す（`const plain` と `buildStage` の金のタイルの候補）、霧（`soften`）とお助け（`assist`）での扱い、説明ページの項目、`INTROS`、色が要れば `:root` と暗い画面の両方の色と `readColors`、割れないタイルなら `tools/check_up.js` の通れないマスの字。
