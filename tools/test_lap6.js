@@ -314,6 +314,13 @@ const { chromium } = require('playwright');
     T.startGame(517);
     for (let i = 0; i < 2000; i++) { if (T.pickItem() === 'spray') spray17++; }
     ok(spray18 === 0 && spray17 > 0, '518面だけ「霧」が出ない（without）（2000回で 518面 ' + spray18 + '、517面 ' + spray17 + '）');
+    // 割れない鉄で上がふさがっている面は「上」を出さない（どの面かは tools/check_up.js で調べる）
+    const ups = {};
+    for (const n of [138, 501, 508, 515, 514]) {
+      T.startGame(n); ups[n] = 0;
+      for (let i = 0; i < 2000; i++) { if (T.pickItem() === 'up') ups[n]++; }
+    }
+    ok(ups[138] + ups[501] + ups[508] + ups[515] === 0 && ups[514] > 0, '上がふさがった面（138・501・508・515面）は「上」が出ない（2000回で ' + JSON.stringify(ups) + '）');
     // 513面：鍵を2つ割ると、扉の錠が開く
     T.startGame(513); S.mode = 'play'; away();
     const locks = S.bricks.filter(b => b.lock);
