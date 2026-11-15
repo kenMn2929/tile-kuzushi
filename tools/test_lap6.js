@@ -2,6 +2,7 @@
 // ボーナスステージ（501〜510面）で、決まった所に当てると全部割れるか、金のタイル（gold）、うずまき（508面）の通り道と固さと小さいタイル、
 // 「分」の出やすさ、筒から台の中へ入るか（504面）、500面・510面・511面のクリアの画面を試す
 // 511面からは、導火線（~）の火の移り方（順に・曲がり角・分かれ道・爆弾や火のタイルへ・火や爆風から）と、511面の火薬だるを試す
+// 519面からは、水（W）の流れ方（真下へ・1回ずつ・鉄で止まる・導火線と火をしけらせる・走る火を消す）と、519面の給水塔を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -21,7 +22,7 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 518, '6周目は501面から。いまは518面まで');
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 519, '6周目は501面から。いまは519面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -200,7 +201,7 @@ const { chromium } = require('playwright');
     // 511面の定義をしばらく置きかえて、導火線だけの形で試す
     const def511 = T.stageDef(511), keep = Object.assign({}, def511);
     const tryRows = rows => { for (const k of Object.keys(def511)) delete def511[k]; def511.rows = rows; T.startGame(511); S.mode = 'play'; away(); };
-    const step = sec => { for (let i = 0; i < Math.round(sec * 60); i++) { T.updateFires(1 / 60); T.updateFuses(1 / 60); } };
+    const step = sec => { for (let i = 0; i < Math.round(sec * 60); i++) { T.updateFires(1 / 60); T.updateFuses(1 / 60); T.updateWaters(1 / 60); } };
     tryRows(['~~~~~.....', '..........', '1111111111']);
     T.damage(at(0, 0), false);
     const a1 = !!at(0, 1);
@@ -228,6 +229,45 @@ const { chromium } = require('playwright');
     T.damage(at(2, 0), false);
     step(1);
     ok(!S.bricks.some(b => b.fuse && b.hp > 0), '導火線：火のタイルの火でも、爆風でも火がつく');
+    // ---- 水 ----
+    tryRows(['.W........', '.2........', '..........', '.3........', '.#........', '.1........', '1111111111']);
+    T.damage(at(0, 1), false);
+    step(2);
+    ok(!at(0, 1) && at(1, 1) && at(1, 1).hp === 1 && at(3, 1) && at(3, 1).hp === 2 && at(5, 1) && at(5, 1).hp === 1 && at(6, 0),
+      '水：真下へ流れて、空きを越えて下のタイルを1回ずつたたき、鉄で止まる。ほかの列は変わらない');
+    tryRows(['.W........', '.W........', '.3........', '..........', '1111111111']);
+    T.damage(at(0, 1), false);
+    step(2);
+    ok(!at(1, 1) && at(2, 1) && at(2, 1).hp === 2, '水：下の水のタイルも割れるが、同じ列を二度はたたかない');
+    tryRows(['..W.......', '~~~~~.....', '..........', '1111111111']);
+    T.damage(at(0, 2), false);
+    step(0.5);
+    const wet = at(1, 2);
+    T.damage(at(1, 0), false);
+    step(1.5);
+    ok(wet && wet.wet && !at(1, 1) && at(1, 2) && at(1, 3) && at(1, 4), '水：水がかかった導火線はしけって、火はその手前で止まる');
+    T.damage(at(1, 2), false);
+    step(1);
+    ok(!at(1, 2) && at(1, 3), '水：しけった導火線は割れても、火が出ない');
+    tryRows(['..........', '..........', '..W.......', '~~~~~~....', '1111111111']);
+    T.damage(at(3, 0), false);
+    step(0.12);
+    const pending = S.fuses.some(f => f.br.row === 3 && f.br.col === 2);
+    T.damage(at(2, 2), false);
+    step(2);
+    ok(pending && !at(3, 1) && at(3, 2) && at(3, 2).wet && at(3, 5), '水：火が移るとちゅうの導火線に水がかかると、そこで火が消える');
+    tryRows(['......W...', '..........', '..........', 'f1111.1111', '1111111111']);
+    T.damage(at(0, 6), false);
+    step(0.12);
+    T.damage(at(3, 0), false);
+    step(2);
+    ok(!at(3, 4) && at(3, 7) && at(3, 9) && at(3, 7).hp === 1, '水：流れている水を越えるところで、横に走る火は消える');
+    tryRows(['.W........', '.f11......', '..........', '1111111111']);
+    T.damage(at(0, 1), false);
+    step(1);
+    T.damage(at(1, 1), false);
+    step(1);
+    ok(!at(1, 1) && at(1, 2) && at(1, 3), '水：水がかかった火のタイルは、割れても横に火が走らない');
     for (const k of Object.keys(def511)) delete def511[k];
     Object.assign(def511, keep);
     // 511面：火薬だる。たがは鉄で、上と下をふさぐ。中の導火線に当てると、たるごと割れる
@@ -291,6 +331,18 @@ const { chromium } = require('playwright');
     for (let i = 0; i < 6 * 60; i++) T.update(1 / 60);
     T.startGame(512);
     ok(sc && !S.scene, '511面だけ、はじめにスズメが虫をくわえて飛んでいく場面がある（5秒で終わる）');
+    // 519面：給水塔。大爆弾に火がつくと、タンクごと割れて、水が脚と町を割る
+    T.startGame(519);
+    const rows19 = T.stageDef(519).rows;
+    ok(rows19[4] === '.########.' && rows19[1][1] === '#' && rows19[1][8] === '#', '519面：タンクのわくと底は鉄');
+    for (const [r, c, where] of [[2, 3, '左の大爆弾'], [2, 5, '右の大爆弾']]) {
+      T.startGame(519); S.mode = 'play'; away();
+      const all = left();
+      const bb = at(r, c);
+      T.damage(bb, true); T.damage(bb, true); T.damage(bb, true);
+      step(3);
+      ok(left() === 0 && S.mode === 'clear', '519面：' + where + 'を割ると、タンクが割れて水が下の町まで割り、' + all + '枚が全部割れてクリア（残り ' + left() + '）');
+    }
     // ---- クリアの画面 ----
     const ovBtn = document.getElementById('ovBtn'), ovText = document.getElementById('ovText');
     T.startGame(500); S.mode = 'play';
@@ -312,8 +364,12 @@ const { chromium } = require('playwright');
     T.startGame(518); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('518ステージ') && !ovText.textContent.includes('ボーナスステージ'),
-      '518面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('ステージ 519 へ'), '518面のあとは519面へ');
+    T.startGame(519); S.mode = 'play';
+    S.bricks = [];
+    T.stageClear();
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('519ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      '519面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し

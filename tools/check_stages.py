@@ -29,7 +29,7 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci~' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~W' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
