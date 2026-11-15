@@ -21,7 +21,7 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 511, '6周目は501面から。いまは511面まで');
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 518, '6周目は501面から。いまは518面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -242,6 +242,55 @@ const { chromium } = require('playwright');
       step(2);
       ok(left() === 0 && S.mode === 'clear', '511面：' + where + 'に当てると、' + all + '枚が全部割れてクリア（残り ' + left() + '）');
     }
+    // 512〜518面：導火線に火をつけると、連鎖でほとんどが割れる。[面, 行, 列, どこか, 残ってよい枚数]
+    for (const [n, r, c, where, rest] of [
+      [512, 5, 3, 'まきの導火線', 4], [513, 3, 4, '熱くなる板の導火線', 14], [514, 2, 2, '坑道の入り口の導火線', 8],
+      [515, 1, 1, 'いちばん上のつなの導火線', 1], [516, 1, 4, 'ひものいちばん上の導火線', 10], [517, 4, 4, '倉庫の中の導火線', 8],
+      [518, 11, 6, '口の導火線', 16]]) {
+      T.startGame(n); S.mode = 'play'; away();
+      const all = left();
+      T.damage(at(r, c), false);
+      step(8);
+      ok(left() <= rest, n + '面：' + where + 'に当てると、' + all + '枚のうち ' + (all - left()) + '枚が連鎖で割れる（残り ' + left() + '）');
+    }
+    // 515面：火はたれた導火線を下り、火のタイルから横に走る。上から順に割れる
+    T.startGame(515); S.mode = 'play'; away();
+    T.damage(at(1, 1), false);
+    step(0.38);
+    const top515 = !at(2, 4) && !!at(4, 4);
+    step(2);
+    ok(top515 && !at(4, 4), '515面：火花は上の行から順に落ちる');
+    // 518面：口から火をつけると、うずまきを回って、まん中の大爆弾まで3秒より長くかかる
+    T.startGame(518); S.mode = 'play'; away();
+    const core = at(6, 10);
+    T.damage(at(11, 6), false);
+    let tc = 0;
+    while (core.hp > 0 && tc < 10) { step(1 / 60); tc += 1 / 60; }
+    ok(core.hp <= 0 && tc > 3, '518面：口から火をつけると、うずまきを回って' + tc.toFixed(1) + '秒でまん中の大爆弾に届く');
+    ok(T.COLS === 17, '518面は17列');
+    let spray18 = 0, spray17 = 0;
+    for (let i = 0; i < 2000; i++) { if (T.pickItem() === 'spray') spray18++; }
+    T.startGame(517);
+    for (let i = 0; i < 2000; i++) { if (T.pickItem() === 'spray') spray17++; }
+    ok(spray18 === 0 && spray17 > 0, '518面だけ「霧」が出ない（without）（2000回で 518面 ' + spray18 + '、517面 ' + spray17 + '）');
+    // 513面：鍵を2つ割ると、扉の錠が開く
+    T.startGame(513); S.mode = 'play'; away();
+    const locks = S.bricks.filter(b => b.lock);
+    for (const b of S.bricks.filter(b => b.key)) T.damage(b, false);
+    ok(locks.length === 2 && locks.every(b => !b.lock), '513面：台車の鍵を2つ割ると、ケースの扉の錠が2つとも開く');
+    // 517面：スイッチでシャッター（赤い壁）が開き、屋根の空気穴（青い壁）がふさがる
+    T.startGame(517); S.mode = 'play'; away();
+    const red = S.bricks.filter(b => b.wall === 1), blue = S.bricks.filter(b => b.wall === 2);
+    const before = red.every(b => b.shown) && blue.every(b => !b.shown);
+    T.damage(S.bricks.find(b => b.toggle), false);
+    ok(before && red.every(b => !b.shown) && blue.every(b => b.shown), '517面：スイッチを当てると、シャッターが開いて、空気穴がふさがる');
+    // 511面のはじめ：スズメが虫をくわえて飛んでいく（5秒で終わる）
+    T.startGame(511);
+    const sc = !!S.scene;
+    S.mode = 'ready';
+    for (let i = 0; i < 6 * 60; i++) T.update(1 / 60);
+    T.startGame(512);
+    ok(sc && !S.scene, '511面だけ、はじめにスズメが虫をくわえて飛んでいく場面がある（5秒で終わる）');
     // ---- クリアの画面 ----
     const ovBtn = document.getElementById('ovBtn'), ovText = document.getElementById('ovText');
     T.startGame(500); S.mode = 'play';
@@ -259,8 +308,12 @@ const { chromium } = require('playwright');
     T.startGame(511); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('511ステージ') && !ovText.textContent.includes('ボーナスステージ'),
-      '511面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('ステージ 512 へ'), '511面のあとは512面へ');
+    T.startGame(518); S.mode = 'play';
+    S.bricks = [];
+    T.stageClear();
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('518ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      '518面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し

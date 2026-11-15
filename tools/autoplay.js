@@ -4,6 +4,7 @@
 //   面の書きかえ：最初の面の定義をこの JSON に置きかえて遊ばせる（形を試すとき。例：'{"rows":[...],"bug":60}'）
 //   --trail：ボールを失うたびに、その前の1.5秒のボールの動き（[秒, x, y, vx, vy, 板のx]）を出す
 //   --max=秒：打ち切るまでの秒数（はじめは600。500面のように長い面を測るとき）
+//   --rest：連鎖が止まったときに残っていたタイル（行, 列, 硬さ）を出す
 //   --where：きっかけが割れるたびに、はじめに割れたきっかけのマス（行, 列）と、いちばん近いボールの位置と向きを出す
 // 出力：面 clear クリアできた回数 lost 1回あたりの失ったボール time 平均の秒数 flips スイッチが切りかわった回数 | 回ごとの「失った数/秒」
 //   きっかけ（導火線か爆弾。はじめからあったもの）がある面は、続けて kick も出す：
@@ -20,16 +21,17 @@ const { chromium } = require('playwright');
   const over = process.argv[5] && !process.argv[5].startsWith('--') ? JSON.parse(process.argv[5]) : null;
   const trail = process.argv.includes('--trail');
   const where = process.argv.includes('--where');
+  const rest = process.argv.includes('--rest');
   const maxArg = process.argv.find(a => a.startsWith('--max='));
   const maxT = maxArg ? +maxArg.slice(6) : 600;
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  page.on('console', m => { const t = m.text(); if (t.startsWith('LEFT') || t.startsWith('LOSS') || t.startsWith('KICK')) console.log(t); });
+  page.on('console', m => { const t = m.text(); if (t.startsWith('LEFT') || t.startsWith('LOSS') || t.startsWith('KICK') || t.startsWith('REST')) console.log(t); });
   const errs = [];
   page.on('pageerror', e => errs.push('pageerror: ' + e.message + '\n' + e.stack));
   await page.goto('file://' + require('path').resolve(dir) + '/test.html');
   await page.waitForTimeout(300);
-  const res = await page.evaluate(({stages, runs, over, trail, maxT, where}) => {
+  const res = await page.evaluate(({stages, runs, over, trail, maxT, where, rest}) => {
     const T = window.__T, S = T.S, dt = 1 / 60;
     if (over) { const d = T.stageDef(stages[0]); for (const k of Object.keys(d)) delete d[k]; Object.assign(d, over); }
     const landX = b => {
@@ -81,7 +83,10 @@ const { chromium } = require('playwright');
           }
           if (kickT !== null && burst === null) {
             quiet = S.fuses.length || S.fires.length ? 0 : quiet + dt;
-            if (quiet >= 0.5 || S.mode === 'clear') burst = (atKick - left()) / total;
+            if (quiet >= 0.5 || S.mode === 'clear') {
+              burst = (atKick - left()) / total;
+              if (rest) console.log('REST ' + n + ' run' + k + ' ' + JSON.stringify(S.bricks.filter(b => b.hp > 0 && !b.iron).map(b => [b.row, b.col, b.hp])));
+            }
           }
           if (trail && S.balls[0]) {
             const b = S.balls[0];
@@ -116,7 +121,7 @@ const { chromium } = require('playwright');
       }
     }
     return out;
-  }, {stages, runs, over, trail, maxT, where});
+  }, {stages, runs, over, trail, maxT, where, rest});
   for (const r of res) console.log(r.n, 'clear', r.clear, 'lost', r.lost, 'time', r.t, 'flips', r.flips, r.kick ? '| ' + r.kick : '', '|', r.each);
   if (errs.length) console.log(errs.join('\n'));
   await browser.close();
