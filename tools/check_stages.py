@@ -1,6 +1,6 @@
 # 5周目（STAGES5）と6周目（STAGES6）の面の並べ方を調べる。使い方：python3 tools/check_stages.py [index.html]
 # 調べること：
-#   - 壁がどちらの向きでも、割るタイルに下から届くか（鍵に全部届く面は、錠を開いたものとして調べる）。スイッチに下から当てられるか（ボールが閉じこめられないか）
+#   - 壁がどちらの向きでも、割るタイルに下から届くか（いちばん上の行の空きに届けば、上からも届くものとする）（鍵に全部届く面は、錠を開いたものとして調べる）。スイッチに下から当てられるか（ボールが閉じこめられないか）
 #   - 動く行・動く列（の動く範囲）に、置いてはいけないものがないか
 #   - かざぐるまの真上と真下が空いているか、ワープが4行目までか、落ちるタイルの下にタイルがあるか、ふたごとワープが2つずつか
 #   - 筒の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
@@ -55,13 +55,17 @@ for n, (rows_s, rest) in defs:
                 if ch == '-': return side == 1
                 return False
             seen = set()
-            stack = [(R, c) for c in range(Cn)]
-            while stack:
-                r, c = stack.pop()
-                for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
-                    q = (r + dr, c + dc)
-                    if not (0 <= q[0] < R and 0 <= q[1] < Cn) or q in seen or block_(*q): continue
-                    seen.add(q); stack.append(q)
+            def flood(stack):
+                while stack:
+                    r, c = stack.pop()
+                    for dr, dc in ((1,0),(-1,0),(0,1),(0,-1)):
+                        q = (r + dr, c + dc)
+                        if not (0 <= q[0] < R and 0 <= q[1] < Cn) or q in seen or block_(*q): continue
+                        seen.add(q); stack.append(q)
+            flood([(R, c) for c in range(Cn)])
+            # いちばん上の行に、下から届く空きのマスがあれば、ボールはそこから上の行の上へ回りこめる（上から当てられる）
+            if any(rows[0][c] == '.' and (0, c) in seen for c in range(Cn)):
+                flood([(-1, c) for c in range(Cn)])
             return seen, block_
         seen, block_ = reach(True)
         keys = [(r, c) for r in range(R) for c in range(Cn) if rows[r][c] == 'k']
