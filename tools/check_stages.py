@@ -29,7 +29,7 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
@@ -92,8 +92,8 @@ for n, (rows_s, rest) in defs:
     # 割れないもの（スイッチ・壁・鉄・錠・筒）は、割るタイルのいちばん下の行より下に置かない
     low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJi' for ch in row))
     low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJi' for ch in row)] or [-1])
-    # 6周目のボーナスステージ（501面から）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
-    if low_hard > low_tile and n < 501:
+    # 6周目のボーナスステージ（501〜510面）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
+    if low_hard > low_tile and not 501 <= n <= 510:
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False
     shape = lambda r: ''.join('.' if ch == '.' else 'X' for ch in r)
     top = '.' not in rows[0]

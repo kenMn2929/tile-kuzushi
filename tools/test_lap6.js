@@ -1,6 +1,7 @@
 // 6周目（501面から）の動きを確かめる。使い方：node tools/test_lap6.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
 // ボーナスステージ（501〜510面）で、決まった所に当てると全部割れるか、金のタイル（gold）、うずまき（508面）の通り道と固さと小さいタイル、
-// 「分」の出やすさ、筒から台の中へ入るか（504面）、500面と510面のクリアの画面を試す
+// 「分」の出やすさ、筒から台の中へ入るか（504面）、500面・510面・511面のクリアの画面を試す
+// 511面からは、導火線（~）の火の移り方（順に・曲がり角・分かれ道・爆弾や火のタイルへ・火や爆風から）と、511面の火薬だるを試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -20,7 +21,7 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 510, '6周目は501面から。いまは510面まで');
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 511, '6周目は501面から。いまは511面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -195,6 +196,52 @@ const { chromium } = require('playwright');
       if (got) inTable++;
     }
     ok(inTable >= 18, '504面：右下の筒に入れると、上のやじるしではね返って台の中へ入る（24回で ' + inTable + ' 回）');
+    // ---- 導火線 ----
+    // 511面の定義をしばらく置きかえて、導火線だけの形で試す
+    const def511 = T.stageDef(511), keep = Object.assign({}, def511);
+    const tryRows = rows => { for (const k of Object.keys(def511)) delete def511[k]; def511.rows = rows; T.startGame(511); S.mode = 'play'; away(); };
+    const step = sec => { for (let i = 0; i < Math.round(sec * 60); i++) { T.updateFires(1 / 60); T.updateFuses(1 / 60); } };
+    tryRows(['~~~~~.....', '..........', '1111111111']);
+    T.damage(at(0, 0), false);
+    const a1 = !!at(0, 1);
+    step(0.12);
+    const a2 = !at(0, 1) && !!at(0, 2);
+    step(0.4);
+    ok(a1 && a2 && !at(0, 4), '導火線：1枚割ると、となりの導火線へ0.1秒ずつ順に火が移って割れる');
+    tryRows(['~~~.......', '..~.......', '.~~~......', '.~.~......', '1111111111']);
+    T.damage(at(0, 0), false);
+    step(0.45);
+    const mid = !at(2, 2) && !!at(3, 1) && !!at(3, 3);
+    step(0.3);
+    ok(mid && !S.bricks.some(b => b.fuse && b.hp > 0), '導火線：曲がり角も進み、分かれ道では両方へ進む');
+    tryRows(['~1~.......', '..........', '1111111111']);
+    T.damage(at(0, 0), false);
+    step(1);
+    ok(at(0, 1) && at(0, 1).hp === 1 && at(0, 2), '導火線：ふつうのタイルには火が移らない（その先の導火線にも届かない）');
+    tryRows(['~~~*......', '...11.....', '..........', '~~f1111...', '1111111111']);
+    T.damage(at(0, 0), false);
+    T.damage(at(3, 0), false);
+    step(1.5);
+    ok(!at(0, 3) && !at(1, 3) && !at(1, 4) && !at(3, 4) && !at(3, 6), '導火線：火の先の爆弾は爆発し、火のタイルは横に火が走る');
+    tryRows(['f.~~~.....', '..........', '*~~~......', '..........', '1111111111']);
+    T.damage(at(0, 0), false);
+    T.damage(at(2, 0), false);
+    step(1);
+    ok(!S.bricks.some(b => b.fuse && b.hp > 0), '導火線：火のタイルの火でも、爆風でも火がつく');
+    for (const k of Object.keys(def511)) delete def511[k];
+    Object.assign(def511, keep);
+    // 511面：火薬だる。たがは鉄で、上と下をふさぐ。中の導火線に当てると、たるごと割れる
+    T.startGame(511);
+    const rows11 = T.stageDef(511).rows;
+    ok(rows11[1].slice(2, 8) === '######' && rows11[7].slice(2, 8) === '######', '511面：たるの上と下のたがは鉄');
+    ok(!S.bricks.some(b => b.iron && b.row >= rows11.length - 1), '511面：鉄は、いちばん下の行に置かない');
+    for (const [r, c, where] of [[4, 4, 'まん中の導火線'], [3, 3, '左上の大爆弾の下の導火線'], [5, 6, '右下の大爆弾の上の導火線']]) {
+      T.startGame(511); S.mode = 'play'; away();
+      const all = left();
+      T.damage(at(r, c), false);
+      step(2);
+      ok(left() === 0 && S.mode === 'clear', '511面：' + where + 'に当てると、' + all + '枚が全部割れてクリア（残り ' + left() + '）');
+    }
     // ---- クリアの画面 ----
     const ovBtn = document.getElementById('ovBtn'), ovText = document.getElementById('ovText');
     T.startGame(500); S.mode = 'play';
@@ -208,7 +255,12 @@ const { chromium } = require('playwright');
     T.startGame(510); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('ボーナスステージも'), '510面をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('ステージ 511 へ'), '510面のあとは511面へ');
+    T.startGame(511); S.mode = 'play';
+    S.bricks = [];
+    T.stageClear();
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('511ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      '511面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し
