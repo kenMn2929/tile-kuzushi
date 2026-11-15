@@ -82,7 +82,7 @@ const { chromium } = require('playwright');
             }
           }
           if (kickT !== null && burst === null) {
-            quiet = S.fuses.length || S.fires.length ? 0 : quiet + dt;
+            quiet = S.fuses.length || S.fires.length || (S.waters || []).some(w => !w.end) ? 0 : quiet + dt;
             if (quiet >= 0.5 || S.mode === 'clear') {
               burst = (atKick - left()) / total;
               if (rest) console.log('REST ' + n + ' run' + k + ' ' + JSON.stringify(S.bricks.filter(b => b.hp > 0 && !b.iron).map(b => [b.row, b.col, b.hp])));
