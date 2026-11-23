@@ -24,7 +24,7 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 527, '6周目は501面から。いまは527面まで');
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 534, '6周目は501面から。いまは534面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -429,9 +429,9 @@ const { chromium } = require('playwright');
     S.sparrowT = 29;
     fly(0.5);
     ok(!!S.thrower && !S.sparrows.some(s => s.state === 'hunt'), '30秒になるまでは、虫を食べに行かない');
-    fly(1);
-    const hunting = S.sparrows.some(s => s.state === 'hunt');
-    fly(6);
+    // 近くにいると、すぐにくわえて飛んでいくので、1コマずつ見る
+    let hunting = false;
+    for (let i = 0; i < 7 * 60; i++) { T.moveSparrows(1 / 60); if (S.sparrows.some(s => s.state === 'hunt')) hunting = true; }
     ok(hunting && !S.thrower && S.sparrows.some(s => s.carry || s.state === 'away'), '30秒たつと、スズメが虫を食べに行って、くわえていく');
     // 導火線の火は、スズメがとまっているタイルを通らない
     T.startGame(511); S.mode = 'play'; away();
@@ -472,8 +472,12 @@ const { chromium } = require('playwright');
     T.startGame(527); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('527ステージ') && !ovText.textContent.includes('ボーナスステージ'),
-      '527面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('ステージ 528 へ'), '527面のあとは528面へ');
+    T.startGame(534); S.mode = 'play';
+    S.bricks = [];
+    T.stageClear();
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('534ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      '534面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し
