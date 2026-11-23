@@ -32,9 +32,9 @@ const { chromium } = require('playwright');
         const K = (r, c) => r * 100 + c;
         const blocked = (r, c) => {
           const x = ch(r, c);
-          if (mov(r, c)) { if (x !== '.' && '#sSi+-LJ'.includes(x)) notes.add('動く行'); return false; }
+          if (mov(r, c)) { if (x !== '.' && '#sSi+-LJ@'.includes(x)) notes.add('動く行'); return false; }
           if (x === '#') return !gone.has(K(r, c));
-          if (x === 's' || x === 'S' || x === 'i') return true;
+          if (x === 's' || x === 'S' || x === 'i' || x === '@') return true;
           if (x === '+' || x === '-') return !(swReach || autoSw);
           if (x === 'L' || x === 'J') return !keysOpen;
           return false;
@@ -54,7 +54,7 @@ const { chromium } = require('playwright');
             for (const dir of [-1, 1]) for (let j = c + dir; j >= 0 && j < C; j += dir) {
               const y = ch(r, j);
               if (y === '#' && !gone.has(K(r, j))) break;
-              if ('sSi+-'.includes(y)) break;
+              if ('sSi+-@'.includes(y)) break;
               if ((y === 'L' || y === 'J') && !keysOpen) break;
               if (y === '*' || y === 'T' || y === 'f' || y === '~') boom(r, j);
             }
