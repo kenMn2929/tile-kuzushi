@@ -5,6 +5,7 @@
 // 519面からは、水（W）の流れ方（真下へ・1回ずつ・鉄で止まる・導火線と火をしけらせる・走る火を消す）と、519〜526面の連鎖、
 // 水を先に割ると連鎖が途中で止まる面（523・525面）を試す
 // 527面からは、スズメ（とまったタイルは割れない・当てたり近くを通ったりすると飛び立つ・30秒たつと虫をくわえていく・導火線の火が通らない）を試す
+// 543面からは、時限爆弾（T）の数え方と爆発（当てると3秒・数えなおさない・爆風と導火線ですぐ）を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -479,6 +480,26 @@ const { chromium } = require('playwright');
     T.stageClear();
     ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes(T.LAST_STAGE + 'ステージ') && !ovText.textContent.includes('ボーナスステージ'),
       T.LAST_STAGE + '面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    // ---- 時限爆弾（T。543面から） ----
+    // 543面の上の左右のベル（0行目の1・2列と7・8列）を使う。字のタイルは、作りかえて試す
+    T.startGame(543); S.mode = 'play'; away();
+    S.sparrows = [];
+    const tb = at(0, 1), tb2 = at(0, 2), under = at(1, 3);
+    ok(tb && tb.timer && tb.bomb && tb.hp === 1, '543面の左上のベルは時限爆弾');
+    T.damage(tb, false);
+    ok(tb.hp === 1 && Math.abs(tb.tick - T.TIMER_T) < 1e-9, '当てると数えはじめ、まだ割れない');
+    T.updateTimers(1); T.damage(tb, false);
+    ok(Math.abs(tb.tick - (T.TIMER_T - 1)) < 1e-6, '数えているあいだに当てても、数えなおさない');
+    T.updateTimers(T.TIMER_T - 1.1);
+    ok(tb.hp === 1, '3秒たつまでは割れない');
+    T.updateTimers(0.2);
+    ok(tb.hp === 0 && tb2.hp === 0 && under.hp === 0, '3秒で爆発して、まわり1マスも割れる（となりの時限爆弾は爆風ですぐ爆発）');
+    // 導火線の火が届くと、すぐ爆発（7列目の時限爆弾のとなりの8列目を導火線に作りかえる）
+    const tf = at(0, 8), tt = at(0, 7);
+    tf.timer = false; tf.bomb = false; tf.fuse = true;
+    T.damage(tf, false);
+    for (let i = 0; i < 30; i++) T.updateFuses(1 / 60);
+    ok(tt.hp === 0, '導火線の火が届いた時限爆弾は、数えずにすぐ爆発する');
     return log;
   });
   // ステージ一覧の見出し
