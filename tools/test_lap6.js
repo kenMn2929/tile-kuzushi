@@ -435,6 +435,18 @@ const { chromium } = require('playwright');
     let hunting = false;
     for (let i = 0; i < 7 * 60; i++) { T.moveSparrows(1 / 60); if (S.sparrows.some(s => s.state === 'hunt')) hunting = true; }
     ok(hunting && !S.thrower && S.sparrows.some(s => s.carry || s.state === 'away'), '30秒たつと、スズメが虫を食べに行って、くわえていく');
+    // 割るタイルの残りがスズメの数（2羽）まで減ると、スズメはとまらずに帰っていく
+    T.startGame(527); S.mode = 'play'; away();
+    fly(10);
+    const lastTwo = S.sparrows.map(s => s.br);
+    for (const b of S.bricks) if (b.hp > 0 && !b.iron && !lastTwo.includes(b)) b.hp = 0;
+    fly(1 / 60);
+    ok(lastTwo.every(b => !b.perched) && S.sparrows.every(s => s.state === 'leave'), '残りが2枚（スズメの数）になると、とまっていた2羽とも飛び立って帰っていく');
+    fly(20);
+    ok(lastTwo.every(b => !b.perched && b.hp > 0) && S.sparrows.every(s => s.state === 'away' || s.state === 'leave'), '残りが少ないあいだは、戻ってきてもとまらない');
+    const hp2 = lastTwo.map(b => b.hp);
+    T.damage(lastTwo[0], false); T.damage(lastTwo[1], false);
+    ok(lastTwo.every((b, i) => b.hp < hp2[i]), '残りの2枚は、ボールで割れる');
     // 導火線の火は、スズメがとまっているタイルを通らない
     T.startGame(511); S.mode = 'play'; away();
     const f0 = at(4, 3), f1 = at(4, 4);

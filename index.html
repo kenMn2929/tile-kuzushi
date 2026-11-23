@@ -572,7 +572,7 @@ img{max-width:100%}
             <div class="section group">
               <p class="sub">ステージ527から{出|で}てくる{鳥|とり}（やっつけられない）</p>
               <ul class="items one">
-                <li data-from="527"><span class="cap bug">雀</span>スズメ。{飛|と}んできて、{上|うえ}が{空|あ}いたタイルにとまる。とまっているタイルは、ボールでも{爆弾|ばくだん}でも{火|ひ}でも{水|みず}でも{割|わ}れず、{導火線|どうかせん}の{火|ひ}も{通|とお}らない。ボールが{近|ちか}くを{通|とお}るか、とまっているタイルに{当|あ}たると、{飛|と}び{立|た}って{別|べつ}のタイルへ{移|うつ}る。ボールをはね{返|かえ}さない。ステージが{始|はじ}まって30{秒|びょう}たつと、{虫|むし}を{食|た}べに{行|い}って、くわえていく</li>
+                <li data-from="527"><span class="cap bug">雀</span>スズメ。{飛|と}んできて、{上|うえ}が{空|あ}いたタイルにとまる。とまっているタイルは、ボールでも{爆弾|ばくだん}でも{火|ひ}でも{水|みず}でも{割|わ}れず、{導火線|どうかせん}の{火|ひ}も{通|とお}らない。ボールが{近|ちか}くを{通|とお}るか、とまっているタイルに{当|あ}たると、{飛|と}び{立|た}って{別|べつ}のタイルへ{移|うつ}る。{割|わ}るタイルが{残|のこ}り{少|すく}なくなると、{帰|かえ}っていく。ボールをはね{返|かえ}さない。ステージが{始|はじ}まって30{秒|びょう}たつと、{虫|むし}を{食|た}べに{行|い}って、くわえていく</li>
               </ul>
             </div>
             <div class="section group">
@@ -6317,7 +6317,10 @@ function perchable(br){
   return !S.bricks.some(o => o !== br && o.hp > 0 && Math.abs(o.x - br.x) < br.w * 0.8 && o.y < br.y && o.y > br.y - ROW_STEP * 1.2);
 }
 // 次にとまるタイルを選ぶ。いまいるところの近く（2マスより近い）は選ばない
+// 割るタイルの残りがスズメの数より多くないときは、とまらない（残り1枚にとまり続けて、面が終わらなくなるのを防ぐ）
+const sparrowsGoHome = () => leftCount() <= S.sparrows.length;
 function pickPerch(s){
+  if (sparrowsGoHome()) return null;
   const taken = new Set(S.sparrows.filter(o => o !== s && o.state === 'fly').map(o => o.br));
   const all = S.bricks.filter(br => perchable(br) && !taken.has(br));
   const far = all.filter(br => Math.hypot(perchX(br) - s.x, perchY(br) - s.y) > CELL * 2);
@@ -6358,8 +6361,11 @@ function sparrowToward(s, x, y, v, dt){
 function moveSparrows(dt){
   if (!S.sparrows.length) return;
   if (S.mode === 'play') S.sparrowT = (S.sparrowT || 0) + dt;
+  const goHome = sparrowsGoHome();
   for (const s of S.sparrows) {
     s.step += dt;
+    // 残りが少なくなったら、とまっている・とまりに行くスズメは帰っていく
+    if (goHome && (s.state === 'perch' || s.state === 'fly')) { flyOff(s, s.state !== 'perch'); continue; }
     if (s.state === 'away') {
       s.t -= dt;
       if (s.t > 0) continue;
