@@ -24,7 +24,8 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 534, '6周目は501面から。いまは534面まで');
+    // いまの最後の面は、6周目の面の数で決まる（面を足しても、ここは直さなくてよい）
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE >= 534, '6周目は501面から。いまは' + T.LAST_STAGE + '面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -473,11 +474,11 @@ const { chromium } = require('playwright');
     S.bricks = [];
     T.stageClear();
     ok(ovBtn.textContent.includes('ステージ 528 へ'), '527面のあとは528面へ');
-    T.startGame(534); S.mode = 'play';
+    T.startGame(T.LAST_STAGE); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('534ステージ') && !ovText.textContent.includes('ボーナスステージ'),
-      '534面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes(T.LAST_STAGE + 'ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      T.LAST_STAGE + '面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し
