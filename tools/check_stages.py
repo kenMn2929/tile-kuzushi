@@ -7,15 +7,36 @@
 #   - 割れないもの（スイッチ・壁・鉄・錠・筒）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
 #   - tint の字と長さ。gold（金のタイルにするマス）の字と長さ
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
-import re, sys, os
-path = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'index.html')
+# 下書きを調べるとき：python3 tools/check_stages.py --draft 下書き.json ...（1ファイルに1面。tools/tune.js と同じ形の JSON）
+import re, sys, os, json
+args = sys.argv[1:]
+drafts = args[args.index('--draft') + 1:] if '--draft' in args else []
+if drafts: args = args[:args.index('--draft')]
+path = args[0] if args else os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'index.html')
 src = open(path, encoding='utf-8').read()
 def stage_defs(name):
     block = src[src.index('const ' + name + ' = ['):]
     block = block[:block.index('\n];')] + '\n'
     return re.findall(r"\{rows: \[((?:'[^']*',?\s*)*)\](.*?)\},?\n", block, re.S)
-defs = [(401 + i, d) for i, d in enumerate(stage_defs('STAGES5'))]
-defs += [(501 + i, d) for i, d in enumerate(stage_defs('STAGES6'))]
+# JSON の下書きを、index.html の書き方と同じ文字列にする
+def from_json(d):
+    strs = lambda a: ', '.join("'%s'" % x for x in a)
+    rest = []
+    for k, v in d.items():
+        if k == 'rows': continue
+        if isinstance(v, dict): rest.append('%s: {%s}' % (k, ', '.join('%s: %s' % kv for kv in v.items())))
+        elif isinstance(v, list) and v and isinstance(v[0], str): rest.append('%s: [%s]' % (k, strs(v)))
+        elif isinstance(v, list): rest.append('%s: [%s]' % (k, ', '.join(map(str, v))))
+        else: rest.append('%s: %s' % (k, json.dumps(v)))
+    return (strs(d['rows']), ', ' + ', '.join(rest))
+if drafts:
+    defs = []
+    for f in drafts:
+        name = os.path.splitext(os.path.basename(f))[0]
+        defs.append((name, from_json(json.load(open(f, encoding='utf-8')))))
+else:
+    defs = [(401 + i, d) for i, d in enumerate(stage_defs('STAGES5'))]
+    defs += [(501 + i, d) for i, d in enumerate(stage_defs('STAGES6'))]
 ok = True
 stats = {'top': 0, 'bottom': 0, 'sym': 0, 'frame': 0}
 for n, (rows_s, rest) in defs:
@@ -105,7 +126,7 @@ for n, (rows_s, rest) in defs:
     low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJi' for ch in row))
     low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJi' for ch in row)] or [-1])
     # 6周目のボーナスステージ（501〜510面）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
-    if low_hard > low_tile and not 501 <= n <= 510:
+    if low_hard > low_tile and not (isinstance(n, int) and 501 <= n <= 510):
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False
     shape = lambda r: ''.join('.' if ch == '.' else 'X' for ch in r)
     top = '.' not in rows[0]
