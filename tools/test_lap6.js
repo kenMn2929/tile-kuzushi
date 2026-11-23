@@ -4,6 +4,7 @@
 // 511面からは、導火線（~）の火の移り方（順に・曲がり角・分かれ道・爆弾や火のタイルへ・火や爆風から）と、511面の火薬だるを試す
 // 519面からは、水（W）の流れ方（真下へ・1回ずつ・鉄で止まる・導火線と火をしけらせる・走る火を消す）と、519〜526面の連鎖、
 // 水を先に割ると連鎖が途中で止まる面（523・525面）を試す
+// 527面からは、スズメ（とまったタイルは割れない・当てたり近くを通ったりすると飛び立つ・30秒たつと虫をくわえていく・導火線の火が通らない）を試す
 // 面の形を前提にしているので、これらの面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -23,7 +24,7 @@ const { chromium } = require('playwright');
     // 火が走り終わるまで進める（ボールは動かさない）
     const burn = () => { for (let i = 0; i < 900 && S.fires.length; i++) T.updateFires(1 / 60); };
     // ---- 周の決まり ----
-    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 526, '6周目は501面から。いまは526面まで');
+    ok(T.LAP6_FROM === 501 && T.LAST_STAGE === 527, '6周目は501面から。いまは527面まで');
     ok(T.lapOf(500) === 5 && T.lapOf(501) === 6 && T.lapOf(510) === 6, '500面は5周目、501〜510面は6周目');
     T.startGame(501);
     ok(T.COLS === 10, '6周目も10列');
@@ -396,6 +397,48 @@ const { chromium } = require('playwright');
     let t24 = 0;
     while (core24.hp > 0 && t24 < 10) { step(1 / 60); t24 += 1 / 60; }
     ok(core24.hp <= 0 && t24 > 2, '524面：外のはしから火をつけると、うずまきを回って' + t24.toFixed(1) + '秒でまん中の大爆弾に届く');
+    // ---- スズメ（527面から） ----
+    const fly = sec => { for (let i = 0; i < Math.round(sec * 60); i++) T.moveSparrows(1 / 60); };
+    T.startGame(526);
+    ok(S.sparrows.length === 0, '526面にはスズメが出ない');
+    T.startGame(527); S.mode = 'play'; away();
+    ok(S.sparrows.length === 2 && S.sparrows.every(s => s.state === 'away'), '527面：はじめはスズメ2羽が盤面の外にいる');
+    fly(10);
+    const sp = S.sparrows.filter(s => s.state === 'perch');
+    ok(sp.length === 2 && sp.every(s => s.br.perched === s && s.br.hp > 0), '527面：10秒たつと、2羽ともタイルにとまっている');
+    ok(sp.every(s => !S.bricks.some(o => o !== s.br && o.hp > 0 && o.col === s.br.col && o.row === s.br.row - 1)), 'スズメは、上のマスが空いたタイルにとまる');
+    const pb = sp[0].br, php = pb.hp;
+    T.damage(pb, false);
+    ok(pb.hp === php && !pb.perched && sp[0].state === 'fly', 'スズメがとまっているタイルに当てても割れず、スズメが飛び立つ');
+    T.damage(pb, true);
+    ok(pb.hp === 0, 'スズメが飛び立ったあとなら、そのタイルは割れる');
+    fly(5);
+    const s2 = S.sparrows.find(s => s.state === 'perch');
+    const b0 = S.balls[0];
+    b0.x = s2.x + 10; b0.y = s2.y + 5;
+    fly(1 / 60);
+    ok(s2.state === 'fly', 'ボールがスズメの近くを通ると、飛び立つ');
+    away();
+    // 爆風でも割れない
+    fly(5);
+    const s3 = S.sparrows.find(s => s.state === 'perch'), b3 = s3.br, h3 = b3.hp;
+    T.damage(b3, true, true);
+    ok(b3.hp === h3 && s3.state === 'fly', 'スズメがとまっているタイルは、爆風でも割れない');
+    // 30秒たつと、上を歩く投げこむ虫をくわえていく
+    ok(!!S.thrower, '527面：上を歩く投げこむ虫がいる');
+    S.sparrowT = 29;
+    fly(0.5);
+    ok(!!S.thrower && !S.sparrows.some(s => s.state === 'hunt'), '30秒になるまでは、虫を食べに行かない');
+    fly(1);
+    const hunting = S.sparrows.some(s => s.state === 'hunt');
+    fly(6);
+    ok(hunting && !S.thrower && S.sparrows.some(s => s.carry || s.state === 'away'), '30秒たつと、スズメが虫を食べに行って、くわえていく');
+    // 導火線の火は、スズメがとまっているタイルを通らない
+    T.startGame(511); S.mode = 'play'; away();
+    const f0 = at(4, 3), f1 = at(4, 4);
+    f1.perched = {state: 'perch'};
+    T.burnFuse(f0);
+    ok(f0.fuse && f1.fuse && !f1.burning, '導火線の火は、スズメがとまっているタイルへは移らない');
     // ---- クリアの画面 ----
     const ovBtn = document.getElementById('ovBtn'), ovText = document.getElementById('ovText');
     T.startGame(500); S.mode = 'play';
@@ -425,8 +468,12 @@ const { chromium } = require('playwright');
     T.startGame(526); S.mode = 'play';
     S.bricks = [];
     T.stageClear();
-    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('526ステージ') && !ovText.textContent.includes('ボーナスステージ'),
-      '526面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
+    ok(ovBtn.textContent.includes('ステージ 527 へ'), '526面のあとは527面へ');
+    T.startGame(527); S.mode = 'play';
+    S.bricks = [];
+    T.stageClear();
+    ok(ovBtn.textContent.includes('タイトルへ') && ovText.textContent.includes('527ステージ') && !ovText.textContent.includes('ボーナスステージ'),
+      '527面（いまの最後の面）をクリアすると、全部クリアの画面からタイトルへ戻る');
     return log;
   });
   // ステージ一覧の見出し
