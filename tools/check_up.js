@@ -42,13 +42,13 @@ const { chromium } = require('playwright');
         const boom = (r, c) => {
           if (fired.has(K(r, c))) return; fired.add(K(r, c));
           const x = ch(r, c);
-          if (x === '*' || x === 'B') {
+          if (x === '*' || x === 'B' || x === 'T') {
             const d = x === 'B' ? 2 : 1;
             for (let i = r - d; i <= r + d; i++) for (let j = c - d; j <= c + d; j++) {
               if (i < 0 || j < 0 || i >= R || j >= C) continue;
               const y = ch(i, j);
               if (y === '#') gone.add(K(i, j));
-              if (y === '*' || y === 'B' || y === 'f' || y === '~') boom(i, j);
+              if (y === '*' || y === 'B' || y === 'T' || y === 'f' || y === '~') boom(i, j);
             }
           } else if (x === 'f') {
             for (const dir of [-1, 1]) for (let j = c + dir; j >= 0 && j < C; j += dir) {
@@ -56,13 +56,13 @@ const { chromium } = require('playwright');
               if (y === '#' && !gone.has(K(r, j))) break;
               if ('sSi+-'.includes(y)) break;
               if ((y === 'L' || y === 'J') && !keysOpen) break;
-              if (y === '*' || y === 'f' || y === '~') boom(r, j);
+              if (y === '*' || y === 'T' || y === 'f' || y === '~') boom(r, j);
             }
           } else if (x === '~') {
             for (const [i, j] of [[r - 1, c], [r + 1, c], [r, c - 1], [r, c + 1]]) {
               if (i < 0 || j < 0 || i >= R || j >= C) continue;
               const y = ch(i, j);
-              if (y === '~' || y === '*' || y === 'B' || y === 'f') boom(i, j);
+              if (y === '~' || y === '*' || y === 'B' || y === 'T' || y === 'f') boom(i, j);
             }
           }
         };
