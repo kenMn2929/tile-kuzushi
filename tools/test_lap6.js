@@ -500,6 +500,23 @@ const { chromium } = require('playwright');
     T.damage(tf, false);
     for (let i = 0; i < 30; i++) T.updateFuses(1 / 60);
     ok(tt.hp === 0, '導火線の火が届いた時限爆弾は、数えずにすぐ爆発する');
+    // ---- 岩（@。551面から） ----
+    // 551面の重し（0・1行目の5・6列）。ふた（2行目）を割ると、岩が落ちて下のタイルをつぶす
+    T.startGame(551); S.mode = 'play'; away();
+    S.sparrows = [];
+    const rk = at(1, 5), rk2 = at(0, 5), lid = at(2, 5);
+    ok(rk && rk.rock && rk.iron && rk.hp > 0, '551面の重しは岩');
+    T.damage(rk, true, true);
+    ok(rk.hp > 0, '岩は爆風でも壊れない');
+    for (let i = 0; i < 60; i++) T.fallRocks(1 / 60);
+    ok(rk.row === 1, '下にタイルがあるあいだは落ちない');
+    T.damage(lid, true);
+    for (let i = 0; i < 20; i++) T.fallRocks(1 / 60);
+    ok(rk.row === 1, '支えがなくなっても、少しゆれてから落ちる');
+    for (let i = 0; i < 300; i++) T.fallRocks(1 / 60);
+    const crushed = [3, 4, 5, 6, 7, 8].every(r => !S.bricks.some(b => b.hp > 0 && !b.rock && b.row === r && b.col === 5));
+    ok(rk.row === 10 && rk2.row === 9 && crushed, '岩は下のタイルをつぶしながら、いちばん下の行まで落ちる（上の岩もいっしょに）');
+    ok(!S.bricks.some(b => b.rock && b.hp > 0 && b.col === 6 && b.row > 1), 'となりの列の岩は、支えがあるので落ちない');
     return log;
   });
   // ステージ一覧の見出し

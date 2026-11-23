@@ -9,7 +9,7 @@ out_dir = sys.argv[1] if len(sys.argv) > 1 else '.'
 s = open(src_path, encoding='utf-8').read()
 hook = """
 window.__T = {S, stageClear, update, loadStage, startGame, startStage, launch, stageDef, applyItem, enterStage, freeCell, LAST_STAGE, LAP5_FROM, LAP6_FROM, lapOf, dropSpeed, stageSpeed,
-  damage, updateFires, updateFuses, updateWaters, updateTimers, TIMER_T, moveSparrows, burnFuse, pickItem, itemNo, ITEMS, W, H, PADDLE_Y, draw, showHelp, showTitle, setPick, goTitle,
+  damage, updateFires, updateFuses, updateWaters, updateTimers, TIMER_T, fallRocks, ROCK_WAIT, ROCK_STEP, moveSparrows, burnFuse, pickItem, itemNo, ITEMS, W, H, PADDLE_Y, draw, showHelp, showTitle, setPick, goTitle,
   get onPrimary(){ return onPrimary; }, get COLS(){ return COLS; }, get BRICK_W(){ return BRICK_W; }};
 if (window.claude && window.claude.hot && typeof window.claude.hot.snapshot === 'function') {"""
 old = "\nif (window.claude && window.claude.hot && typeof window.claude.hot.snapshot === 'function') {"
