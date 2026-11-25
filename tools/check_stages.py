@@ -3,8 +3,8 @@
 #   - 壁がどちらの向きでも、割るタイルに下から届くか（いちばん上の行の空きに届けば、上からも届くものとする）（鍵に全部届く面は、錠を開いたものとして調べる）。スイッチに下から当てられるか（ボールが閉じこめられないか）
 #   - 動く行・動く列（の動く範囲）に、置いてはいけないものがないか
 #   - かざぐるまの真上と真下が空いているか、ワープが4行目までか、落ちるタイルの下にタイルがあるか、ふたごとワープが2つずつか
-#   - 筒の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
-#   - 割れないもの（スイッチ・壁・鉄・錠・筒）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
+#   - 筒と大砲の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
+#   - 割れないもの（スイッチ・壁・鉄・錠・筒・大砲）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
 #   - tint の字と長さ。gold（金のタイルにするマス）の字と長さ
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
 # 下書きを調べるとき：python3 tools/check_stages.py --draft 下書き.json ...（1ファイルに1面。tools/tune.js と同じ形の JSON）
@@ -50,14 +50,14 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci~W@' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~W@C' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
                     if 0 <= rr < R and (rows[rr][c] != '.' or rr in moving or inv(rr, c)):
                         print(n, 'kaze needs empty still cell above/below', r, c); ok = False
-            if ch == 'i' and (r == 0 or rows[r - 1][c] != '.' or (r - 1) in moving or inv(r - 1, c)):
-                print(n, 'tube needs an empty still cell above', r, c); ok = False
+            if ch in 'iC' and (r == 0 or rows[r - 1][c] != '.' or (r - 1) in moving or inv(r - 1, c)):
+                print(n, 'tube/cannon needs an empty still cell above', r, c); ok = False
             if ch in 'oO' and r > 4:
                 print(n, 'warp below row 4', r, c); ok = False
             if ch == 'd' and (r + 1 >= R or rows[r + 1][c] in '.+-'):
@@ -72,7 +72,7 @@ for n, (rows_s, rest) in defs:
         def reach(locked):
             def block_(r, c):
                 ch = rows[r][c]
-                if ch in '#sSi@': return True
+                if ch in '#sSi@C': return True
                 if ch in 'LJ': return locked
                 if ch == '+': return side == 0
                 if ch == '-': return side == 1
@@ -122,11 +122,11 @@ for n, (rows_s, rest) in defs:
             for c, ch in enumerate(gr):
                 if ch == '.': continue
                 if ch != '$': print(n, 'bad gold letter', r, c, ch); ok = False
-                elif c < len(row) and row[c] in '.+-sS#wxXoOLJi': print(n, 'gold on a cell without a breakable tile', r, c); ok = False
-    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOi')
+                elif c < len(row) and row[c] in '.+-sS#wxXoOLJiC': print(n, 'gold on a cell without a breakable tile', r, c); ok = False
+    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOiC')
     # 割れないもの（スイッチ・壁・鉄・錠・筒）は、割るタイルのいちばん下の行より下に置かない
-    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJi' for ch in row))
-    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJi' for ch in row)] or [-1])
+    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJiC' for ch in row))
+    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJiC' for ch in row)] or [-1])
     # 6周目のボーナスステージ（501〜510面）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
     if low_hard > low_tile and not (isinstance(n, int) and 501 <= n <= 510):
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False

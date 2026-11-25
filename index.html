@@ -245,6 +245,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.warp::before{width:11px;height:11px;margin:-5.5px 0 0 -5.5px;background:#0e1a20;box-shadow:0 0 0 2px var(--t-asagi)}
 .cap.bug{background:var(--bug);color:var(--board)}
 .cap.crow{background:#24272f;color:#f2efe6}
+.cap.eagle{background:#5b3a1e;color:#f4f1e8}
+.cap.cannon{background:#7a5230;color:#f2efe6;border-radius:3px}
 .cap.king{background:var(--bug);color:var(--t-yamabuki)}
 .cap.queen{background:var(--t-fuji);color:var(--t-yamabuki);font-size:.62rem}
 .cap.joker{background:var(--t-ai);color:var(--t-yamabuki);font-size:.62rem}
@@ -578,6 +580,14 @@ img{max-width:100%}
               <ul class="items one">
                 <li data-from="527"><span class="cap bug">雀</span>スズメ。{飛|と}んできて、{上|うえ}が{空|あ}いたタイルにとまる。とまっているタイルは、ボールでも{爆弾|ばくだん}でも{火|ひ}でも{水|みず}でも{割|わ}れず、{導火線|どうかせん}の{火|ひ}も{通|とお}らない。ボールが{近|ちか}くを{通|とお}るか、とまっているタイルに{当|あ}たると、{飛|と}び{立|た}って{別|べつ}のタイルへ{移|うつ}る。{割|わ}るタイルが{残|のこ}り{少|すく}なくなると、{帰|かえ}っていく。ボールをはね{返|かえ}さない。ステージが{始|はじ}まって30{秒|びょう}たつと、{虫|むし}を{食|た}べに{行|い}って、くわえていく</li>
                 <li data-from="559"><span class="cap crow">烏</span>カラス。{飛|と}んできて、{導火線|どうかせん}を1{枚|まい}くわえ、{離|はな}れた{空|あ}いたところへ{置|お}いていく。{置|お}いた{先|さき}で、ほかの{導火線|どうかせん}や{爆弾|ばくだん}とつながることもある。ボールが{近|ちか}くを{通|とお}ると{逃|に}げて、くわえていた{導火線|どうかせん}を{近|ちか}くに{落|お}とす。くわえられている{導火線|どうかせん}は、ボールが{当|あ}たると{割|わ}れるが、{火|ひ}はつかない。ボールをはね{返|かえ}さない</li>
+                <li data-from="599"><span class="cap eagle">鷲</span>ワシ。{上|うえ}を{飛|と}びまわり、ときどき{下|お}りてきて、{導火線|どうかせん}を1{枚|まい}{切|き}っていく（{切|き}られたタイルは{消|き}える）。ボールが{近|ちか}くを{通|とお}ると、ひるんで{上|うえ}へ{戻|もど}り、しばらく{下|お}りてこない。ボールをはね{返|かえ}さない。ステージ599では、まだやっつけられない</li>
+              </ul>
+            </div>
+            <div class="section group">
+              <p class="sub">ステージ600のワシ</p>
+              <ul class="items one">
+                <li data-from="600"><span class="cap cannon">砲</span>{大砲|たいほう}。{割|わ}れず、{割|わ}らなくてもクリアできる。となりの{導火線|どうかせん}の{火|ひ}が{届|とど}くと、ワシへ{弾|たま}を1{発|ぱつ}{撃|う}つ。{弾|たま}はワシを{追|お}いかけて、かならず{当|あ}たる。1つの{大砲|たいほう}が{撃|う}てるのは1{回|かい}だけ。ワシは、{大砲|たいほう}のとなりの{導火線|どうかせん}は{切|き}らない</li>
+                <li data-from="600"><span class="cap eagle">鷲</span>ワシに{弾|たま}を3{回|かい}{当|あ}てると、やっつけてクリア。タイルは{全部|ぜんぶ}{割|わ}らなくてよい。のこり1{回|かい}になると、おこって{速|はや}く{飛|と}び、よく{下|お}りてくる。タイルを{全部|ぜんぶ}{割|わ}ると、{残|のこ}りの{大砲|たいほう}がまとめて{撃|う}つ</li>
               </ul>
             </div>
             <div class="section group">
@@ -815,7 +825,7 @@ const TINTS = {R: 't-sango', Y: 't-yamabuki', G: 't-wakakusa', A: 't-asagi', B: 
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1, C: 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 // 金のタイルが続けて割れたとき、「きんの タイル」の知らせと音を次に出すまでの秒数
 const GOLD_GAP = 0.6;
@@ -875,6 +885,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // @: 岩（割れない。クリアの数に入らない。爆風・霧でも変わらず、水と火は鉄と同じく止まる。すぐ下のマスが空くと、ROCK_WAIT 秒ゆれてから落ちはじめ、
 //    下のタイルをつぶしながら、鉄・錠・スイッチ・壁・筒・ほかの岩か、面のいちばん下の行まで落ちる。止まっているあいだは、下にタイルがあれば落ちない。
 //    動く行・動く列には置かず、すぐ下にタイルを置く（いちばん下の行はよい））
+// C: 大砲（600面。割れない。クリアの数に入らない。となりの導火線の火が届くと、ワシへ弾を1発撃つ（1つの大砲で1回だけ）。爆風・霧でも変わらない。
+//    真上のマスは空ける。動く行・動く列には置かない）
 // + / -: 赤い壁 / 青い壁（割れない。クリアの数に入らない。はじめは + が出ていて、- が引っこんでいる。出ている壁は鉄と同じくはね返し、爆風・霧でも変わらない。
 //    引っこんでいる壁は、ボール・光・火が通りぬける。スイッチのない面には置かない。動く行・動く列には置かない。
 //    壁で囲んだタイルは、スイッチを当てれば割りに行けるようにする（スイッチを壁で囲まない））
@@ -903,6 +915,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // maxBalls: 数  分かれるタイルや「分」でボールがふえるのを、MAX_BALLS のかわりにこの数までにする
 // tint: [行の字]  マスごとのタイルの色（rows と同じ形で書く）。. はふつうの色（行ごとの色）。3回のタイルと、字のある仕掛けのタイルは、それぞれの色のまま
 //   R 赤（さんご）  Y 黄（やまぶき）  G 緑（わかくさ）  A 青緑（あさぎ）  B 青（あい）  S 空色  P 桃色  V 紫（ふじ）  K 茶色（くるみ）
+// eagle: ワシ（597〜600面）。'shadow' 影が一度横切る  'pass' 上を一度通りかかり、スズメが逃げる  'hunt' 上を飛びまわって導火線を切る（やっつけられない）
+//   'boss' 'hunt' に大砲を合わせて、ワシに EAGLE_HP 回当てるとクリア（タイルは割り切らなくてよい）
 // crow: 数  カラス（559面から）。導火線のタイルを1枚くわえて、離れた空いたマスへ運んで置く。ボールが近くを通ると逃げて、くわえた導火線を近くに落とす
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
@@ -2338,6 +2352,10 @@ const INTROS = {
         text: 'カラスが{飛|と}んできて、{導火線|どうかせん}を1{枚|まい}くわえ、{別|べつ}のところへ{置|お}いていきます。{火|ひ}の{道|みち}が{切|き}れることも、つながることもあります。ボールを{近|ちか}くに{通|とお}すと、{逃|に}げていきます。'},
   551: {title: '{岩|いわ}',
         text: '{岩|いわ}は{割|わ}れません。{割|わ}らなくてもクリアできます。{下|した}のタイルを{割|わ}って{支|ささ}えをなくすと、{岩|いわ}が{落|お}ちてきて、{下|した}のタイルをつぶしながら{落|お}ちていきます。{爆弾|ばくだん}でも{壊|こわ}れません。'},
+  599: {title: 'ワシ',
+        text: 'スズメたちがこわがっていたのは、ワシでした。ワシは{上|うえ}を{飛|と}びまわり、ときどき{下|お}りてきて、{導火線|どうかせん}を1{枚|まい}ずつ{切|き}っていきます。ボールを{近|ちか}くに{通|とお}すと、ひるんで、しばらく{下|お}りてきません。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
+  600: {eyebrow: 'ステージ 600', title: 'ワシとたたかう',
+        text: '6{周目|しゅうめ}の{最後|さいご}のステージです。{導火線|どうかせん}の{火|ひ}が{大砲|たいほう}に{届|とど}くと、{大砲|たいほう}がワシへ{弾|たま}を{撃|う}ちます。{大砲|たいほう}は3つあります。ワシに3{回|かい}{当|あ}てると、やっつけてクリアです。タイルが{残|のこ}っていてもかまいません。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
         text: 'ステージ510までの10ステージは、ボーナスステージです。かたそうに{見|み}えても、{爆弾|ばくだん}や{鎖|くさり}、{火|ひ}のタイルがつながっていて、うまく{当|あ}てると{一気|いっき}に{割|わ}れます。どこに{当|あ}てればいいか、さがしてみてください。'},
 };
@@ -2355,6 +2373,9 @@ const STORY = {
   497: () => 'スイッチや{押|お}されるタイルを{置|お}いていったのは、だれだろう。',
   498: () => S.kingSeen ? 'いまの{大|おお}きな{虫|むし}は、{虫|むし}KINGとも{虫|むし}QUEENともちがうみたいです。' : '',
   499: () => '{虫|むし}JOKERが、{虫|むし}KINGと{虫|むし}QUEENをよびました。{次|つぎ}は3{匹|びき}と{順|じゅん}にたたかいます。',
+  597: () => S.eagleSeen ? 'スズメたちが、{空|そら}を{見上|みあ}げてこわがっています。いまの{大|おお}きな{影|かげ}は、{何|なん}だろう。' : 'スズメたちが、{空|そら}を{見上|みあ}げてこわがっています。{何|なに}がいるのだろう。',
+  598: () => S.eagleSeen ? 'いまの{大|おお}きな{鳥|とり}が{来|く}ると、スズメたちはみんな{逃|に}げていきました。' : '',
+  599: () => 'ワシがおこっています。{次|つぎ}は{大砲|たいほう}を{撃|う}って、ワシをやっつけましょう。',
 };
 
 const $ = id => document.getElementById(id);
@@ -2457,7 +2478,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, sparrows: [], sparrowT: 0, crows: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -2568,6 +2589,10 @@ function sfx(name, arg){
     case 'fire':   tone(220, 0.32, 'sawtooth', 0.03, 560); tone(1600, 0.26, 'triangle', 0.02, 700, 0.03); break;
     case 'up':     tone(480, 0.14, 'sine', 0.05, 1500); break;
     case 'caw':    tone(560, 0.16, 'sawtooth', 0.035, 380); break;
+    case 'screech': tone(1900, 0.5, 'sawtooth', 0.03, 1100); tone(1500, 0.3, 'triangle', 0.03, 900, 0.08); break;
+    case 'swoop':  tone(900, 0.4, 'sine', 0.035, 260); break;
+    case 'cut':    tone(700, 0.06, 'square', 0.04, 300); tone(220, 0.1, 'triangle', 0.05, 120, 0.04); break;
+    case 'cannon': tone(110, 0.35, 'sawtooth', 0.08, 40); tone(70, 0.4, 'square', 0.05, 30, 0.02); break;
     case 'pick':   tone(380, 0.1, 'triangle', 0.05, 620); break;
     case 'spray':  tone(2600, 0.45, 'sawtooth', 0.012, 700); tone(1900, 0.4, 'triangle', 0.02, 900, 0.03); break;
     case 'gift':   [1175, 1568].forEach((f, i) => tone(f, 0.1, 'sine', 0.05, null, i * 0.08)); break;
@@ -2628,7 +2653,7 @@ function makeBrick(r, c, hp, bomb){
     sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false,
     key: false, lock: false, blink: false, shown: true,
     shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false, egg: false, eggT: 0, arrow: 0, back: false, fork: false, mesh: false, faller: false, fallT: FALL_WAIT,
-    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false
+    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false, cannon: false, fired: false
   };
 }
 function buildStage(n){
@@ -2662,8 +2687,10 @@ function buildStage(n){
       b.tube = ch === 'i';
       // 岩も、鉄と同じく割れずにクリアの数に入らない（爆風で壊れないところだけ、damage で分ける）
       b.rock = ch === '@';
+      // 大砲も、鉄と同じく割れずにクリアの数に入らない（爆風で壊れないところだけ、damage で分ける）
+      b.cannon = ch === 'C';
       b.fallT = b.rock ? ROCK_WAIT : FALL_WAIT;
-      b.iron = ch === '#' || b.toggle || b.wall > 0 || b.tube || b.rock;
+      b.iron = ch === '#' || b.toggle || b.wall > 0 || b.tube || b.rock || b.cannon;
       b.shown = b.wall !== 2;
       b.regen = ch === 'r' || ch === 'R';
       b.sprout = ch === 'v' || ch === 'V';
@@ -2764,7 +2791,12 @@ function buildStage(n){
   S.scene = def.scene ? {t: 0, kind: def.scene} : null;
   S.sparrows = def.sparrow ? makeSparrows(def.sparrow) : [];
   S.sparrowT = 0;
+  S.sparrowHide = 0;
   S.crows = def.crow ? makeCrows(def.crow) : [];
+  S.eagle = def.eagle ? makeEagle(def.eagle) : null;
+  S.eagleFrom = list.filter(needBreak).length;
+  S.eagleSeen = false;
+  S.shots = [];
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -2817,7 +2849,7 @@ function rockBelow(r, c){
   if (S.rowMove[r] || (S.colMove[c] && r >= top && r <= bottom)) return 'stop';
   if (S.warps.some(w => w.row === r && w.col === c) || S.uzus.some(u => u.row === r && u.col === c)) return 'stop';
   if (S.kazes.some(k => k.col === c && Math.abs(k.row - r) <= 1)) return 'stop';
-  if (S.bricks.some(b => b.tube && b.row === r + 1 && b.col === c)) return 'stop';
+  if (S.bricks.some(b => (b.tube || b.cannon) && b.row === r + 1 && b.col === c)) return 'stop';
   const b = S.bricks.find(o => o.hp > 0 && o.row === r && o.col === c);
   if (b) return b.rock && b.rolling ? 'wait' : b.iron || b.lock ? 'stop' : 'tile';
   if (S.flying.some(f => f.row === r && f.col === c)) return 'wait';
@@ -3002,8 +3034,8 @@ function freeCell(r, c){
   // かざぐるまのマスと、羽根がかかる真上・真下のマス
   if (S.kazes.some(k => k.col === c && Math.abs(k.row - r) <= 1)) return false;
   if (S.keyCells.some(([kr, kc]) => kr === r && kc === c)) return false;
-  // 筒の真上のマス（撃ち出したボールの通り道）
-  if (S.bricks.some(b => b.tube && b.row === r + 1 && b.col === c)) return false;
+  // 筒と大砲の真上のマス（撃ち出したボールと弾の通り道）
+  if (S.bricks.some(b => (b.tube || b.cannon) && b.row === r + 1 && b.col === c)) return false;
   // 運ぶ虫がタイルを置きに行くマス
   const to = S.carrier && S.carrier.to;
   if (to && to[0] === r && to[1] === c) return false;
@@ -3190,7 +3222,8 @@ function replaceKing(k, n){
 // 虫の名前（知らせの字は、盤面に出すのでひらがなとアルファベット）
 const kingName = k => k && k.joker ? 'むしJOKER' : k && k.queen ? 'むしQUEEN' : 'むしKING';
 const kingWho = k => k.joker ? 'joker' : k.queen ? 'queen' : 'king';
-const kingAlive = () => S.kings.some(k => k.boss && k.hp > 0);
+// ワシとたたかう面（600面）も、やっつけるまでクリアにしない
+const kingAlive = () => S.kings.some(k => k.boss && k.hp > 0) || !!(S.eagle && S.eagle.kind === 'boss' && S.eagle.hp > 0);
 // ボールが当たる虫KINGか（通りかかる前と、やっつけたあとは当たらない）
 const kingHere = k => !!(k && k.state !== 'wait' && k.state !== 'down');
 const kingPhase = k => k.hp > k.ph2 ? 1 : k.hp > k.ph3 ? 2 : 3;
@@ -3613,13 +3646,13 @@ function stageClear(){
   const gained = S.lives < LIVES_MAX;
   S.lives = Math.min(S.lives + 1, LIVES_MAX);
   S.mode = 'clear';
-  S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = []; S.fires = []; S.fuses = []; S.waters = [];
+  S.items = []; S.lasers = []; S.flying = []; S.mists = []; S.bolts = []; S.fires = []; S.fuses = []; S.waters = []; S.shots = [];
   S.cleared.add(listNo(S.stage));
   store.set(CLEARED_KEY, [...S.cleared].join(','));
   saveBest();
   // 虫KINGをやっつけた面（100面と200面）と、虫QUEENをやっつけた面（300面）、2匹をやっつけた面（400面）、3匹をやっつけた面（500面）は、おめでとうの画面にする
   // できている最後の面（LAST_STAGE）も、全部クリアの画面にする
-  const lastOne = stageDef(S.stage).king === 'boss';
+  const lastOne = stageDef(S.stage).king === 'boss' || stageDef(S.stage).eagle === 'boss';
   const allDone = S.stage === LAST_STAGE;
   const lap = lapOf(S.stage);
   sfx(lastOne || allDone ? 'fanfare' : 'clear');
@@ -3678,10 +3711,12 @@ function stageClear(){
   // できている最後の面（LAST_STAGE）のあとは、全部クリアの画面を出してタイトルへ戻る
   if (allDone) {
     if (!reduceMotion.matches) confetti();
+    // 600面（ワシ）のあとは7周目へ続ける。7周目ができるまでは、ここでタイトルへ戻る
     showOverlay({
       eyebrow: 'ステージ ' + S.stage + ' クリア',
       title: 'おめでとう！',
-      text: S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
+      text: (lastOne && lap === 6 ? 'ワシをやっつけました。\n' : '') + S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
+        (lastOne && lap === 6 ? '7{周目|しゅうめ}は、これから{作|つく}ります。\n' : '') +
         '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
         'クリアのごほうび +' + fmt(bonus),
       btn: 'タイトルへ',
@@ -3696,7 +3731,7 @@ function stageClear(){
     showOverlay({
       eyebrow: 'ステージ ' + S.stage + ' クリア',
       title: 'おめでとう！',
-      text: (lap === 5 ? '{虫|むし}KINGと{虫|むし}QUEEN、それに{虫|むし}JOKER' : lap === 4 ? '{虫|むし}KINGと{虫|むし}QUEEN' : lap === 3 ? '{虫|むし}QUEEN' : '{虫|むし}KING') + 'をやっつけました。\n' +
+      text: (lap === 6 ? 'ワシ' : lap === 5 ? '{虫|むし}KINGと{虫|むし}QUEEN、それに{虫|むし}JOKER' : lap === 4 ? '{虫|むし}KINGと{虫|むし}QUEEN' : lap === 3 ? '{虫|むし}QUEEN' : '{虫|むし}KING') + 'をやっつけました。\n' +
         (lap === 1 ? STAGES.length + 'ステージ、' : lap + '{周目|しゅうめ}も、') + '{全部|ぜんぶ}クリアです。\n' +
         '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
         'クリアのごほうび +' + fmt(bonus) + '\n' + lifeNote + '\n' + note,
@@ -3840,7 +3875,7 @@ for (let n = 1; n <= LAST_STAGE; n++) {
   b.append(num, mark);
   const def = stageDef(n);
   const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') +
-    (def.king === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow ? '鳥' : '');
+    (def.king === 'boss' || def.eagle === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow || (def.eagle && def.eagle !== 'boss') ? '鳥' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -3864,7 +3899,8 @@ function renderPicker(){
       : def.carry ? '（タイルを運ぶ虫が出る）' : '';
     const who = def.rush ? '虫KINGと虫QUEENと虫JOKER' : def.duo ? '虫KINGと虫QUEEN' : def.joker ? '虫JOKER' : def.queen ? '虫QUEEN' : '虫KING';
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
-    const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '');
+    const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '') +
+      (def.eagle === 'boss' ? '（ワシとたたかう）' : def.eagle === 'pass' || def.eagle === 'hunt' ? '（ワシが出る）' : '');
     b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
@@ -4143,7 +4179,7 @@ function updateItems(dt){
 
 function soften(br){
   // 閉じた錠・スイッチ・壁・筒には効かない
-  if (br.lock || br.toggle || br.wall || br.tube || br.rock) return;
+  if (br.lock || br.toggle || br.wall || br.tube || br.rock || br.cannon) return;
   br.regen = false;
   if (br.shield) {
     // 盾は外れるだけで、やわらかくはならない
@@ -4406,7 +4442,7 @@ function addCrack(br){
   br.cracks.push(pts);
 }
 function tileColor(br){
-  return br.gold ? GOLD.bottom : br.push ? C['t-oshi'] : br.toggle || br.tube ? C['t-iron'] : br.wall ? C[br.wall === 1 ? 't-aka' : 't-ao'] : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C[br.timer ? 't-toki' : 't-bomb']
+  return br.gold ? GOLD.bottom : br.push ? C['t-oshi'] : br.toggle || br.tube || br.cannon ? C['t-iron'] : br.wall ? C[br.wall === 1 ? 't-aka' : 't-ao'] : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C[br.timer ? 't-toki' : 't-bomb']
     : br.sprout ? C['t-sprout'] : br.wither ? C['t-nibi'] : br.zap ? C['t-zap'] : br.chest ? C['t-chest']
     : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.fire ? C[br.wet ? 't-nibi' : 't-hi'] : br.twin ? C[br.pair ? 't-moegi' : 't-botan'] : br.egg ? C['t-egg']
     : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.mesh ? C['t-chest'] : br.faller ? C['t-kurumi'] : br.fuse ? C[br.wet ? 't-nibi' : 't-nawa'] : br.water ? C['t-mizu'] : br.max === 3 ? C['t-hard'] : C[br.color];
@@ -4431,7 +4467,7 @@ function damage(br, full, blast){
   br.flash = 0.12;
   // スイッチは当たるたびに壁を入れかえる（爆風では切りかわらない）。壁は爆風でも壊れない
   if (br.toggle) { if (!blast) flipWalls(br); else sfx('iron'); return; }
-  if (br.wall || br.tube || br.rock) { sfx(br.rock ? 'rock' : 'iron'); return; }
+  if (br.wall || br.tube || br.rock || br.cannon) { sfx(br.rock ? 'rock' : 'iron'); return; }
   // 閉じた錠は爆風でも壊れない。鉄は爆風でだけ壊れる
   if (br.lock) { sfx('lock'); return; }
   if (br.iron && !blast) { sfx('iron'); return; }
@@ -4599,6 +4635,8 @@ function burnFuse(br){
   let any = false;
   for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     const nb = S.bricks.find(b => b.hp > 0 && b.row === br.row + dr && b.col === br.col + dc);
+    // 大砲に火が届くと、ワシへ撃つ
+    if (nb && nb.cannon) { if (!nb.fired) fireCannon(nb); continue; }
     if (!nb || nb.burning || nb.perched || !fuseNext(nb)) continue;
     nb.burning = true;
     S.fuses.push({br: nb, t: 0, x: br.x + br.w / 2, y: br.y + br.h / 2});
@@ -5183,7 +5221,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveSparrows(dt); moveCrows(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
+    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveSparrows(dt); moveCrows(dt); moveEagle(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
   if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
@@ -5613,6 +5651,7 @@ function drawTile(br){
   if (br.wall && !br.shown) { drawWallDown(br); return; }
   if (br.blink && !br.shown) { drawHidden(br); return; }
   if (br.tube) { drawTube(br, x, y); return; }
+  if (br.cannon) { drawCannon(br, x, y); return; }
   if (br.rock) { drawRock(br, x, y); return; }
   rr(x, y, w, h, 3);
   ctx.fillStyle = br.gold ? goldFill(y, h) : tileColor(br);
@@ -6661,7 +6700,8 @@ function moveSparrows(dt){
     if (goHome && (s.state === 'perch' || s.state === 'fly')) { flyOff(s, s.state !== 'perch'); continue; }
     if (s.state === 'away') {
       s.t -= dt;
-      if (s.t > 0) continue;
+      // ワシが通ったあと（598面）は、しばらく戻ってこない
+      if (s.t > 0 || S.sparrowHide > 0) continue;
       s.carry = false;
       s.prey = null;
       s.x = Math.random() < 0.5 ? -40 : W + 40;
@@ -6943,6 +6983,337 @@ function drawCrows(){
     drawCrow(c.x, c.y, c.dir, flap);
   }
 }
+// ワシ（597〜600面。面の eagle に書く）
+// EAGLE_K は絵の大きさ
+// 'shadow'（597面）：割るタイルがはじめの EAGLE_AT まで減ると、大きな影が一度だけ盤面を横切る。遊びには関わらない
+// 'pass'（598面）：同じときに、ワシが上を一度だけ通りかかる。来ると、スズメはいっせいに飛び立ち、EAGLE_SCARE 秒は戻ってこない
+// 'hunt'（599面）：ワシが上を行き来して、EAGLE_EVERY 秒ごとに導火線を1枚切りに下りてくる（切られたタイルは消える。点は入らない）。
+//   大砲のとなりの導火線と、燃えている・しけった・スズメがとまっている導火線、動く行・動く列の導火線は切らない。
+//   ボールが近く（EAGLE_NEAR）を通ると「ギャッ」とひるんで上へ戻り、EAGLE_FLINCH 秒は下りてこない。ボールははね返さない
+// 'boss'（600面）：'hunt' に大砲（C）を合わせる。導火線の火が大砲に届くと、ワシへ弾を撃つ（弾はワシを追いかけて、かならず当たる）。
+//   EAGLE_HP 回当てるとやっつけて、ワシが飛び去ってからクリア（タイルが残っていてもよい）。のこり1回になるとおこって、速く飛び、EAGLE_EVERY_ANGRY 秒ごとに下りてくる。
+//   割るタイルがなくなったら、まだ撃っていない大砲を全部撃つ（それでも足りないときは、ワシが逃げていってクリア）
+// 「止」のあいだと、遊んでいないあいだは止まる。続きから遊ぶデータには入らない
+const EAGLE_AT = 0.6, EAGLE_Y = 40, EAGLE_K = 1.2, EAGLE_V = 75, EAGLE_PASS_V = 110, EAGLE_SHADOW_V = 150, EAGLE_DIVE_V = 200, EAGLE_UP_V = 150;
+const EAGLE_NEAR = 30, EAGLE_FIRST = 8, EAGLE_EVERY = 11, EAGLE_EVERY_ANGRY = 7, EAGLE_FLINCH = 7, EAGLE_SCARE = 15, EAGLE_HP = 3;
+const SHOT_V = 460, SHOT_HIT = 24;
+function makeEagle(kind){
+  const fly = kind === 'hunt' || kind === 'boss';
+  return {kind, x: -70, y: EAGLE_Y, dir: 1, state: fly ? 'circle' : 'wait', t: EAGLE_FIRST, step: 0,
+    hp: kind === 'boss' ? EAGLE_HP : 0, br: null, hurtT: 0, coolT: 0, spin: 0};
+}
+const eagleAngry = e => e.kind === 'boss' && e.hp === 1;
+// 切りに行く導火線。道を切るように、となりに導火線・爆弾・火のタイルがあるものを先に選ぶ
+function eagleFuse(){
+  const [top, bottom] = S.vband;
+  const next = (b, f) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dr, dc]) =>
+    S.bricks.some(o => o !== b && o.hp > 0 && o.row === b.row + dr && o.col === b.col + dc && f(o)));
+  const list = S.bricks.filter(b => b.fuse && b.hp > 0 && b.row >= 0 && !b.wet && !b.burning && !b.perched && !b.carried && !(b.slideT > 0) &&
+    !S.rowMove[b.row] && !(S.colMove[b.col] && b.row >= top && b.row <= bottom) && !next(b, o => o.cannon));
+  const linked = list.filter(b => next(b, fuseNext));
+  const from = linked.length ? linked : list;
+  return from.length ? from[Math.floor(Math.random() * from.length)] : null;
+}
+function eagleCut(br){
+  br.hp = 0;
+  shatter(br);
+  S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: 'ぶちっ', t: 0, bad: true});
+  sfx('cut');
+  ui();
+  if (S.mode === 'play' && !S.bricks.some(needBreak) && !kingAlive()) stageClear();
+}
+function eagleFlinch(e){
+  S.pops.push({x: e.x, y: e.y + 24, text: 'ギャッ', t: 0});
+  sfx('screech');
+  e.hurtT = 0.4;
+  e.coolT = 1;
+  e.t = Math.max(e.t, EAGLE_FLINCH);
+  if (e.state === 'dive') { e.state = 'up'; e.br = null; }
+}
+// 598面：スズメがいっせいに飛び立って、しばらく戻ってこない
+function scareSparrows(){
+  S.sparrowHide = EAGLE_SCARE;
+  let any = false;
+  for (const s of S.sparrows) {
+    if (s.state === 'away') continue;
+    if (s.br && s.br.perched === s) s.br.perched = null;
+    s.br = null; s.prey = null;
+    s.state = 'leave';
+    S.pops.push({x: s.x, y: s.y - 12, text: 'ちゅん', t: 0});
+    any = true;
+  }
+  if (any) sfx('flee');
+}
+// 大砲：ワシへ弾を1発撃つ
+function fireCannon(br){
+  br.fired = true;
+  br.flash = 0.2;
+  const x = br.x + br.w / 2, y = br.y;
+  S.shots.push({x, y, vx: 0, vy: -SHOT_V, t: 0});
+  S.blasts.push({x, y, t: 0, size: 18, color: C['t-yamabuki']});
+  S.pops.push({x, y: y - 4, text: 'ドーン', t: 0});
+  sfx('cannon');
+}
+function eagleHit(e){
+  e.hp--;
+  e.hurtT = 0.7;
+  e.coolT = 1;
+  S.blasts.push({x: e.x, y: e.y, t: 0, size: 34, color: C['t-sango']});
+  const got = addScore(1000);
+  sfx('kinghit'); sfx('screech');
+  if (e.hp <= 0) {
+    e.state = 'down'; e.t = 1.8; e.br = null;
+    S.pops.push({x: e.x, y: e.y + 26, text: 'まいった +' + got, t: 0});
+    return;
+  }
+  S.pops.push({x: e.x, y: e.y + 26, text: 'ギャッ +' + got, t: 0});
+  if (e.state === 'dive') { e.state = 'up'; e.br = null; }
+  e.t = Math.max(e.t, EAGLE_FLINCH);
+  if (eagleAngry(e)) banner('ワシが おこった', 'あと1かい', C['t-sango']);
+  ui();
+}
+// 弾はワシを追いかける（はじめはまっすぐ上へ出て、だんだん曲がる）
+function moveShots(dt){
+  const e = S.eagle, alive = e && e.hp > 0 && e.state !== 'down';
+  for (const q of S.shots) {
+    q.t += dt;
+    if (alive) {
+      const dx = e.x - q.x, dy = e.y - q.y, d = Math.hypot(dx, dy) || 1;
+      if (d < SHOT_HIT) { q.hit = true; eagleHit(e); continue; }
+      const k = Math.min(1, dt * (2 + q.t * 8));
+      q.vx += (dx / d * SHOT_V - q.vx) * k;
+      q.vy += (dy / d * SHOT_V - q.vy) * k;
+    }
+    q.x += q.vx * dt; q.y += q.vy * dt;
+  }
+  S.shots = S.shots.filter(q => !q.hit && (alive || (q.y > -30 && q.x > -30 && q.x < W + 30)));
+}
+function moveEagle(dt){
+  const e = S.eagle;
+  if (!e) return;
+  e.step += dt;
+  if (S.mode !== 'play' || S.stopT > 0) return;
+  if (e.hurtT > 0) e.hurtT = Math.max(0, e.hurtT - dt);
+  if (e.coolT > 0) e.coolT = Math.max(0, e.coolT - dt);
+  if (S.sparrowHide > 0) S.sparrowHide = Math.max(0, S.sparrowHide - dt);
+  moveShots(dt);
+  if (S.mode !== 'play' || e.state === 'gone') return;
+  if (e.state === 'wait') {
+    if (leftCount() > S.eagleFrom * EAGLE_AT) return;
+    e.state = 'go';
+    e.x = e.kind === 'shadow' ? -150 : -70;
+    e.y = e.kind === 'shadow' ? H * 0.4 : EAGLE_Y + 4;
+    sfx(e.kind === 'shadow' ? 'swoop' : 'screech');
+    return;
+  }
+  if (e.state === 'go') {
+    e.x += (e.kind === 'shadow' ? EAGLE_SHADOW_V : EAGLE_PASS_V) * dt;
+    if (e.kind === 'shadow') e.y -= 14 * dt;
+    if (e.x > 0 && !S.eagleSeen) {
+      S.eagleSeen = true;
+      if (e.kind === 'pass') scareSparrows();
+    }
+    if (e.x > W + 160) e.state = 'gone';
+    return;
+  }
+  // ここからは 'hunt' と 'boss'
+  if (e.state === 'down') {
+    e.spin += dt * 7;
+    e.x += e.dir * 70 * dt; e.y -= 80 * dt;
+    e.t -= dt;
+    if (e.t <= 0) { e.state = 'gone'; stageClear(); }
+    return;
+  }
+  // 割るタイルがなくなったら、残りの大砲を全部撃つ
+  if (e.kind === 'boss' && !S.bricks.some(needBreak)) {
+    const rest = S.bricks.filter(b => b.cannon && !b.fired);
+    for (const b of rest) fireCannon(b);
+    if (!rest.length && !S.shots.length && e.hp > 0) { e.hp = 0; e.state = 'down'; e.t = 1.8; return; }
+  }
+  // ボールが近くを通ると、ひるむ
+  if (e.coolT <= 0 && S.balls.some(b => !(b.hold > 0) && !(b.tubeT > 0) && Math.hypot(b.x - e.x, b.y - e.y) < EAGLE_NEAR + S.ballR)) eagleFlinch(e);
+  const angry = eagleAngry(e);
+  if (e.state === 'circle') {
+    e.x += e.dir * EAGLE_V * (angry ? 1.5 : 1) * dt;
+    if (e.x > W - 40 && e.dir > 0) e.dir = -1;
+    if (e.x < 40 && e.dir < 0) e.dir = 1;
+    e.y = EAGLE_Y + Math.sin(e.step * 1.6) * 6;
+    e.t -= dt;
+    if (e.t <= 0) {
+      e.br = eagleFuse();
+      if (e.br) { e.state = 'dive'; sfx('swoop'); } else e.t = 2;
+    }
+    return;
+  }
+  if (e.state === 'dive') {
+    const br = e.br;
+    if (!br || br.hp <= 0 || br.burning || br.wet || br.perched || br.carried) { e.state = 'up'; e.br = null; e.t = Math.max(e.t, 2); return; }
+    if (sparrowToward(e, br.x + br.w / 2, br.y - 8, EAGLE_DIVE_V * (angry ? 1.3 : 1), dt)) {
+      eagleCut(br);
+      e.br = null;
+      e.state = 'up';
+      e.t = angry ? EAGLE_EVERY_ANGRY : EAGLE_EVERY;
+    }
+    return;
+  }
+  if (e.state === 'up' && sparrowToward(e, clamp(e.x, 40, W - 40), EAGLE_Y, EAGLE_UP_V, dt)) e.state = 'circle';
+}
+// ワシの絵（右向きで書いて、dir で左右を返す）。白い頭と尾、茶色の体、黄色い曲がったくちばしと足
+// flap は 0 で羽を上げ、1 で下ろす。o.dive は羽をたたんで足を前に出す。o.angry は目が赤い。o.dizzy は目が×
+function drawEagleBird(x, y, dir, flap, o){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir * EAGLE_K, EAGLE_K);
+  if (o.hurt) ctx.globalAlpha = 0.45 + 0.55 * Math.abs(Math.sin(S.time * 30));
+  const s = o.dive ? 0.35 : 1 - flap * 1.7;
+  const wing = (dx, dy, k, color) => {
+    ctx.save();
+    ctx.translate(dx, dy);
+    ctx.scale(k, s * k);
+    ctx.beginPath();
+    ctx.moveTo(-9, 0); ctx.lineTo(9, 0); ctx.lineTo(6, -16); ctx.lineTo(3, -30);
+    ctx.lineTo(0, -37); ctx.lineTo(-3, -33); ctx.lineTo(-5, -37); ctx.lineTo(-8, -32); ctx.lineTo(-10, -35); ctx.lineTo(-12, -29);
+    ctx.lineTo(-13, -16); ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  };
+  // 暗い画面でも見えるように、ふちどる
+  ctx.strokeStyle = 'rgba(205,214,228,.6)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.ellipse(0, 0, 17, 9, -0.08, 0, Math.PI * 2); ctx.stroke();
+  // 奥の羽
+  wing(-6, -4, 0.85, '#3e2713');
+  // 尾（白）
+  ctx.fillStyle = '#efece3';
+  ctx.beginPath(); ctx.moveTo(-14, -3); ctx.lineTo(-31, -7); ctx.lineTo(-32, 6); ctx.lineTo(-14, 4); ctx.closePath(); ctx.fill();
+  // 足（黄色。急降下のときは前へ出す）
+  ctx.strokeStyle = '#e8b52d';
+  ctx.lineWidth = 2.2;
+  ctx.lineCap = 'round';
+  const fx = o.dive ? 13 : 3, fy = o.dive ? 13 : 12;
+  ctx.beginPath();
+  ctx.moveTo(2, 6); ctx.lineTo(fx, fy);
+  ctx.moveTo(fx, fy); ctx.lineTo(fx + 4, fy + 1); ctx.moveTo(fx, fy); ctx.lineTo(fx + 1, fy + 4); ctx.moveTo(fx, fy); ctx.lineTo(fx - 3, fy + 3);
+  ctx.stroke();
+  // 体
+  ctx.fillStyle = '#5b3a1e';
+  ctx.beginPath(); ctx.ellipse(0, 0, 17, 9, -0.08, 0, Math.PI * 2); ctx.fill();
+  // 頭（白）
+  ctx.fillStyle = '#f4f1e8';
+  ctx.beginPath(); ctx.ellipse(11, -4, 7, 6, -0.4, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(16, -7, 7, 0, Math.PI * 2); ctx.fill();
+  // くちばし（黄色で、先が下へ曲がる）
+  ctx.fillStyle = '#f2b630';
+  ctx.beginPath();
+  ctx.moveTo(21, -10); ctx.quadraticCurveTo(29, -10, 29, -4); ctx.lineTo(26, -2.5); ctx.quadraticCurveTo(26, -5, 21, -4);
+  ctx.closePath(); ctx.fill();
+  // 目と、こわい眉
+  if (o.dizzy) {
+    ctx.strokeStyle = '#1a1208';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(16, -10); ctx.lineTo(19, -7); ctx.moveTo(19, -10); ctx.lineTo(16, -7); ctx.stroke();
+  } else {
+    ctx.fillStyle = o.angry ? '#e0442f' : '#e8b52d';
+    ctx.beginPath(); ctx.arc(18, -8.5, 2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1a1208';
+    ctx.beginPath(); ctx.arc(18.6, -8.5, 1, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#3a2a18';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(14, -12); ctx.lineTo(21, -10.5); ctx.stroke();
+  }
+  // 手前の羽
+  wing(-2, -3, 1, '#6e4724');
+  ctx.restore();
+}
+// 597面の影：上から見たワシの形を、盤面に大きくうすく落とす
+function drawEagleShadow(x, y, t){
+  const s = reduceMotion.matches ? 1 : 0.85 + 0.15 * Math.sin(t * 3);
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.fillStyle = 'rgba(8,10,20,.36)';
+  ctx.beginPath(); ctx.ellipse(0, 0, 30, 10, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(32, 0, 8, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(-26, -6); ctx.lineTo(-50, -14); ctx.lineTo(-50, 14); ctx.lineTo(-26, 6); ctx.closePath(); ctx.fill();
+  for (const side of [-1, 1]) {
+    ctx.save();
+    ctx.scale(1, side * s);
+    ctx.beginPath();
+    ctx.moveTo(14, -6); ctx.lineTo(4, -40); ctx.lineTo(-2, -78); ctx.lineTo(-10, -84); ctx.lineTo(-14, -76); ctx.lineTo(-20, -80);
+    ctx.lineTo(-24, -72); ctx.lineTo(-30, -74); ctx.lineTo(-30, -62); ctx.lineTo(-22, -36); ctx.lineTo(-12, -6);
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  ctx.restore();
+}
+// 大砲：木の台と車輪に、上を向いた鉄の砲身。撃ったあとは、すすけて煙が出る
+function drawCannon(br, x, y){
+  const w = br.w, h = br.h, k = h / 18, cx = x + w / 2;
+  ctx.save();
+  // 砲身
+  ctx.save();
+  ctx.translate(cx, y + h * 0.6);
+  ctx.rotate(-Math.PI / 2 + 0.3);
+  rr(-2 * k, -4.5 * k, 19 * k, 9 * k, 3 * k);
+  ctx.fillStyle = C['t-iron'];
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.fillRect(0, -3 * k, 15 * k, 1.6 * k);
+  ctx.fillStyle = '#16181e';
+  ctx.beginPath(); ctx.ellipse(17 * k, 0, 1.8 * k, 3.6 * k, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+  // 台と車輪
+  rr(x + 3, y + h * 0.55, w - 6, h * 0.45, 2);
+  ctx.fillStyle = '#7a5230';
+  ctx.fill();
+  ctx.fillStyle = '#3a2a18';
+  for (const dx of [-w * 0.25, w * 0.25]) { ctx.beginPath(); ctx.arc(cx + dx, y + h - 2.5 * k, 3.2 * k, 0, Math.PI * 2); ctx.fill(); }
+  if (br.fired) {
+    ctx.fillStyle = 'rgba(30,30,36,.45)';
+    rr(x + 2, y, w - 4, h, 3); ctx.fill();
+    if (!reduceMotion.matches) {
+      ctx.fillStyle = 'rgba(190,190,200,.35)';
+      const u = (S.time * 0.8) % 1;
+      ctx.beginPath(); ctx.arc(cx + 4 * k + u * 4, y - 2 - u * 10 * k, (2 + u * 3) * k, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+function drawEagle(){
+  const e = S.eagle;
+  if (e && e.kind === 'shadow' && e.state === 'go') drawEagleShadow(e.x, e.y, e.step);
+  else if (e && e.state !== 'wait' && e.state !== 'gone') {
+    const still = reduceMotion.matches || S.stopT > 0;
+    const flap = still ? 0.4 : 0.5 + 0.5 * Math.sin(e.step * (e.state === 'circle' ? 5 : 9));
+    ctx.save();
+    if (e.state === 'down' && !reduceMotion.matches) { ctx.translate(e.x, e.y); ctx.rotate(Math.sin(e.spin) * 0.6); ctx.translate(-e.x, -e.y); }
+    drawEagleBird(e.x, e.y, e.dir, flap, {dive: e.state === 'dive', angry: eagleAngry(e), hurt: e.hurtT > 0, dizzy: e.state === 'down'});
+    ctx.restore();
+    // 600面：あと何回当てればよいか（赤い丸）
+    if (e.kind === 'boss' && e.state !== 'down') {
+      for (let i = 0; i < EAGLE_HP; i++) {
+        ctx.beginPath();
+        ctx.arc(e.x + (i - (EAGLE_HP - 1) / 2) * 11, Math.max(6, e.y - 46), 3.6, 0, Math.PI * 2);
+        if (i < e.hp) { ctx.fillStyle = C['t-sango']; ctx.fill(); }
+        ctx.strokeStyle = 'rgba(255,255,255,.8)';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+    }
+  }
+  // 大砲の弾
+  for (const q of S.shots) {
+    const sp = Math.hypot(q.vx, q.vy) || 1;
+    ctx.strokeStyle = 'rgba(255,170,60,.7)';
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(q.x, q.y); ctx.lineTo(q.x - q.vx / sp * 14, q.y - q.vy / sp * 14); ctx.stroke();
+    ctx.fillStyle = '#26262c';
+    ctx.beginPath(); ctx.arc(q.x, q.y, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.5)';
+    ctx.beginPath(); ctx.arc(q.x - 1.5, q.y - 1.5, 1.6, 0, Math.PI * 2); ctx.fill();
+  }
+}
 function drawChicks(){
   for (const q of S.chicks) {
     ctx.save();
@@ -7112,6 +7483,7 @@ function draw(){
   drawGlobs();
   drawSparrows();
   drawCrows();
+  drawEagle();
 
   if (S.lasers.length) {
     ctx.fillStyle = C['t-fuji'];
