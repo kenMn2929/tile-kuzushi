@@ -632,7 +632,7 @@ const { chromium } = require('playwright');
       ok(cans.every(b => b.fired), 'タイルがなくなると、残りの大砲がまとめて撃つ');
       for (let i = 0; i < 60 * 6 && S.mode === 'play'; i++) T.moveEagle(1 / 60);
       ok(e6.hp === 0 && S.mode === 'clear', 'ワシに3回当てると、飛び去ってからクリア');
-      ok(ovText.textContent.includes('ワシをやっつけました') && ovText.textContent.includes('7') && ovBtn.textContent.includes('タイトルへ'), '600面のあとは、おめでとうの画面（7周目はこれから）からタイトルへ');
+      ok(ovText.textContent.includes('ワシをやっつけました') && ovText.textContent.includes('7周目') && ovBtn.textContent.includes('ステージ 601 へ'), '600面のあとは、おめでとうの画面から7周目（601面）へ');
     }
     return log;
   });
