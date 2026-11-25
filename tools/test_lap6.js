@@ -537,7 +537,7 @@ const { chromium } = require('playwright');
     T.startGame(559); S.mode = 'play'; away();
     S.sparrows = [];
     ok(S.crows.length === 1 && S.crows[0].state === 'away', '559面：はじめはカラスが盤面の外にいる');
-    const cw = S.crows[0], f0 = fusePos(), nFuse = S.bricks.filter(b => b.fuse && b.hp > 0).length;
+    const cw = S.crows[0], cf0 = fusePos(), nFuse = S.bricks.filter(b => b.fuse && b.hp > 0).length;
     let took = null;
     for (let i = 0; i < 60 * 30 && !took; i++) { T.moveCrows(1 / 60); if (cw.state === 'carry') took = cw.br; }
     ok(!!took && took.carried && took.row < 0, 'カラスが導火線を1枚くわえる');
@@ -545,7 +545,7 @@ const { chromium } = require('playwright');
     let placed = false;
     for (let i = 0; i < 60 * 20 && !placed; i++) { T.moveCrows(1 / 60); if (!took.carried) placed = true; }
     ok(placed && took.row === dest[0] && took.col === dest[1] && took.hp > 0, 'くわえた導火線を、決めたマスに置く（' + dest + '）');
-    ok(fusePos() !== f0 && S.bricks.filter(b => b.fuse && b.hp > 0).length === nFuse, '導火線の場所が変わり、枚数はそのまま');
+    ok(fusePos() !== cf0 && S.bricks.filter(b => b.fuse && b.hp > 0).length === nFuse, '導火線の場所が変わり、枚数はそのまま');
     ok(cw.state === 'leave', '置いたら飛んでいく');
     // くわえているときにボールが近くを通ると、逃げて近くに落とす
     crowFly(20);
