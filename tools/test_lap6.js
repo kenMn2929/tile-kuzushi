@@ -571,6 +571,69 @@ const { chromium } = require('playwright');
     const spots = [];
     for (let i = 0; i < 30; i++) { const q = T.crowSpot(cw, src); if (q) spots.push(q); }
     ok(spots.length && spots.every(([r, c]) => r <= low && Math.abs(r - src.row) + Math.abs(c - src.col) >= 3 && T.freeCell(r, c)), '置く先は、空いていて、離れていて、いちばん下の行より上');
+    // ---- ワシ（597〜600面） ----
+    if (T.LAST_STAGE >= 600) {
+      const fly = sec => { for (let i = 0; i < Math.round(sec * 60); i++) T.moveEagle(1 / 60); };
+      // 割るタイルを、はじめの5割まで減らす（ワシが来る6割を下まわる）
+      const thin = () => { const list = S.bricks.filter(b => b.hp > 0 && !b.iron); for (const b of list.slice(0, Math.ceil(list.length / 2))) b.hp = 0; };
+      T.startGame(596);
+      ok(!S.eagle, '596面にはワシが出ない');
+      T.startGame(597); S.mode = 'play'; away();
+      ok(S.eagle && S.eagle.kind === 'shadow' && S.eagle.state === 'wait' && S.crows.length === 0 && S.sparrows.length > 0, '597面：スズメだけで、ワシの影は待っている');
+      fly(1);
+      ok(S.eagle.state === 'wait', 'タイルが減るまでは、影は来ない');
+      thin(); fly(1 / 60);
+      ok(S.eagle.state === 'go', 'タイルが6割を下まわると、影が横切りはじめる');
+      fly(8);
+      ok(S.eagle.state === 'gone' && S.eagleSeen, '影は一度だけ横切って、いなくなる');
+      T.startGame(598); S.mode = 'play'; away();
+      for (let i = 0; i < 60 * 8; i++) T.moveSparrows(1 / 60);
+      const out0 = S.sparrows.filter(s => s.state === 'perch' || s.state === 'fly').length;
+      thin(); fly(1.2);
+      ok(S.eagle.kind === 'pass' && S.eagleSeen && out0 > 0 && S.sparrows.every(s => s.state === 'leave' || s.state === 'away'), '598面：ワシが通りかかると、スズメがいっせいに飛び立つ');
+      for (let i = 0; i < 60 * 10; i++) { T.moveSparrows(1 / 60); T.moveEagle(1 / 60); }
+      ok(S.sparrows.every(s => s.state === 'leave' || s.state === 'away'), 'スズメは、しばらく戻ってこない');
+      for (let i = 0; i < 60 * 15; i++) { T.moveSparrows(1 / 60); T.moveEagle(1 / 60); }
+      ok(S.sparrows.some(s => s.state === 'perch' || s.state === 'fly'), 'しばらくすると、スズメが戻ってくる');
+      T.startGame(599); S.mode = 'play'; away();
+      const eg = S.eagle, nf = () => S.bricks.filter(b => b.fuse && b.hp > 0).length, f0 = nf(), left0 = S.bricks.filter(b => b.hp > 0 && !b.iron).length;
+      ok(eg.kind === 'hunt' && eg.state === 'circle' && eg.hp === 0, '599面：ワシが上を飛びまわる（やっつけられない）');
+      fly(7);
+      ok(eg.state === 'circle' && nf() === f0, 'はじめの8秒は下りてこない');
+      for (let i = 0; i < 60 * 3 && eg.state === 'circle'; i++) T.moveEagle(1 / 60);
+      ok(eg.state === 'dive' && nf() === f0, '下りてきて、導火線を切りに行く');
+      for (let i = 0; i < 60 * 6 && eg.state === 'dive'; i++) T.moveEagle(1 / 60);
+      ok(eg.state === 'up' && nf() === f0 - 1 && S.fuses.length === 0, '導火線を1枚切る（火はつかない）');
+      fly(3);
+      ok(eg.state === 'circle', '切ったら上へ戻る');
+      eg.t = 0; fly(1 / 60);
+      const bl = S.balls[0];
+      for (let i = 0; i < 20; i++) T.moveEagle(1 / 60);
+      bl.x = eg.x; bl.y = eg.y + 6; fly(1 / 60); away();
+      ok(eg.state === 'up' && eg.t >= T.EAGLE_FLINCH - 0.1, 'ボールが近くを通ると、ひるんで上へ戻り、しばらく下りてこない');
+      T.startGame(600); S.mode = 'play'; away();
+      const e6 = S.eagle, cans = S.bricks.filter(b => b.cannon);
+      ok(e6.kind === 'boss' && e6.hp === T.EAGLE_HP && cans.length === 3 && cans.every(b => b.iron && b.hp > 0), '600面：大砲が3つあって、ワシは3回でやっつけられる');
+      const nextTo = (b, f) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dr, dc]) => S.bricks.some(o => o.hp > 0 && o.row === b.row + dr && o.col === b.col + dc && f(o)));
+      let pick = [];
+      for (let i = 0; i < 60; i++) pick.push(T.eagleFuse());
+      ok(pick.every(b => b && b.fuse && !nextTo(b, o => o.cannon)), 'ワシは、大砲のとなりの導火線を切らない');
+      T.damage(cans[0], true, true);
+      ok(cans[0].hp > 0 && !cans[0].fired, '大砲は爆風でも壊れない');
+      const lit = S.bricks.find(b => b.fuse && b.hp > 0 && nextTo(b, o => o === cans[0]));
+      T.damage(lit, true);
+      ok(cans[0].fired && S.shots.length === 1, '導火線の火が大砲に届くと、弾を撃つ');
+      for (let i = 0; i < 60 * 4 && e6.hp === T.EAGLE_HP; i++) T.moveEagle(1 / 60);
+      ok(e6.hp === T.EAGLE_HP - 1 && S.shots.length === 0, '弾はワシを追いかけて当たる');
+      for (const b of S.bricks) if (b.hp > 0 && !b.iron) b.hp = 0;
+      T.damage(S.bricks.find(b => b.hp > 0 && b.cannon && b.fired), true);
+      ok(S.mode === 'play', 'タイルを全部割っても、ワシが残っているあいだはクリアにならない');
+      fly(1 / 60);
+      ok(cans.every(b => b.fired), 'タイルがなくなると、残りの大砲がまとめて撃つ');
+      for (let i = 0; i < 60 * 6 && S.mode === 'play'; i++) T.moveEagle(1 / 60);
+      ok(e6.hp === 0 && S.mode === 'clear', 'ワシに3回当てると、飛び去ってからクリア');
+      ok(ovText.textContent.includes('ワシをやっつけました') && ovText.textContent.includes('7') && ovBtn.textContent.includes('タイトルへ'), '600面のあとは、おめでとうの画面（7周目はこれから）からタイトルへ');
+    }
     return log;
   });
   // ステージ一覧の見出し
