@@ -529,6 +529,48 @@ const { chromium } = require('playwright');
     const crushed = [3, 4, 5, 6, 7, 8].every(r => !S.bricks.some(b => b.hp > 0 && !b.rock && b.row === r && b.col === 5));
     ok(rk.row === 10 && rk2.row === 9 && crushed, '岩は下のタイルをつぶしながら、いちばん下の行まで落ちる（上の岩もいっしょに）');
     ok(!S.bricks.some(b => b.rock && b.hp > 0 && b.col === 6 && b.row > 1), 'となりの列の岩は、支えがあるので落ちない');
+    // ---- カラス（559面から） ----
+    const crowFly = sec => { for (let i = 0; i < Math.round(sec * 60); i++) T.moveCrows(1 / 60); };
+    const fusePos = () => S.bricks.filter(b => b.fuse && b.hp > 0 && !b.carried).map(b => b.row + ',' + b.col).sort().join(' ');
+    T.startGame(558);
+    ok(S.crows.length === 0, '558面にはカラスが出ない');
+    T.startGame(559); S.mode = 'play'; away();
+    S.sparrows = [];
+    ok(S.crows.length === 1 && S.crows[0].state === 'away', '559面：はじめはカラスが盤面の外にいる');
+    const cw = S.crows[0], cf0 = fusePos(), nFuse = S.bricks.filter(b => b.fuse && b.hp > 0).length;
+    let took = null;
+    for (let i = 0; i < 60 * 30 && !took; i++) { T.moveCrows(1 / 60); if (cw.state === 'carry') took = cw.br; }
+    ok(!!took && took.carried && took.row < 0, 'カラスが導火線を1枚くわえる');
+    const dest = cw.to;
+    let placed = false;
+    for (let i = 0; i < 60 * 20 && !placed; i++) { T.moveCrows(1 / 60); if (!took.carried) placed = true; }
+    ok(placed && took.row === dest[0] && took.col === dest[1] && took.hp > 0, 'くわえた導火線を、決めたマスに置く（' + dest + '）');
+    ok(fusePos() !== cf0 && S.bricks.filter(b => b.fuse && b.hp > 0).length === nFuse, '導火線の場所が変わり、枚数はそのまま');
+    ok(cw.state === 'leave', '置いたら飛んでいく');
+    // くわえているときにボールが近くを通ると、逃げて近くに落とす
+    crowFly(20);
+    took = null;
+    for (let i = 0; i < 60 * 30 && !took; i++) { T.moveCrows(1 / 60); if (cw.state === 'carry') took = cw.br; }
+    crowFly(0.3);
+    const bl = S.balls[0];
+    bl.x = cw.x + 8; bl.y = cw.y - 8;
+    crowFly(1 / 60);
+    ok(cw.state === 'leave' && !took.carried && took.row >= 0 && took.hp > 0, 'くわえているときにボールが近くを通ると、カラスが逃げて導火線を落とす');
+    away();
+    // くわえられている導火線は、当てると割れるが火はつかない
+    crowFly(20);
+    took = null;
+    for (let i = 0; i < 60 * 30 && !took; i++) { T.moveCrows(1 / 60); if (cw.state === 'carry') took = cw.br; }
+    S.fuses = [];
+    T.damage(took, false);
+    crowFly(1 / 60);
+    ok(took.hp === 0 && S.fuses.length === 0 && cw.state === 'leave', 'くわえられている導火線は、当てると割れて、火はつかない');
+    // 置く先は、割るタイルのいちばん下の行より上で、離れたマス
+    const low = Math.max(...S.bricks.filter(b => b.hp > 0 && !b.iron).map(b => b.row));
+    const src = S.bricks.find(b => b.fuse && b.hp > 0 && !b.carried);
+    const spots = [];
+    for (let i = 0; i < 30; i++) { const q = T.crowSpot(cw, src); if (q) spots.push(q); }
+    ok(spots.length && spots.every(([r, c]) => r <= low && Math.abs(r - src.row) + Math.abs(c - src.col) >= 3 && T.freeCell(r, c)), '置く先は、空いていて、離れていて、いちばん下の行より上');
     return log;
   });
   // ステージ一覧の見出し

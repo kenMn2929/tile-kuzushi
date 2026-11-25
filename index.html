@@ -244,6 +244,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.warp{position:relative;background:var(--board);box-shadow:inset 0 0 0 1px var(--line)}
 .cap.warp::before{width:11px;height:11px;margin:-5.5px 0 0 -5.5px;background:#0e1a20;box-shadow:0 0 0 2px var(--t-asagi)}
 .cap.bug{background:var(--bug);color:var(--board)}
+.cap.crow{background:#24272f;color:#f2efe6}
 .cap.king{background:var(--bug);color:var(--t-yamabuki)}
 .cap.queen{background:var(--t-fuji);color:var(--t-yamabuki);font-size:.62rem}
 .cap.joker{background:var(--t-ai);color:var(--t-yamabuki);font-size:.62rem}
@@ -576,6 +577,7 @@ img{max-width:100%}
               <p class="sub">ステージ527から{出|で}てくる{鳥|とり}（やっつけられない）</p>
               <ul class="items one">
                 <li data-from="527"><span class="cap bug">雀</span>スズメ。{飛|と}んできて、{上|うえ}が{空|あ}いたタイルにとまる。とまっているタイルは、ボールでも{爆弾|ばくだん}でも{火|ひ}でも{水|みず}でも{割|わ}れず、{導火線|どうかせん}の{火|ひ}も{通|とお}らない。ボールが{近|ちか}くを{通|とお}るか、とまっているタイルに{当|あ}たると、{飛|と}び{立|た}って{別|べつ}のタイルへ{移|うつ}る。{割|わ}るタイルが{残|のこ}り{少|すく}なくなると、{帰|かえ}っていく。ボールをはね{返|かえ}さない。ステージが{始|はじ}まって30{秒|びょう}たつと、{虫|むし}を{食|た}べに{行|い}って、くわえていく</li>
+                <li data-from="559"><span class="cap crow">烏</span>カラス。{飛|と}んできて、{導火線|どうかせん}を1{枚|まい}くわえ、{離|はな}れた{空|あ}いたところへ{置|お}いていく。{置|お}いた{先|さき}で、ほかの{導火線|どうかせん}や{爆弾|ばくだん}とつながることもある。ボールが{近|ちか}くを{通|とお}ると{逃|に}げて、くわえていた{導火線|どうかせん}を{近|ちか}くに{落|お}とす。くわえられている{導火線|どうかせん}は、ボールが{当|あ}たると{割|わ}れるが、{火|ひ}はつかない。ボールをはね{返|かえ}さない</li>
               </ul>
             </div>
             <div class="section group">
@@ -901,6 +903,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // maxBalls: 数  分かれるタイルや「分」でボールがふえるのを、MAX_BALLS のかわりにこの数までにする
 // tint: [行の字]  マスごとのタイルの色（rows と同じ形で書く）。. はふつうの色（行ごとの色）。3回のタイルと、字のある仕掛けのタイルは、それぞれの色のまま
 //   R 赤（さんご）  Y 黄（やまぶき）  G 緑（わかくさ）  A 青緑（あさぎ）  B 青（あい）  S 空色  P 桃色  V 紫（ふじ）  K 茶色（くるみ）
+// crow: 数  カラス（559面から）。導火線のタイルを1枚くわえて、離れた空いたマスへ運んで置く。ボールが近くを通ると逃げて、くわえた導火線を近くに落とす
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
@@ -2057,6 +2060,39 @@ const STAGES6 = [
   // 落石注意の標識（ひし形の黄色い標識。がけを3回のタイルで描き、落ちてくる石が岩。下は柱）
   {rows: ['....22....','...2112...','..211@12..','.23313312.','2222222@32','2333331112','.2133332..','..2.332...','...2.2....','....3.....','....3..g..'],
    tint: ['....KK....','...KYYK...','..KYY.YK..','.KYYY.YYK.','KYYYYYY.YK','KY...YYYYK','.KY....K..','..K...K...','...K.K....','..........','..........']},
+  // 559面から：カラス（導火線を1枚くわえて、離れた空いたマスへ運ぶ。ボールが近くを通ると逃げて、近くに落とす）
+  // 物干し（左右の柱のあいだのロープが導火線。シャツとタオルと靴下がぶら下がる。下は物干し台）
+  {rows: ['.3......3.','.2~~~~~~2.','.2222.222.','.2222.222.','.2.2..222.','.2.2..2.2.','.3......3.','.3......3.','3333..3333','.3......3.','.g..gg.g..'],
+   tint: ['.K......K.','..........','..PPP.SS..','..PPP.SSR.','...P..SS..','...P..S...','.K......K.','.K......K.','KKKK..KKKK','.K......K.','..........'],
+   crow: 1},
+  // 釣り（左の岸に人。さおの先から糸が導火線で、右の端を下りていく。水面は水のタイルで、割ると下の魚をたたく）
+  {rows: ['.......22.','.....11..~','..1.1....~','.111.....~','.11......~','.11..WWW.~','3333.....~','3333..22.2','3333.2222.','2222..22..','.....g....'],
+   tint: ['.......KK.','.....KK...','..Y.K.....','.RRR......','.BB.......','.BB.......','GGGG......','GGGG..RR.R','KKKK.RRRR.','KKKK..RR..','..........'],
+   crow: 1, sparrow: 3},
+  // 鐘つき堂（上は屋根。鐘と撞木を導火線のつなでつるす。下は石の台）
+  {rows: ['...3333...','.22222222.','2...~...~2','2..333..~2','2.33333.~2','2.3333322.','2.33333..2','..........','.22222222.','..........','.g.g..ggg.'],
+   tint: ['...RRRR...','.RRRRRRRR.','K........K','K........K','K.YYYYY..K','K.YYYYYKK.','K........K','..........','.AAAAAAAA.','..........','..........'],
+   crow: 1, sparrow: 3},
+  // 毛糸と編み物（編み棒は鉄と玉。マフラーのしま模様から毛糸の導火線がのびて、下の毛糸玉へ）
+  {rows: ['...2......','...2#####.','....22222.','....22222.','....11111.','....11111.','.~~~33333.','.~........','.~..111...','.~~11111..','g..222.ggg'],
+   tint: ['...R......','...R......','....GGGGG.','....YYYYY.','....GGGGG.','....YYYYY.','....GGGGG.','..........','....PPP...','...PPPPP..','...PPP....'],
+   crow: 1, sparrow: 1},
+  // 風鈴（上は軒。ひもの導火線でガラスの鈴をつるし、舌が時限爆弾。下の短冊が動く行。右は朝顔、下の盾は縁側）
+  {rows: ['.333333333','3333333333','....~...2.','...222.2.2','..22222.2.','..22222.2.','..2.T.2.2.','....~..2.2','....~...2.','...22...2.','.g.gg.g.gg'],
+   tint: ['.KKKKKKKKK','KKKKKKKKKK','........G.','...SSS.V.V','..SSSSS.G.','..SSSSS.G.','..S...S.G.','.......V.V','........G.','...RR...G.','..........'],
+   move: {9: 40}, crow: 1, sparrow: 3},
+  // ゴミ捨て場（左は看板。ネットの網の下に、結び目が導火線の黒いゴミ袋。下は空き缶。カラスが2羽）
+  {rows: ['.222......','.222.aaaa.','..3..~~.~~','..3.333333','..3.333333','..3.333333','...3333333','..........','.2..2...2.','..........','.g..gggg..'],
+   tint: ['.YYY......','.YYY......','..K.......','..K.BBBAAA','..K.BBBAAA','..K.BBBAAA','...GGGGAAA','..........','.R..S...Y.','..........','..........'],
+   crow: 2, sparrow: 2},
+  // 操り人形（上の手板から、糸の導火線が両手と頭へ。右は幕）
+  {rows: ['....3.....','.3333333..','.~..~..~.3','.~..~..~.3','.~.222.~.3','.~.222.~.3','.22222222.','...222...3','...222...3','...2.2...3','..2g.22...'],
+   tint: ['....K.....','.KKKKKKK..','.........V','.........V','...YYY...V','...YYY...V','.YRRRRRY..','.........V','.........V','...B.B...V','..KK.KK...'],
+   crow: 1, sparrow: 3},
+  // クモの巣（上は枝。巣の糸のあいだに、導火線の輪。まん中にクモ。カラスが2羽）
+  {rows: ['.33333333.','.2..2...2.','..~.2..~..','..~~2~~~..','.2.3333.2.','22.3333.22','.2.3333.2.','..~~2~~~..','..~.2..~..','.2..2...2.','.ggg..g.g.'],
+   tint: ['.KKKKKKKK.','.S..S...S.','....S.....','....S.....','.S.V..V.S.','SS......SS','.S.V..V.S.','....S.....','....S.....','.S..S...S.','..........'],
+   crow: 2, sparrow: 3},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -2175,6 +2211,8 @@ const INTROS = {
         text: 'ステージ542までは、{新|あたら}しいものは{出|で}てきません。これまでのタイルや{虫|むし}、スズメに、{導火線|どうかせん}と{水|みず}を{少|すこ}しまぜたステージです。'},
   543: {title: '{時限爆弾|じげんばくだん}',
         text: '{時限爆弾|じげんばくだん}にボールを{当|あ}てると、{数字|すうじ}が3から{減|へ}っていき、0になると{爆発|ばくはつ}して、まわりのタイルもいっしょに{割|わ}れます。{導火線|どうかせん}の{火|ひ}が{届|とど}くと、すぐに{爆発|ばくはつ}します。'},
+  559: {title: 'カラス',
+        text: 'カラスが{飛|と}んできて、{導火線|どうかせん}を1{枚|まい}くわえ、{別|べつ}のところへ{置|お}いていきます。{火|ひ}の{道|みち}が{切|き}れることも、つながることもあります。ボールを{近|ちか}くに{通|とお}すと、{逃|に}げていきます。'},
   551: {title: '{岩|いわ}',
         text: '{岩|いわ}は{割|わ}れません。{割|わ}らなくてもクリアできます。{下|した}のタイルを{割|わ}って{支|ささ}えをなくすと、{岩|いわ}が{落|お}ちてきて、{下|した}のタイルをつぶしながら{落|お}ちていきます。{爆弾|ばくだん}でも{壊|こわ}れません。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
@@ -2296,7 +2334,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, sparrows: [], sparrowT: 0, carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, sparrows: [], sparrowT: 0, crows: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -2406,6 +2444,7 @@ function sfx(name, arg){
     case 'douse':  tone(2400, 0.16, 'sawtooth', 0.01, 900); break;
     case 'fire':   tone(220, 0.32, 'sawtooth', 0.03, 560); tone(1600, 0.26, 'triangle', 0.02, 700, 0.03); break;
     case 'up':     tone(480, 0.14, 'sine', 0.05, 1500); break;
+    case 'caw':    tone(560, 0.16, 'sawtooth', 0.035, 380); break;
     case 'pick':   tone(380, 0.1, 'triangle', 0.05, 620); break;
     case 'spray':  tone(2600, 0.45, 'sawtooth', 0.012, 700); tone(1900, 0.4, 'triangle', 0.02, 900, 0.03); break;
     case 'gift':   [1175, 1568].forEach((f, i) => tone(f, 0.1, 'sine', 0.05, null, i * 0.08)); break;
@@ -2602,6 +2641,7 @@ function buildStage(n){
   S.scene = def.scene ? {t: 0, kind: def.scene} : null;
   S.sparrows = def.sparrow ? makeSparrows(def.sparrow) : [];
   S.sparrowT = 0;
+  S.crows = def.crow ? makeCrows(def.crow) : [];
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -2844,6 +2884,8 @@ function freeCell(r, c){
   // 運ぶ虫がタイルを置きに行くマス
   const to = S.carrier && S.carrier.to;
   if (to && to[0] === r && to[1] === c) return false;
+  // カラスが導火線を置きに行くマス
+  if (S.crows.some(o => o.to && o.to[0] === r && o.to[1] === c)) return false;
   if (S.bricks.some(b => b.hp > 0 && b.row === r && b.col === c)) return false;
   return !S.flying.some(f => f.row === r && f.col === c);
 }
@@ -3675,7 +3717,7 @@ for (let n = 1; n <= LAST_STAGE; n++) {
   b.append(num, mark);
   const def = stageDef(n);
   const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') +
-    (def.king === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow ? '鳥' : '');
+    (def.king === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow ? '鳥' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -3699,7 +3741,7 @@ function renderPicker(){
       : def.carry ? '（タイルを運ぶ虫が出る）' : '';
     const who = def.rush ? '虫KINGと虫QUEENと虫JOKER' : def.duo ? '虫KINGと虫QUEEN' : def.joker ? '虫JOKER' : def.queen ? '虫QUEEN' : '虫KING';
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
-    const birds = def.sparrow ? '（スズメが出る）' : '';
+    const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '');
     b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
@@ -4429,6 +4471,8 @@ function lightFire(br){
 // 火の移る先は印（burning）をつけて、二度は数えない
 const fuseNext = b => (b.fuse || b.bomb || b.fire) && !b.wet;
 function burnFuse(br){
+  // カラスがくわえている導火線は、割れても火を移さない
+  if (br.carried) return;
   let any = false;
   for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     const nb = S.bricks.find(b => b.hp > 0 && b.row === br.row + dr && b.col === br.col + dc);
@@ -5016,7 +5060,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveSparrows(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
+    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveSparrows(dt); moveCrows(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
   if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
@@ -6583,6 +6627,199 @@ function drawSparrows(){
     ctx.restore();
   }
 }
+// カラス（559面から。面の crow に数を書く）
+// 盤面の外から飛んできて、導火線のタイルを1枚くわえ、離れた空いたマスへ運んで置く（道が切れる。置いた先でつながることもある）
+// 置いたら盤面の外へ飛んでいき、CROW_AWAY 秒で戻ってくる。はじめは CROW_FIRST 秒（2羽目はさらに CROW_NEXT 秒あと）で来る
+// ボールが近く（CROW_NEAR）を通ると「カァ」と逃げる。くわえていた導火線は、そのとき近くの空いたマスへ落とす
+// くわえられている導火線は、ボールが当たると1回で割れる（火はつかない）。運べる導火線が CROW_LEFT 枚より少ないと、もう来ない
+// 置く先は、割るタイルのいちばん下の行より上で、鉄・岩・筒などに囲まれていない（下からボールが行ける）マス
+// 「止」のあいだと、遊んでいないあいだは止まる。続きから遊ぶデータには入らない
+const CROW_FIRST = 6, CROW_NEXT = 6, CROW_V = 150, CROW_CARRY_V = 100, CROW_NEAR = 26, CROW_AWAY = 9, CROW_LEFT = 2, CROW_JOIN = 0.4;
+function makeCrows(n){
+  const list = [];
+  for (let i = 0; i < n; i++) {
+    const side = i % 2 ? -1 : 1;
+    list.push({x: side < 0 ? -50 : W + 50, y: 24, dir: -side, state: 'away', t: CROW_FIRST + i * CROW_NEXT, br: null, to: null, step: Math.random() * 6});
+  }
+  return list;
+}
+// 下からボールが行けるマス（鉄・岩・筒・スイッチは通れない。壁は出入りするので通れる。割れるタイルは割れば通れる）
+function crowReach(){
+  const def = stageDef(S.stage), rows = def.rows.length, seen = new Set(), q = [];
+  const block = new Set(S.bricks.filter(b => b.hp > 0 && b.iron && !b.wall && b.row >= 0).map(b => b.row * 64 + b.col));
+  for (let c = 0; c < COLS; c++) q.push([rows - 1, c]);
+  while (q.length) {
+    const [r, c] = q.pop(), k = r * 64 + c;
+    if (r < 0 || r >= rows || c < 0 || c >= COLS || seen.has(k) || block.has(k)) continue;
+    seen.add(k);
+    q.push([r + 1, c], [r - 1, c], [r, c + 1], [r, c - 1]);
+  }
+  return seen;
+}
+const crowTaken = c => new Set(S.crows.filter(o => o !== c).flatMap(o => [o.br, o.to && o.to[0] * 64 + o.to[1]]));
+// 運ぶ導火線：となりに導火線・爆弾・火のタイルがあるもの（道を切る）を先に選ぶ
+function crowFuse(c){
+  const [top, bottom] = S.vband, taken = crowTaken(c);
+  const list = S.bricks.filter(b => b.fuse && b.hp > 0 && !b.wet && !b.burning && !b.perched && !b.carried && !(b.slideT > 0) && !taken.has(b) &&
+    !S.rowMove[b.row] && !(S.colMove[b.col] && b.row >= top && b.row <= bottom));
+  if (list.length < CROW_LEFT) return null;
+  const linked = list.filter(b => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dr, dc]) =>
+    S.bricks.some(o => o !== b && o.hp > 0 && o.row === b.row + dr && o.col === b.col + dc && fuseNext(o))));
+  const from = linked.length ? linked : list;
+  return from[Math.floor(Math.random() * from.length)];
+}
+// 置く先：CROW_JOIN の割合で、導火線・爆弾・火のタイルのとなり（つながる）を選ぶ。ほかは、となりに何かタイルがあるマス
+function crowSpot(c, br){
+  const low = Math.max(-1, ...S.bricks.filter(b => needBreak(b) && b !== br).map(b => b.row));
+  const reach = crowReach(), taken = crowTaken(c), cells = [];
+  for (let r = 0; r <= low; r++) for (let col = 0; col < COLS; col++) {
+    if (!freeCell(r, col) || !reach.has(r * 64 + col) || taken.has(r * 64 + col)) continue;
+    if (Math.abs(r - br.row) + Math.abs(col - br.col) < 3) continue;
+    cells.push([r, col]);
+  }
+  const near = ([r, col], f) => [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dr, dc]) =>
+    S.bricks.some(o => o !== br && o.hp > 0 && o.row === r + dr && o.col === col + dc && f(o)));
+  const join = cells.filter(q => near(q, fuseNext)), side = cells.filter(q => near(q, () => true));
+  const list = join.length && Math.random() < CROW_JOIN ? join : side.length ? side : cells;
+  return list.length ? list[Math.floor(Math.random() * list.length)] : null;
+}
+// 導火線を (r, col) のマスに置く
+function crowPut(br, r, col){
+  br.row = r; br.col = col;
+  br.baseX = br.x = SIDE + col * CELL;
+  br.baseY = br.y = cellY(r);
+  br.carried = false;
+  br.flash = 0.12;
+  sfx('land');
+}
+// くわえたまま逃げるとき：カラスにいちばん近い空いたマスへ落とす（ボールが重なるマスはさける）
+function crowDrop(c){
+  const br = c.br, reach = crowReach(), cells = [];
+  for (let r = 0; r < stageDef(S.stage).rows.length; r++) for (let col = 0; col < COLS; col++) {
+    const taken = crowTaken(c);
+    if (freeCell(r, col) && reach.has(r * 64 + col) && !taken.has(r * 64 + col) && !ballOverlaps(SIDE + col * CELL, cellY(r), BRICK_W, BRICK_H)) cells.push([r, col]);
+  }
+  const d = ([r, col]) => Math.hypot(SIDE + col * CELL + BRICK_W / 2 - c.x, cellY(r) - c.y);
+  const [r, col] = cells.length ? cells.reduce((a, q) => d(q) < d(a) ? q : a) : c.from;
+  crowPut(br, r, col);
+}
+function crowLeave(c, scare){
+  if (scare) {
+    S.pops.push({x: c.x, y: c.y - 14, text: 'カァ', t: 0});
+    sfx('caw');
+  }
+  if (c.state === 'carry' && c.br && c.br.hp > 0) crowDrop(c);
+  c.br = null; c.to = null;
+  c.state = 'leave';
+}
+function moveCrows(dt){
+  if (!S.crows.length) return;
+  for (const c of S.crows) c.step += dt;
+  if (S.mode !== 'play' || S.stopT > 0) return;
+  for (const c of S.crows) {
+    if (c.state === 'away') {
+      c.t -= dt;
+      if (c.t > 0) continue;
+      c.br = crowFuse(c);
+      if (!c.br) { c.t = 2; continue; }
+      c.x = c.br.x + c.br.w / 2 < W / 2 ? W + 50 : -50;
+      c.y = 24;
+      c.state = 'go';
+      continue;
+    }
+    if (c.state === 'leave') {
+      const ox = c.x < W / 2 ? -60 : W + 60;
+      if (sparrowToward(c, ox, -30, CROW_V * 1.4, dt)) { c.state = 'away'; c.t = CROW_AWAY; }
+      continue;
+    }
+    // ボールが近くを通ると逃げる
+    if (S.balls.some(b => !(b.hold > 0) && !(b.tubeT > 0) && Math.hypot(b.x - c.x, b.y - c.y) < CROW_NEAR + S.ballR)) { crowLeave(c, true); continue; }
+    const br = c.br;
+    if (c.state === 'go') {
+      if (!br || br.hp <= 0 || br.wet || br.burning || br.perched || br.carried) { crowLeave(c); continue; }
+      if (sparrowToward(c, br.x + br.w / 2, br.y - 10, CROW_V, dt)) {
+        const to = crowSpot(c, br);
+        if (!to) { crowLeave(c); continue; }
+        c.from = [br.row, br.col];
+        c.to = to;
+        br.carried = true;
+        br.row = -1; br.col = -1;
+        c.state = 'carry';
+        sfx('pick');
+      }
+      continue;
+    }
+    if (c.state === 'carry') {
+      if (br.hp <= 0) { crowLeave(c); continue; }
+      const [r, col] = c.to, cx = SIDE + col * CELL, cy = cellY(r);
+      const there = sparrowToward(c, cx + BRICK_W / 2, cy - 10, CROW_CARRY_V, dt);
+      br.x = c.x - br.w / 2;
+      br.y = c.y + 10;
+      // ボールがそのマスにいるあいだは、上で待ってから置く
+      if (there && !ballOverlaps(cx, cy, BRICK_W, BRICK_H)) {
+        c.to = null;
+        if (freeCell(r, col)) crowPut(br, r, col); else crowDrop(c);
+        c.br = null;
+        c.state = 'leave';
+      }
+    }
+  }
+}
+function drawCrow(x, y, dir, flap){
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.scale(dir, 1);
+  // 暗い画面でも見えるように、体のまわりを明るい線でふちどる
+  ctx.strokeStyle = 'rgba(205,214,228,.75)';
+  ctx.lineWidth = 2.4;
+  ctx.beginPath(); ctx.moveTo(-10, -1); ctx.lineTo(-25, -5); ctx.lineTo(-24, 3); ctx.closePath(); ctx.stroke();
+  ctx.beginPath(); ctx.ellipse(0, 0, 14, 9.5, -0.1, 0, Math.PI * 2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(11, -6, 7.5, 0, Math.PI * 2); ctx.stroke();
+  // しっぽ
+  ctx.fillStyle = '#1b1d24';
+  ctx.beginPath();
+  ctx.moveTo(-10, -1); ctx.lineTo(-25, -5); ctx.lineTo(-24, 3); ctx.closePath();
+  ctx.fill();
+  // 体と頭
+  ctx.fillStyle = '#24272f';
+  ctx.beginPath(); ctx.ellipse(0, 0, 14, 9.5, -0.1, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(11, -6, 7.5, 0, Math.PI * 2); ctx.fill();
+  // 目
+  ctx.fillStyle = '#f2efe6';
+  ctx.beginPath(); ctx.arc(13, -7.5, 2, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#0d0e12';
+  ctx.beginPath(); ctx.arc(13.6, -7.5, 1.1, 0, Math.PI * 2); ctx.fill();
+  // 太いくちばし
+  ctx.fillStyle = '#3d414c';
+  ctx.beginPath(); ctx.moveTo(16, -9.5); ctx.lineTo(26, -5); ctx.lineTo(16, -2.5); ctx.closePath(); ctx.fill();
+  // 羽。青みのつや
+  ctx.save();
+  ctx.translate(-2, -2);
+  ctx.rotate(-0.5 + flap * 1.1);
+  ctx.fillStyle = '#16181e';
+  ctx.beginPath(); ctx.ellipse(-4, -3, 13, 6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#4b5873';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(-13, -3); ctx.lineTo(4, -4.5); ctx.moveTo(-12, 0); ctx.lineTo(2, -1); ctx.stroke();
+  ctx.restore();
+  ctx.restore();
+}
+function drawCrows(){
+  for (const c of S.crows) {
+    if (c.state === 'away') continue;
+    const flap = reduceMotion.matches || S.stopT > 0 ? 0.45 : 0.5 + 0.5 * Math.sin(c.step * 20);
+    if (c.state === 'carry') {
+      // 導火線をつかむ足
+      ctx.strokeStyle = '#2a2420';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(c.x - 3, c.y + 6); ctx.lineTo(c.x - 4, c.y + 12);
+      ctx.moveTo(c.x + 3, c.y + 6); ctx.lineTo(c.x + 4, c.y + 12);
+      ctx.stroke();
+    }
+    drawCrow(c.x, c.y, c.dir, flap);
+  }
+}
 function drawChicks(){
   for (const q of S.chicks) {
     ctx.save();
@@ -6751,6 +6988,7 @@ function draw(){
   for (const g of S.bugs) drawBug(g.x, g.y, {step: g.step, stun: g.stunT, eat: g.eat, munch: g.munch, paint: g.paint, windup: g.paint && g.paintT < 0.5});
   drawGlobs();
   drawSparrows();
+  drawCrows();
 
   if (S.lasers.length) {
     ctx.fillStyle = C['t-fuji'];
