@@ -1,4 +1,4 @@
-# 5周目（STAGES5）と6周目（STAGES6）の面の並べ方を調べる。使い方：python3 tools/check_stages.py [index.html]
+# 5周目（STAGES5）と6周目（STAGES6）と7周目（STAGES7）の面の並べ方を調べる。使い方：python3 tools/check_stages.py [index.html]
 # 調べること：
 #   - 壁がどちらの向きでも、割るタイルに下から届くか（いちばん上の行の空きに届けば、上からも届くものとする）（鍵に全部届く面は、錠を開いたものとして調べる）。スイッチに下から当てられるか（ボールが閉じこめられないか）
 #   - 動く行・動く列（の動く範囲）に、置いてはいけないものがないか
@@ -6,6 +6,7 @@
 #   - 筒と大砲の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
 #   - 割れないもの（スイッチ・壁・鉄・錠・筒・大砲）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
 #   - tint の字と長さ。gold（金のタイルにするマス）の字と長さ
+#   - 夜の面（night）に、スズメ（sparrow）とカラス（crow）を書いていないか
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
 # 下書きを調べるとき：python3 tools/check_stages.py --draft 下書き.json ...（1ファイルに1面。tools/tune.js と同じ形の JSON）
 import re, sys, os, json
@@ -37,6 +38,7 @@ if drafts:
 else:
     defs = [(401 + i, d) for i, d in enumerate(stage_defs('STAGES5'))]
     defs += [(501 + i, d) for i, d in enumerate(stage_defs('STAGES6'))]
+    defs += [(601 + i, d) for i, d in enumerate(stage_defs('STAGES7'))]
 ok = True
 stats = {'top': 0, 'bottom': 0, 'sym': 0, 'frame': 0}
 for n, (rows_s, rest) in defs:
@@ -50,7 +52,7 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci~W@C' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~W@Cl' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
@@ -64,6 +66,8 @@ for n, (rows_s, rest) in defs:
                 print(n, 'faller without tile below', r, c); ok = False
             if ch == '@' and r + 1 < R and (rows[r + 1][c] in '.+-' or (r + 1) in moving or inv(r + 1, c)):
                 print(n, 'rock without still tile below', r, c); ok = False
+    if re.search(r"night: true", rest) and re.search(r"(sparrow|crow): [1-9]", rest):
+        print(n, 'sparrow/crow on a night stage'); ok = False
     for ch in 'pPoO':
         k = sum(row.count(ch) for row in rows)
         if k not in (0, 2): print(n, 'pair count', ch, k); ok = False

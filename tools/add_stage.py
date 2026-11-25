@@ -1,12 +1,12 @@
-# 下書き（JSON）を、6周目の面のいちばん後ろ（STAGES6 の最後）に書き足す。使い方：
+# 下書き（JSON）を、7周目の面のいちばん後ろ（STAGES7 の最後）に書き足す。使い方：
 #   python3 tools/add_stage.py 下書き.json 'コメント（絵と仕掛けの説明）' [下書き.json 'コメント' ...]
 # コメントは「// 」をつけて面の上に入れる。2行以上にするときは、コメントの中で \n を使う
-# 書き足したあとは、check_stages.py・test_lap6.js・check_up.js を流す
+# 書き足したあとは、check_stages.py・test_lap7.js・test_lap6.js・check_up.js を流す
 import json, os, sys
 here = os.path.dirname(os.path.abspath(__file__))
 path = os.path.join(here, '..', 'index.html')
 s = open(path, encoding='utf-8').read()
-start = s.index('const STAGES6 = [')
+start = s.index('const STAGES7 = [')
 end = s.index('\n];', start)
 strs = lambda a: '[' + ','.join("'%s'" % x for x in a) + ']'
 def fmt(d, note):

@@ -19,12 +19,12 @@ if (!dir || !runsArg || !items.length) { console.log('使い方：node tools/tun
 const runs = +runsArg;
 execFileSync('python3', [path.join(tools, 'make_test_page.py'), dir]);
 const html = fs.readFileSync(path.join(dir, 'test.html'), 'utf8');
-// いまの最後の面の番号（6周目の面の数から）
-const lap6 = html.slice(html.indexOf('const STAGES6 = ['));
-const last = 500 + (lap6.slice(0, lap6.indexOf('\n];')).match(/^\s*\{rows: /gm) || []).length;
+// いまの最後の面の番号（7周目の面の数から）
+const lap7 = html.slice(html.indexOf('const STAGES7 = ['));
+const last = 600 + (lap7.slice(0, lap7.indexOf('\n];')).match(/^\s*\{rows: /gm) || []).length;
 const base = +(opt('base') || last);
 const HP = {'*': 1, '#': 0, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 0, S: 0, '+': 0, '-': 0, h: 1, c: 2, i: 0, '~': 1, W: 1, T: 1, '@': 0, C: 0, o: 0, O: 0, w: 0, x: 0, X: 0};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 0, S: 0, '+': 0, '-': 0, h: 1, c: 2, i: 0, '~': 1, W: 1, T: 1, '@': 0, C: 0, l: 1, o: 0, O: 0, w: 0, x: 0, X: 0};
 const hard = rows => rows.join('').split('').reduce((a, ch) => a + (ch === '.' ? 0 : /\d/.test(ch) ? +ch : HP[ch] ?? 1), 0);
 const jobs = items.map(it => {
   if (/^\d+$/.test(it)) return {name: it, stage: +it};

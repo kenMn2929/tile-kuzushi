@@ -54,6 +54,7 @@
   --t-mizu:#2c7bb0;
   --t-toki:#2e2a36;
   --t-iwa:#7a6f62;
+  --t-akari:#c9741e;
   --bug:#2f5d48;
   --bad:#4b3a4f;
   --warn:#c4472f;
@@ -73,7 +74,7 @@
     --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
     --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
     --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
-    --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578;
+    --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a;
     --bad:#7a5f80; --warn:#ef7b5f;
     color-scheme:dark;
   }
@@ -87,7 +88,7 @@
   --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
   --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
   --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
-  --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578;
+  --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a;
   --bad:#7a5f80; --warn:#ef7b5f;
   color-scheme:dark;
 }
@@ -222,6 +223,8 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.fuse{background:linear-gradient(transparent 40%,#ecd29a 40%,#ecd29a 60%,transparent 60%) var(--t-nawa);border-radius:3px}
 .cap.water{background:var(--t-mizu);border-radius:3px}
 .cap.timer{background:var(--t-toki);border-radius:3px}
+.cap.lamp{background:var(--t-akari);color:#fff;border-radius:3px}
+.cap.night{background:radial-gradient(circle at 50% 50%,#f3d98a 0 3px,rgba(243,217,138,.35) 5px,#0b1020 9px);border-radius:3px}
 .cap.rock{background:var(--t-iwa);border-radius:9px 5px 8px 4px}
 .cap.tube{position:relative;background:var(--board);box-shadow:inset 0 0 0 1px var(--line);border-radius:3px}
 .cap.tube::before,.cap.tube::after{content:"";position:absolute;left:50%;width:18px;margin-left:-9px}
@@ -388,6 +391,7 @@ img{max-width:100%}
                 <li data-from="519"><span class="cap water">水</span>{水|みず}のタイル。1{回|かい}で{割|わ}れる。{割|わ}れると{水|みず}が{真下|ました}へ{流|なが}れて、{下|した}にあるタイルを1{回|かい}ずつたたく。{鉄|てつ}や{錠|じょう}、{出|で}ている{壁|かべ}で{止|と}まる。{水|みず}がかかった{導火線|どうかせん}と{火|ひ}のタイルはしけって、{割|わ}れても{火|ひ}が{出|で}なくなる。{走|はし}っている{火|ひ}も、{流|なが}れている{水|みず}を{越|こ}えられない</li>
                 <li data-from="543"><span class="cap timer">時</span>{時限爆弾|じげんばくだん}。ボールが{当|あ}たっても、すぐには{割|わ}れない。3{秒|びょう}{数|かぞ}えてから{爆発|ばくはつ}して、まわりのタイルもいっしょに{割|わ}れる。{残|のこ}りの{秒|びょう}が{数字|すうじ}で{見|み}える。{導火線|どうかせん}の{火|ひ}が{届|とど}くか、ほかの{爆弾|ばくだん}の{爆風|ばくふう}を{受|う}けると、すぐに{爆発|ばくはつ}する</li>
                 <li data-from="551"><span class="cap rock"></span>{岩|いわ}。{割|わ}れず、{割|わ}らなくてもクリアできる。{爆弾|ばくだん}でも{壊|こわ}れない。すぐ{下|した}が{空|あ}くと、{少|すこ}しゆれてから{落|お}ちはじめ、{下|した}のタイルをつぶしながら、{鉄|てつ}などの{割|わ}れないものか、ステージのいちばん{下|した}の{行|ぎょう}まで{落|お}ちる。{水|みず}や{火|ひ}は、{岩|いわ}で{止|と}まる</li>
+                <li data-from="601"><span class="cap lamp">灯</span>{灯|あか}り。1{回|かい}で{割|わ}れる。{夜|よる}のステージでは、まわりをぼんやり{照|て}らしていて、{割|わ}ると、まわり2マスがずっと{明|あか}るくなる</li>
               </ul>
             </div>
             <div class="section group">
@@ -591,6 +595,12 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">ステージ601から（{夜|よる}）</p>
+              <ul class="items one">
+                <li data-from="601"><span class="cap night"></span>{夜|よる}のステージ。{暗|くら}くて、ボールと{板|いた}のまわりしか{見|み}えない。タイルは、ふちだけうっすら{見|み}える。{灯|あか}りを{割|わ}ったところや、{火|ひ}・{爆発|ばくはつ}・{落|お}ちてくるアイテムのまわりも{明|あか}るくなる。スズメとカラスは{寝|ね}ていて、{出|で}てこない</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">ステージ500の{虫|むし}たち</p>
               <ul class="items one">
                 <li data-from="500"><span class="cap king">王</span>{虫|むし}KING（たまごを{産|う}む）、{虫|むし}QUEEN（{逃|に}げるタイルを{投|な}げる。{下|した}に{盾|たて}がある）、{虫|むし}KINGと{虫|むし}QUEENの2{匹|ひき}いっしょ（2{匹|ひき}とも{落|お}ちるタイルを{投|な}げる）、{虫|むし}JOKERの{順|じゅん}に{出|で}てくる。どれもボールか{光|ひかり}を12{回|かい}{当|あ}てると、やっつけられる。タイルは{全部|ぜんぶ}{割|わ}らなくてよい</li>
@@ -769,8 +779,9 @@ const GUARD_MAX = 5;
 // 2周目（101面から）は、タイルが少しずつ下りてくる。速さ（px/秒）は101面の DROP_V0 から、199面の DROP_V1 まで上がっていく
 // 3周目（201面から）も下りてくる。201面の DROP_V1 から、299面の DROP_V2 まで、ほんの少しだけ上げる
 // 4周目（301面から）は、DROP_V2 から399面の DROP_V3 まで、また少しだけ上げる。5周目（401面から）も、DROP_V3 から499面の DROP_V4 まで上げる
+// 6周目は DROP_V4 のまま。7周目（601面から）は、DROP_V4 から699面の DROP_V5 まで上げる
 // 割らないといけないタイルのいちばん下が DROP_LINE まで来たら、ボールが1つへって、タイルは DROP_BACK の速さで元の高さへ戻る
-const DROP_V0 = 1, DROP_V1 = 1.8, DROP_V2 = 2, DROP_V3 = 2.2, DROP_V4 = 2.4, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
+const DROP_V0 = 1, DROP_V1 = 1.8, DROP_V2 = 2, DROP_V3 = 2.2, DROP_V4 = 2.4, DROP_V5 = 2.6, DROP_LINE = PADDLE_Y - 130, DROP_BACK = 520;
 // やじるしのタイルで向きを変えたボールの、縦の速さの割合（横は 0.8 で、横から約37度）
 const ARROW_VY = 0.6;
 // 強いやじるし：ARROW_FLIP 秒ごとに向きが左右入れかわる。かわる ARROW_SOON 秒前から、やじるしが点滅する
@@ -825,7 +836,7 @@ const TINTS = {R: 't-sango', Y: 't-yamabuki', G: 't-wakakusa', A: 't-asagi', B: 
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1, C: 1};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1, C: 1, l: 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 // 金のタイルが続けて割れたとき、「きんの タイル」の知らせと音を次に出すまでの秒数
 const GOLD_GAP = 0.6;
@@ -887,6 +898,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //    動く行・動く列には置かず、すぐ下にタイルを置く（いちばん下の行はよい））
 // C: 大砲（600面。割れない。クリアの数に入らない。となりの導火線の火が届くと、ワシへ弾を1発撃つ（1つの大砲で1回だけ）。爆風・霧でも変わらない。
 //    真上のマスは空ける。動く行・動く列には置かない）
+// l: 灯り（601面から。1回。夜の面では、まわりをぼんやり照らしていて、割れると、まわり LAMP_R マスがずっと明るくなる。
+//    夜でない面では、ふつうのタイルと同じ。動く行・動く列には置かない）
 // + / -: 赤い壁 / 青い壁（割れない。クリアの数に入らない。はじめは + が出ていて、- が引っこんでいる。出ている壁は鉄と同じくはね返し、爆風・霧でも変わらない。
 //    引っこんでいる壁は、ボール・光・火が通りぬける。スイッチのない面には置かない。動く行・動く列には置かない。
 //    壁で囲んだタイルは、スイッチを当てれば割りに行けるようにする（スイッチを壁で囲まない））
@@ -919,6 +932,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //   'boss' 'hunt' に大砲を合わせて、ワシに EAGLE_HP 回当てるとクリア（タイルは割り切らなくてよい）
 // crow: 数  カラス（559面から）。導火線のタイルを1枚くわえて、離れた空いたマスへ運んで置く。ボールが近くを通ると逃げて、くわえた導火線を近くに落とす
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
+// night: true  夜の面（601面から）。盤面が暗く、ボール・板・灯りのまわりしか見えない。タイルはふちだけうっすら見える。スズメとカラスは出さない
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -2251,6 +2265,14 @@ const STAGES6 = [
    eagle: 'boss', without: ['up', 'flame', 'pierce', 'burst']},
 ];
 
+// 7周目（601面から）。テーマは夜。601面から、夜の面（night）と灯り（l）が出てくる
+const STAGES7 = [
+  // 仮
+  {rows: ['....1.....','...212....','...2l2..22','...222..2l','22.l22..l2','2l.222..22','22.2221.22','22.2l21.22','11.2221.l1'],
+   tint: ['....B.....','...BBB....','...B.B..AA','...BBB..A.','VV..BB...A','V..BBB..AA','VV.BBBK.AA','VV.B.BK.AA','VV.BBBK..A'],
+   night: true},
+];
+
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
 const ITEMS = {
   split:  {glyph: '分', pop: 'ふえる',        color: 't-sango',    weight: 22, kind: 'good'},
@@ -2375,6 +2397,8 @@ const INTROS = {
         text: 'スズメたちがこわがっていたのは、ワシでした。ワシは{上|うえ}を{飛|と}びまわり、ときどき{下|お}りてきて、{導火線|どうかせん}を1{枚|まい}ずつ{切|き}っていきます。ボールを{近|ちか}くに{通|とお}すと、ひるんで、しばらく{下|お}りてきません。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
   600: {eyebrow: 'ステージ 600', title: 'ワシとたたかう',
         text: '6{周目|しゅうめ}の{最後|さいご}のステージです。{導火線|どうかせん}の{火|ひ}が{大砲|たいほう}に{届|とど}くと、{大砲|たいほう}がワシへ{弾|たま}を{撃|う}ちます。{大砲|たいほう}は3つあります。ワシに3{回|かい}{当|あ}てると、やっつけてクリアです。タイルが{残|のこ}っていてもかまいません。'},
+  601: {eyebrow: 'ステージ 601 から', title: '{夜|よる}と{灯|あか}り',
+        text: '{日|ひ}が{暮|く}れて、{夜|よる}になりました。{夜|よる}のステージは{暗|くら}くて、ボールと{板|いた}のまわりしか{見|み}えません。{灯|あか}りのタイルを{割|わ}ると、まわりがずっと{明|あか}るくなります。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
         text: 'ステージ510までの10ステージは、ボーナスステージです。かたそうに{見|み}えても、{爆弾|ばくだん}や{鎖|くさり}、{火|ひ}のタイルがつながっていて、うまく{当|あ}てると{一気|いっき}に{割|わ}れます。どこに{当|あ}てればいいか、さがしてみてください。'},
 };
@@ -2435,14 +2459,14 @@ const store = {
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const fmt = n => n.toLocaleString('ja-JP');
-// 何周目の面か。1周目は1〜100面、2周目は101〜200面、3周目は201〜300面、4周目は301〜400面、5周目は401〜500面、6周目は501面から
+// 何周目の面か。1周目は1〜100面、2周目は101〜200面、3周目は201〜300面、4周目は301〜400面、5周目は401〜500面、6周目は501〜600面、7周目は601面から
 const LAP3_FROM = STAGES.length * 2 + 1, LAP4_FROM = LAP3_FROM + STAGES3.length, LAP5_FROM = LAP4_FROM + STAGES4.length;
-const LAP6_FROM = LAP5_FROM + STAGES5.length;
-const lapOf = n => n <= STAGES.length ? 1 : n < LAP3_FROM ? 2 : n < LAP4_FROM ? 3 : n < LAP5_FROM ? 4 : n < LAP6_FROM ? 5 : 6;
-// ステージ一覧は6周目のできている面まで。その先は6周目の面をくり返し、同じ形の面にクリアの印をつける
+const LAP6_FROM = LAP5_FROM + STAGES5.length, LAP7_FROM = LAP6_FROM + STAGES6.length;
+const lapOf = n => n <= STAGES.length ? 1 : n < LAP3_FROM ? 2 : n < LAP4_FROM ? 3 : n < LAP5_FROM ? 4 : n < LAP6_FROM ? 5 : n < LAP7_FROM ? 6 : 7;
+// ステージ一覧は7周目のできている面まで。その先は7周目の面をくり返し、同じ形の面にクリアの印をつける
 // （いまは、いちばん最後の面をクリアすると全部クリアの画面からタイトルへ戻るので、その先へは進まない）
-const LAST_STAGE = LAP6_FROM - 1 + STAGES6.length;
-const listNo = n => n > LAST_STAGE ? LAP6_FROM + (n - LAP6_FROM) % STAGES6.length : n;
+const LAST_STAGE = LAP7_FROM - 1 + STAGES7.length;
+const listNo = n => n > LAST_STAGE ? LAP7_FROM + (n - LAP7_FROM) % STAGES7.length : n;
 const patternNo = n => ((n - 1) % STAGES.length) + 1;
 // アイテムの出やすさやお助けの決まりで使う面の番号。2周目は1周目の同じ形の面に合わせ、3周目からはそのまま（どの決まりも出そろっている）
 const ruleNo = n => lapOf(n) === 2 ? patternNo(n) : listNo(n);
@@ -2460,17 +2484,18 @@ const speedK = n => bugSlow(n) * lapFast(n);
 const stageSpeed = n => baseSpeed(n) * speedK(n);
 // 板の長さも、2周目からはいちばん短くする
 const basePaddle = n => lapOf(n) > 1 ? 60 : Math.max(60, 88 - (n - 1) * 1.8);
-// その面の形と仕掛け。2周目は LAP2 を重ねたもの、3周目は STAGES3、4周目は STAGES4、5周目は STAGES5、6周目は STAGES6
+// その面の形と仕掛け。2周目は LAP2 を重ねたもの、3周目は STAGES3、4周目は STAGES4、5周目は STAGES5、6周目は STAGES6、7周目は STAGES7
 const stageDef = n => lapOf(n) === 1 ? STAGES[n - 1] : lapOf(n) === 2 ? LAP2_STAGES[patternNo(n) - 1]
   : lapOf(n) === 3 ? STAGES3[n - LAP3_FROM] : lapOf(n) === 4 ? STAGES4[n - LAP4_FROM] : lapOf(n) === 5 ? STAGES5[n - LAP5_FROM]
-  : STAGES6[listNo(n) - LAP6_FROM];
+  : lapOf(n) === 6 ? STAGES6[n - LAP6_FROM] : STAGES7[listNo(n) - LAP7_FROM];
 // タイルが下りてくる速さ。1周目と、虫KINGとたたかう面と、still の面は下りてこない
-// 3周目は100面ぶんで DROP_V1 から DROP_V2 まで、4周目は DROP_V2 から DROP_V3 まで、5周目は DROP_V3 から DROP_V4 まで上げる。6周目は DROP_V4 のまま
+// 3周目は100面ぶんで DROP_V1 から DROP_V2 まで、4周目は DROP_V2 から DROP_V3 まで、5周目は DROP_V3 から DROP_V4 まで上げる。6周目は DROP_V4 のまま。7周目は DROP_V4 から DROP_V5 まで上げる
 const lapDrop = (n, from, v0, v1) => v0 + (v1 - v0) * Math.min(1, (listNo(n) - from) / (STAGES.length - 2));
 const dropSpeed = n => lapOf(n) === 1 || stageDef(n).king === 'boss' || stageDef(n).still ? 0
   : lapOf(n) === 2 ? DROP_V0 + (DROP_V1 - DROP_V0) * (patternNo(n) - 1) / (STAGES.length - 2)
   : lapOf(n) === 3 ? lapDrop(n, LAP3_FROM, DROP_V1, DROP_V2)
-  : lapOf(n) === 4 ? lapDrop(n, LAP4_FROM, DROP_V2, DROP_V3) : lapOf(n) === 5 ? lapDrop(n, LAP5_FROM, DROP_V3, DROP_V4) : DROP_V4;
+  : lapOf(n) === 4 ? lapDrop(n, LAP4_FROM, DROP_V2, DROP_V3) : lapOf(n) === 5 ? lapDrop(n, LAP5_FROM, DROP_V3, DROP_V4)
+  : lapOf(n) === 6 ? DROP_V4 : lapDrop(n, LAP7_FROM, DROP_V4, DROP_V5);
 // いまの面で、ボールがふえるのは何個まで（面の maxBalls。書かない面は MAX_BALLS）
 const maxBalls = () => stageDef(S.stage).maxBalls || MAX_BALLS;
 // 33面からは、よけたいアイテムを半分にし、「命」と「守」を1.5倍出やすくする
@@ -2488,7 +2513,7 @@ const hidden = b => (b.blink || b.wall > 0) && !b.shown;
 const guards = (b, ox, oy, by) => b.shield && ox >= oy && by > b.y + b.h / 2;
 // 仕掛けのない、ふつうのタイルか（かためる虫はこれだけをかたくする）
 const plain = b => b.hp > 0 && !b.gold && !b.bomb && !b.iron && !b.rust && !b.regen && !b.sprout && !b.wither &&
-  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water;
+  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
 
 const S = {
@@ -2515,7 +2540,7 @@ function readColors(){
   const cs = getComputedStyle(document.documentElement);
   ['board','grout','ink','muted','panel','line','paddle','ball','on-tile','on-yamabuki','bad','warn',
    't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard','t-bomb','t-fuji','t-kurumi','t-nibi','t-iron','t-rust','t-mist',
-   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','t-gin','t-aka','t-ao','t-oshi','t-nawa','t-mizu','t-toki','t-iwa','bug']
+   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','t-gin','t-aka','t-ao','t-oshi','t-nawa','t-mizu','t-toki','t-iwa','t-akari','bug']
     .forEach(k => { C[k] = cs.getPropertyValue('--' + k).trim(); });
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
@@ -2603,6 +2628,7 @@ function sfx(name, arg){
     case 'twins':  [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.1, 'triangle', 0.055, null, i * 0.06)); break;
     case 'fuse':   tone(1900, 0.07, 'sawtooth', 0.012, 1300); break;
     case 'tick':   tone(1500, 0.04, 'square', 0.03, null); break;
+    case 'lamp':   tone(660, 0.25, 'sine', 0.04, 990); tone(1320, 0.3, 'sine', 0.02, null, 0.08); break;
     case 'water':  tone(700, 0.3, 'sine', 0.04, 240); tone(1200, 0.12, 'sine', 0.02, 500, 0.05); break;
     case 'douse':  tone(2400, 0.16, 'sawtooth', 0.01, 900); break;
     case 'fire':   tone(220, 0.32, 'sawtooth', 0.03, 560); tone(1600, 0.26, 'triangle', 0.02, 700, 0.03); break;
@@ -2672,7 +2698,7 @@ function makeBrick(r, c, hp, bomb){
     sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false,
     key: false, lock: false, blink: false, shown: true,
     shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false, egg: false, eggT: 0, arrow: 0, back: false, fork: false, mesh: false, faller: false, fallT: FALL_WAIT,
-    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false, cannon: false, fired: false
+    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false, cannon: false, fired: false, lamp: false
   };
 }
 function buildStage(n){
@@ -2736,6 +2762,7 @@ function buildStage(n){
       b.water = ch === 'W';
       // 時限爆弾は爆弾の1つ（爆弾と同じく、金のタイルやかためる虫の相手にならない）
       b.timer = ch === 'T';
+      b.lamp = ch === 'l';
       // 絵の色。3回のタイルと仕掛けのタイルは、tileColor でそれぞれの色が先に決まる
       const tc = def.tint && def.tint[r] && TINTS[def.tint[r][c]];
       if (tc) b.color = tc;
@@ -2765,7 +2792,7 @@ function buildStage(n){
     for (const b of list) if ((def.gold[b.row] || '')[b.col] === '$') b.gold = true;
   } else if (Math.random() < 0.35) {
     const cands = list.filter(b => b.max <= 2 && !b.bomb && !b.iron && !b.regen && !b.sprout && !b.chest && !b.key && !b.lock && !b.blink &&
-      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water);
+      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp);
     if (cands.length) cands[Math.floor(Math.random() * cands.length)].gold = true;
   }
   S.rowMove = {};
@@ -2808,14 +2835,17 @@ function buildStage(n){
   S.fuses = [];
   S.waters = [];
   S.scene = def.scene ? {t: 0, kind: def.scene} : null;
-  S.sparrows = def.sparrow ? makeSparrows(def.sparrow) : [];
+  // 夜の面には、スズメとカラスは出ない（寝ている）
+  S.sparrows = def.sparrow && !def.night ? makeSparrows(def.sparrow) : [];
   S.sparrowT = 0;
   S.sparrowHide = 0;
-  S.crows = def.crow ? makeCrows(def.crow) : [];
+  S.crows = def.crow && !def.night ? makeCrows(def.crow) : [];
   S.eagle = def.eagle ? makeEagle(def.eagle) : null;
   S.eagleFrom = list.filter(needBreak).length;
   S.eagleSeen = false;
   S.shots = [];
+  S.night = !!def.night;
+  S.lights = [];
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -3687,6 +3717,7 @@ function stageClear(){
       : lap === 3 ? '{次|つぎ}は、ステージ' + LAP4_FROM + 'から4{周目|しゅうめ}が{始|はじ}まります。{新|あたら}しい{形|かたち}のステージで、タイルは{少|すこ}しずつ{下|お}りてきます。'
       : lap === 4 ? '{次|つぎ}は、ステージ' + LAP5_FROM + 'から5{周目|しゅうめ}が{始|はじ}まります。タイルが{少|すこ}し{小|ちい}さくなった、{新|あたら}しい{形|かたち}のステージで、タイルは{少|すこ}しずつ{下|お}りてきます。'
       : lap === 5 ? '{次|つぎ}は、ステージ' + LAP6_FROM + 'から6{周目|しゅうめ}です。はじめの' + STAGES6.length + 'ステージは、ボーナスステージです。'
+      : lap === 6 ? '{次|つぎ}は、ステージ' + LAP7_FROM + 'から7{周目|しゅうめ}です。{日|ひ}が{暮|く}れて、{夜|よる}になります。'
       : '');
   } else {
     // 次の面で説明をはさむときは、仕掛けの知らせはそちらにまかせる。2周目の仕掛けは、どれも1周目で出てきたものなので知らせない
@@ -3730,12 +3761,12 @@ function stageClear(){
   // できている最後の面（LAST_STAGE）のあとは、全部クリアの画面を出してタイトルへ戻る
   if (allDone) {
     if (!reduceMotion.matches) confetti();
-    // 600面（ワシ）のあとは7周目へ続ける。7周目ができるまでは、ここでタイトルへ戻る
+    // 7周目は作っているところなので、できている最後の面のあとは、ここでタイトルへ戻る
     showOverlay({
       eyebrow: 'ステージ ' + S.stage + ' クリア',
       title: 'おめでとう！',
-      text: (lastOne && lap === 6 ? 'ワシをやっつけました。\n' : '') + S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
-        (lastOne && lap === 6 ? '7{周目|しゅうめ}は、これから{作|つく}ります。\n' : '') +
+      text: S.stage + 'ステージ、{全部|ぜんぶ}クリアです。\n' +
+        (lap === 7 && !lastOne ? '7{周目|しゅうめ}の{続|つづ}きは、これから{作|つく}ります。\n' : '') +
         '{点数|てんすう} ' + fmt(S.score) + '\nいちばん{長|なが}い{連続|れんぞく} ' + S.maxCombo + '\n{最高|さいこう}{記録|きろく} ' + fmt(S.best) + '\n' +
         'クリアのごほうび +' + fmt(bonus),
       btn: 'タイトルへ',
@@ -3880,7 +3911,7 @@ function setPick(n){
   ui();
 }
 for (let n = 1; n <= LAST_STAGE; n++) {
-  if (n === STAGES.length + 1 || n === LAP3_FROM || n === LAP4_FROM || n === LAP5_FROM || n === LAP6_FROM) {
+  if (n === STAGES.length + 1 || n === LAP3_FROM || n === LAP4_FROM || n === LAP5_FROM || n === LAP6_FROM || n === LAP7_FROM) {
     const lap = document.createElement('p'); lap.className = 'st-lap';
     setText(lap, lapOf(n) + '{周目|しゅうめ}' + (n === LAP6_FROM ? '（' + LAP6_FROM + '〜' + (LAP6_FROM + 9) + 'はボーナスステージ）' : ''));
     stagesEl.appendChild(lap);
@@ -3894,7 +3925,7 @@ for (let n = 1; n <= LAST_STAGE; n++) {
   b.append(num, mark);
   const def = stageDef(n);
   const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') +
-    (def.king === 'boss' || def.eagle === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow || (def.eagle && def.eagle !== 'boss') ? '鳥' : '');
+    (def.king === 'boss' || def.eagle === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow || (def.eagle && def.eagle !== 'boss') ? '鳥' : '') + (def.night ? '夜' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -3920,7 +3951,7 @@ function renderPicker(){
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
     const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '') +
       (def.eagle === 'boss' ? '（ワシとたたかう）' : def.eagle === 'pass' || def.eagle === 'hunt' ? '（ワシが出る）' : '');
-    b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
+    b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + (def.night ? '（夜）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
 }
@@ -4464,7 +4495,7 @@ function tileColor(br){
   return br.gold ? GOLD.bottom : br.push ? C['t-oshi'] : br.toggle || br.tube || br.cannon ? C['t-iron'] : br.wall ? C[br.wall === 1 ? 't-aka' : 't-ao'] : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C[br.timer ? 't-toki' : 't-bomb']
     : br.sprout ? C['t-sprout'] : br.wither ? C['t-nibi'] : br.zap ? C['t-zap'] : br.chest ? C['t-chest']
     : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.fire ? C[br.wet ? 't-nibi' : 't-hi'] : br.twin ? C[br.pair ? 't-moegi' : 't-botan'] : br.egg ? C['t-egg']
-    : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.mesh ? C['t-chest'] : br.faller ? C['t-kurumi'] : br.fuse ? C[br.wet ? 't-nibi' : 't-nawa'] : br.water ? C['t-mizu'] : br.max === 3 ? C['t-hard'] : C[br.color];
+    : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.mesh ? C['t-chest'] : br.faller ? C['t-kurumi'] : br.fuse ? C[br.wet ? 't-nibi' : 't-nawa'] : br.water ? C['t-mizu'] : br.lamp ? C['t-akari'] : br.max === 3 ? C['t-hard'] : C[br.color];
 }
 function shatter(br){
   if (reduceMotion.matches) return;
@@ -4479,6 +4510,11 @@ function shatter(br){
       color: br.gold && i % 2 ? GOLD.top : col
     });
   }
+}
+// 灯り：割れたマスを、まわり LAMP_R マスまでずっと照らす（夜の面のほかは、照らしても見た目は変わらない）
+function lightUp(br){
+  S.lights.push({row: br.row, col: br.col, at: S.time});
+  if (S.night) sfx('lamp');
 }
 function damage(br, full, blast){
   // スズメがとまっているタイルは割れない。スズメが飛び立つ
@@ -4536,6 +4572,7 @@ function damage(br, full, blast){
   shatter(br);
   S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 4, text: '+' + got, t: 0});
   sfx('break', br.row);
+  if (br.lamp) lightUp(br);
 
   if (br.gold) {
     // 金のタイルを並べた面（508・509面）で何枚もいっしょに割れても、知らせと音は少し間をあけ、「福」は落ちてくるものがないときだけ出す
@@ -5708,6 +5745,8 @@ function drawTile(br){
     } else {
       tileGlyph(br, '時', C['on-tile']);
     }
+  } else if (br.lamp) {
+    tileGlyph(br, '灯', C['on-tile']);
   } else if (br.bomb) {
     tileGlyph(br, '爆', C['on-tile']);
     // 右上で導火線の火花がちらつく
@@ -7422,6 +7461,100 @@ function drawBanner(){
   }
   ctx.restore();
 }
+// タイルが来てはいけない線。タイルが2行ぶんより近づくと、濃くなって点滅する
+function drawDropLine(){
+  if (dropSpeed(S.stage)) {
+    const near = clamp(1 - (DROP_LINE - fieldBottom()) / (ROW_STEP * 2), 0, 1);
+    ctx.save();
+    ctx.globalAlpha = 0.55 + 0.45 * near * (reduceMotion.matches ? 1 : 0.6 + 0.4 * Math.sin(S.time * 10));
+    ctx.strokeStyle = C.warn;
+    ctx.lineWidth = 2.5;
+    ctx.setLineDash([8, 6]);
+    ctx.beginPath();
+    ctx.moveTo(6, DROP_LINE);
+    ctx.lineTo(W - 6, DROP_LINE);
+    ctx.stroke();
+    ctx.restore();
+  }
+}
+// 夜の面：盤面を暗くして、ボール・板・灯り・火のまわりだけを明るく抜く。タイルはふちだけうっすら描く
+// 灯りのタイルは割る前もぼんやり光り、割ると、まわり LAMP_R マス（横は列、縦は行で数える）がずっと明るくなる
+const NIGHT_BOARD = '#16202e', NIGHT_GROUT = '#1e2a3a', NIGHT_BALL = '#f4f1e4';
+const NIGHT_DARK = 'rgba(5,8,20,.94)', NIGHT_BALL_R = 72, NIGHT_PADDLE_R = 34, LAMP_R = 2.5, LAMP_FADE = 0.6;
+const nightCanvas = document.createElement('canvas');
+function drawNight(){
+  if (!S.night) return;
+  if (nightCanvas.width !== canvas.width || nightCanvas.height !== canvas.height) {
+    nightCanvas.width = canvas.width; nightCanvas.height = canvas.height;
+  }
+  const g = nightCanvas.getContext('2d'), k = scale * dpr;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalCompositeOperation = 'source-over';
+  g.clearRect(0, 0, nightCanvas.width, nightCanvas.height);
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.fillStyle = NIGHT_DARK;
+  g.fillRect(0, 0, W, H);
+  g.globalCompositeOperation = 'destination-out';
+  // (x, y) を中心に、横 rx・縦 ry の楕円を抜く。a は抜く濃さ
+  const hole = (x, y, rx, ry, a) => {
+    g.save();
+    g.translate(x, y);
+    g.scale(1, ry / rx);
+    const gr = g.createRadialGradient(0, 0, rx * 0.5, 0, 0, rx);
+    gr.addColorStop(0, 'rgba(0,0,0,' + a + ')');
+    gr.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = gr;
+    g.beginPath();
+    g.arc(0, 0, rx, 0, Math.PI * 2);
+    g.fill();
+    g.restore();
+  };
+  const flick = t => reduceMotion.matches ? 1 : 0.92 + 0.08 * Math.sin(S.time * 7 + t);
+  for (const q of S.lights) {
+    const a = Math.min(1, (S.time - q.at) / LAMP_FADE);
+    hole(SIDE + q.col * CELL + BRICK_W / 2, cellY(q.row) + BRICK_H / 2, CELL * (LAMP_R + 0.6), ROW_STEP * (LAMP_R + 0.6), a);
+  }
+  for (const br of S.bricks) {
+    if (br.lamp && br.hp > 0) hole(br.x + br.w / 2, br.y + br.h / 2, CELL * 0.9, CELL * 0.75, 0.85 * flick(br.col));
+  }
+  const p = S.paddle;
+  hole(p.x, PADDLE_Y + PADDLE_H / 2, p.w / 2 + NIGHT_PADDLE_R, NIGHT_PADDLE_R + 10, 1);
+  for (const b of S.balls) hole(b.x, b.y, NIGHT_BALL_R, NIGHT_BALL_R, 1);
+  for (const f of S.fires) hole(f.x, f.y, 40, 40, 0.9);
+  for (const q of S.blasts) hole(q.x, q.y, 50 + (q.size || 46), 50 + (q.size || 46), 1 - q.t / 0.35);
+  for (const it of S.items) hole(it.x, it.y, 30, 24, 0.8);
+  ctx.save();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.drawImage(nightCanvas, 0, 0);
+  ctx.restore();
+  // 灯りで照らしたところは、うすく暖かい色をのせる
+  for (const q of S.lights) {
+    const x = SIDE + q.col * CELL + BRICK_W / 2, y = cellY(q.row) + BRICK_H / 2, rx = CELL * (LAMP_R + 0.6);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(1, ROW_STEP / CELL);
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
+    gr.addColorStop(0, 'rgba(255,196,110,.22)');
+    gr.addColorStop(1, 'rgba(255,196,110,0)');
+    ctx.fillStyle = gr;
+    ctx.globalAlpha = Math.min(1, (S.time - q.at) / LAMP_FADE);
+    ctx.beginPath();
+    ctx.arc(0, 0, rx, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  // タイルのふち
+  ctx.save();
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(170,190,225,.2)';
+  for (const br of S.bricks) {
+    if (br.hp <= 0 || (br.blink && !br.shown) || (br.wall && !br.shown)) continue;
+    rr(br.x + 0.5, br.y + 0.5, br.w - 1, br.h - 1, 3);
+    ctx.stroke();
+  }
+  ctx.restore();
+  drawDropLine();
+}
 function draw(){
   if (!canvas.width || !C.board) return;
   ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -7429,10 +7562,10 @@ function draw(){
   const k = scale * dpr;
   ctx.setTransform(k, 0, 0, k, 0, 0);
 
-  // 目地の入った壁
-  ctx.fillStyle = C.board;
+  // 目地の入った壁（夜の面は、明るいテーマでも暗い色の壁）
+  ctx.fillStyle = S.night ? NIGHT_BOARD : C.board;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = C.grout;
+  ctx.strokeStyle = S.night ? NIGHT_GROUT : C.grout;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   for (let x = 50; x < W; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
@@ -7459,20 +7592,8 @@ function draw(){
     ctx.restore();
   }
 
-  // 2周目からは、タイルが来てはいけない線を引く。タイルが2行ぶんより近づくと、濃くなって点滅する
-  if (dropSpeed(S.stage)) {
-    const near = clamp(1 - (DROP_LINE - fieldBottom()) / (ROW_STEP * 2), 0, 1);
-    ctx.save();
-    ctx.globalAlpha = 0.55 + 0.45 * near * (reduceMotion.matches ? 1 : 0.6 + 0.4 * Math.sin(S.time * 10));
-    ctx.strokeStyle = C.warn;
-    ctx.lineWidth = 2.5;
-    ctx.setLineDash([8, 6]);
-    ctx.beginPath();
-    ctx.moveTo(6, DROP_LINE);
-    ctx.lineTo(W - 6, DROP_LINE);
-    ctx.stroke();
-    ctx.restore();
-  }
+  // 2周目からは、タイルが来てはいけない線を引く（夜の面は、暗くしたあとに引く）
+  if (!S.night) drawDropLine();
 
   drawUzus();
   drawWarps();
@@ -7503,6 +7624,7 @@ function draw(){
   drawSparrows();
   drawCrows();
   drawEagle();
+  drawNight();
 
   if (S.lasers.length) {
     ctx.fillStyle = C['t-fuji'];
@@ -7608,7 +7730,7 @@ function draw(){
       }
       ctx.beginPath();
       ctx.arc(b.x, b.y, S.ballR, 0, Math.PI * 2);
-      ctx.fillStyle = C.ball;
+      ctx.fillStyle = S.night ? NIGHT_BALL : C.ball;
       ctx.fill();
     }
   }
