@@ -28,30 +28,53 @@ const { chromium } = require('playwright');
     const shown = [...document.querySelectorAll('#help [data-from]')].filter(el => !el.hidden);
     ok(S.mode === 'intro' && ovTitle.textContent.includes('夜') && ovBtn.textContent.includes('601'), '601面の前に、夜と灯りの説明が出る');
     ok(shown.length >= 2 && shown.every(el => el.dataset.from === '601'), '説明ページの601面の項目（灯り・夜）だけが出る');
-    // ---- 夜の面 ----
+    // ---- 夜の面（夜風） ----
     T.startGame(601); S.mode = 'play'; away();
-    ok(S.night === true && S.lights.length === 0, '601面は夜の面で、はじめは灯りがついていない');
+    ok(S.night === true && S.wind && S.wind.phase === 'calm' && Math.abs(S.wind.t - T.WIND_FIRST) < 1e-9, '601面は夜の面で、はじめは風が止んでいる');
     const d = T.stageDef(601);
     d.sparrow = 2; d.crow = 1;
     T.startGame(601);
     ok(S.sparrows.length === 0 && S.crows.length === 0, '夜の面には、スズメとカラスは出ない');
     delete d.sparrow; delete d.crow;
     T.startGame(600);
-    ok(!S.night, '600面は夜の面ではない');
+    ok(!S.night && S.wind === null, '600面は夜の面ではなく、風は吹かない');
+    // 風の移りかわり：静か → 知らせ → 吹く → 静か
+    T.startGame(601); S.mode = 'play'; away();
+    const w = S.wind;
+    w.t = 0.01; T.updateWind(1 / 60);
+    ok(w.phase === 'warn' && (w.dir === 1 || w.dir === -1), '静かなあとは、風の筋で知らせる');
+    w.t = 0.01; T.updateWind(1 / 60);
+    ok(w.phase === 'gust' && Math.abs(w.t - T.WIND_GUST) < 1e-9, '知らせのあとに吹く');
+    // 吹いているあいだ、まっすぐ落ちるボールは風下へ曲がり、速さは変わらない
+    const b = S.balls[0];
+    b.hold = 0; b.x = 200; b.y = 250; b.vx = 0; b.vy = S.speed;
+    w.dir = 1; w.t = T.WIND_GUST / 2;
+    for (let i = 0; i < 30; i++) T.updateWind(1 / 60);
+    ok(b.vx > 0 && b.vy > 0 && Math.abs(Math.hypot(b.vx, b.vy) - S.speed) < 1e-6, '風が吹くと、ボールは風下へ曲がり、速さは変わらない');
+    ok(Math.abs(b.vy) >= 0.3 * S.speed - 1e-6, '風で曲がっても、真横に近い向きにはならない');
+    // 時止めのあいだは止む
+    const vx = b.vx, t0 = w.t;
+    S.stopT = 3;
+    T.updateWind(1 / 60);
+    ok(b.vx === vx && w.t === t0, '時止めのあいだは、風が止む');
+    S.stopT = 0;
+    let drew = true;
+    try { T.draw(); } catch (e) { drew = false; }
+    ok(drew, '風の吹いている夜の面を描ける');
+    w.t = 0.01; T.updateWind(1 / 60);
+    ok(w.phase === 'calm' && T.windPower() === 0, '吹き終わると、また静かになる');
+    // 同じ向きは3回まで
+    T.startGame(601);
+    const dirs = [];
+    for (let i = 0; i < 40; i++) { S.wind.phase = 'calm'; S.wind.t = 0.001; T.updateWind(1 / 60); dirs.push(S.wind.dir); }
+    ok(!dirs.some((x, i) => i >= 3 && dirs.slice(i - 3, i + 1).every(y => y === x)), '風の向きは、同じ向きが4回続かない');
     // ---- 灯り ----
     T.startGame(601); S.mode = 'play'; away();
     const lamps = S.bricks.filter(b => b.lamp);
     ok(lamps.length > 0 && lamps.every(b => b.hp === 1 && !b.iron && !b.gold), '601面に灯りのタイルがあって、1回で割れる（金のタイルにならない）');
-    const lp = lamps[0];
-    T.damage(lp, false);
-    ok(lp.hp === 0 && S.lights.length === 1 && S.lights[0].row === lp.row && S.lights[0].col === lp.col, '灯りを割ると、そのマスに明かりがつく');
+    T.damage(lamps[0], false);
     T.damage(lamps[1], true, true);
-    ok(S.lights.length === 2, '爆風で割れても、明かりがつく');
-    let drew = true;
-    try { T.draw(); } catch (e) { drew = false; }
-    ok(drew, '夜の面を描ける');
-    T.startGame(601);
-    ok(S.lights.length === 0, '面をやりなおすと、明かりは消える');
+    ok(lamps[0].hp === 0 && lamps[1].hp === 0, '灯りは、ボールでも爆風でも割れる');
     // ---- ホタル（609面から） ----
     if (T.LAST_STAGE >= 609) {
       T.startGame(609);

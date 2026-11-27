@@ -1,5 +1,4 @@
-// 面の盤面を画像にする。使い方：node tools/shots.js 写しのフォルダ 面の番号（,区切り） [出力フォルダ] [--dark] [--day]
-// --day：夜の面（601面から）も暗くせずに撮る（絵の形を見せるとき）
+// 面の盤面を画像にする。使い方：node tools/shots.js 写しのフォルダ 面の番号（,区切り） [出力フォルダ] [--dark]
 // 出力：出力フォルダ/面の番号.png（盤面だけを切りぬいたもの。2倍の細かさ）。並べるときは tools/grid.py を使う
 const { chromium } = require('playwright');
 const path = require('path');
@@ -7,7 +6,7 @@ const path = require('path');
   const dir = process.argv[2];
   const list = process.argv[3].split(',').map(Number);
   const outDir = process.argv[4] && !process.argv[4].startsWith('--') ? process.argv[4] : dir;
-  const dark = process.argv.includes('--dark'), day = process.argv.includes('--day');
+  const dark = process.argv.includes('--dark');
   require('fs').mkdirSync(outDir, {recursive: true});
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: 420, height: 760 }, deviceScaleFactor: 2, colorScheme: dark ? 'dark' : 'light' });
@@ -15,7 +14,7 @@ const path = require('path');
   await page.goto('file://' + path.resolve(dir) + '/test.html');
   await page.waitForTimeout(300);
   for (const n of list) {
-    await page.evaluate(([n, day]) => { window.__T.startGame(n); if (day) window.__T.S.night = false; }, [n, day]);
+    await page.evaluate(n => window.__T.startGame(n), n);
     await page.waitForTimeout(150);
     await page.screenshot({ path: path.join(outDir, n + '.png'), clip: {x: 16, y: 140, width: 388, height: 330} });
   }

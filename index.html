@@ -225,7 +225,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.timer{background:var(--t-toki);border-radius:3px}
 .cap.lamp{background:var(--t-akari);color:#fff;border-radius:3px}
 .cap.firefly{background:radial-gradient(circle at 50% 60%,#e9f59a 0 3px,rgba(220,240,120,.4) 5px,#0b1020 9px);border-radius:3px}
-.cap.night{background:radial-gradient(circle at 50% 50%,#f3d98a 0 3px,rgba(243,217,138,.35) 5px,#0b1020 9px);border-radius:3px}
+.cap.night{background:linear-gradient(transparent 3px,var(--t-sora) 3px 5px,transparent 5px 8px,var(--t-sora) 8px 10px,transparent 10px);border-radius:3px}
 .cap.rock{background:var(--t-iwa);border-radius:9px 5px 8px 4px}
 .cap.tube{position:relative;background:var(--board);box-shadow:inset 0 0 0 1px var(--line);border-radius:3px}
 .cap.tube::before,.cap.tube::after{content:"";position:absolute;left:50%;width:18px;margin-left:-9px}
@@ -392,7 +392,7 @@ img{max-width:100%}
                 <li data-from="519"><span class="cap water">水</span>{水|みず}のタイル。1{回|かい}で{割|わ}れる。{割|わ}れると{水|みず}が{真下|ました}へ{流|なが}れて、{下|した}にあるタイルを1{回|かい}ずつたたく。{鉄|てつ}や{錠|じょう}、{出|で}ている{壁|かべ}で{止|と}まる。{水|みず}がかかった{導火線|どうかせん}と{火|ひ}のタイルはしけって、{割|わ}れても{火|ひ}が{出|で}なくなる。{走|はし}っている{火|ひ}も、{流|なが}れている{水|みず}を{越|こ}えられない</li>
                 <li data-from="543"><span class="cap timer">時</span>{時限爆弾|じげんばくだん}。ボールが{当|あ}たっても、すぐには{割|わ}れない。3{秒|びょう}{数|かぞ}えてから{爆発|ばくはつ}して、まわりのタイルもいっしょに{割|わ}れる。{残|のこ}りの{秒|びょう}が{数字|すうじ}で{見|み}える。{導火線|どうかせん}の{火|ひ}が{届|とど}くか、ほかの{爆弾|ばくだん}の{爆風|ばくふう}を{受|う}けると、すぐに{爆発|ばくはつ}する</li>
                 <li data-from="551"><span class="cap rock"></span>{岩|いわ}。{割|わ}れず、{割|わ}らなくてもクリアできる。{爆弾|ばくだん}でも{壊|こわ}れない。すぐ{下|した}が{空|あ}くと、{少|すこ}しゆれてから{落|お}ちはじめ、{下|した}のタイルをつぶしながら、{鉄|てつ}などの{割|わ}れないものか、ステージのいちばん{下|した}の{行|ぎょう}まで{落|お}ちる。{水|みず}や{火|ひ}は、{岩|いわ}で{止|と}まる</li>
-                <li data-from="601"><span class="cap lamp">灯</span>{灯|あか}り。1{回|かい}で{割|わ}れる。{夜|よる}のステージでは、まわりをぼんやり{照|て}らしていて、{割|わ}ると、まわり2マスがずっと{明|あか}るくなる</li>
+                <li data-from="601"><span class="cap lamp">灯</span>{灯|あか}り。1{回|かい}で{割|わ}れる。{夜|よる}のステージで、{窓|まど}やろうそくの{火|ひ}になって{光|ひか}っている</li>
               </ul>
             </div>
             <div class="section group">
@@ -598,13 +598,13 @@ img{max-width:100%}
             <div class="section group">
               <p class="sub">ステージ601から（{夜|よる}）</p>
               <ul class="items one">
-                <li data-from="601"><span class="cap night"></span>{夜|よる}のステージ。{暗|くら}くて、ボールと{板|いた}のまわりしか{見|み}えない。タイルは、ふちだけうっすら{見|み}える。{灯|あか}りを{割|わ}ったところや、{火|ひ}・{爆発|ばくはつ}・{落|お}ちてくるアイテムのまわりも{明|あか}るくなる。スズメとカラスは{寝|ね}ていて、{出|で}てこない</li>
+                <li data-from="601"><span class="cap night"></span>{夜|よる}のステージ。ときどき{夜風|よかぜ}が{横|よこ}から{吹|ふ}いて、ボールが{風下|かざしも}へ{流|なが}される。{吹|ふ}く{少|すこ}し{前|まえ}に、{風|かぜ}の{筋|すじ}がうっすら{見|み}える。「{止|と}」のあいだは{止|や}む。スズメとカラスは{寝|ね}ていて、{出|で}てこない</li>
               </ul>
             </div>
             <div class="section group">
               <p class="sub">ステージ609から（{夜|よる}の{虫|むし}）</p>
               <ul class="items one">
-                <li data-from="609"><span class="cap firefly"></span>ホタル。{夜|よる}のステージで、{残|のこ}っているタイルのあたりをただよい、まわりを{照|て}らす。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げる。ボールははね{返|かえ}さない。「{止|と}」のあいだは{止|と}まる</li>
+                <li data-from="609"><span class="cap firefly"></span>ホタル。{夜|よる}のステージで、{残|のこ}っているタイルのあたりをただよって{光|ひか}る。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げる。ボールははね{返|かえ}さない。「{止|と}」のあいだは{止|と}まる</li>
               </ul>
             </div>
             <div class="section group">
@@ -905,8 +905,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //    動く行・動く列には置かず、すぐ下にタイルを置く（いちばん下の行はよい））
 // C: 大砲（600面。割れない。クリアの数に入らない。となりの導火線の火が届くと、ワシへ弾を1発撃つ（1つの大砲で1回だけ）。爆風・霧でも変わらない。
 //    真上のマスは空ける。動く行・動く列には置かない）
-// l: 灯り（601面から。1回。夜の面では、まわりをぼんやり照らしていて、割れると、まわり LAMP_R マスがずっと明るくなる。
-//    夜でない面では、ふつうのタイルと同じ。動く行・動く列には置かない）
+// l: 灯り（601面から。1回。ぼんやり光って見える。割れると灯りの音が鳴る。夜の面に置く。動く行・動く列には置かない）
 // + / -: 赤い壁 / 青い壁（割れない。クリアの数に入らない。はじめは + が出ていて、- が引っこんでいる。出ている壁は鉄と同じくはね返し、爆風・霧でも変わらない。
 //    引っこんでいる壁は、ボール・光・火が通りぬける。スイッチのない面には置かない。動く行・動く列には置かない。
 //    壁で囲んだタイルは、スイッチを当てれば割りに行けるようにする（スイッチを壁で囲まない））
@@ -939,8 +938,8 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 //   'boss' 'hunt' に大砲を合わせて、ワシに EAGLE_HP 回当てるとクリア（タイルは割り切らなくてよい）
 // crow: 数  カラス（559面から）。導火線のタイルを1枚くわえて、離れた空いたマスへ運んで置く。ボールが近くを通ると逃げて、くわえた導火線を近くに落とす
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
-// night: true  夜の面（601面から）。盤面が暗く、ボール・板・灯りのまわりしか見えない。タイルはふちだけうっすら見える。スズメとカラスは出さない
-// firefly: 数  ホタル（609面から。夜の面だけ）。残っているタイルのあたりをただよって、まわりを照らす味方の虫。ボールははね返さない
+// night: true  夜の面（601面から）。ときどき夜風（横風）が吹いて、ボールが風下へ流される（drawWind の上のコメント）。スズメとカラスは出さない
+// firefly: 数  ホタル（609面から。夜の面だけ）。残っているタイルのあたりをただよって光る、飾りの虫。ボールははね返さない
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -2465,10 +2464,10 @@ const INTROS = {
         text: 'スズメたちがこわがっていたのは、ワシでした。ワシは{上|うえ}を{飛|と}びまわり、ときどき{下|お}りてきて、{導火線|どうかせん}を1{枚|まい}ずつ{切|き}っていきます。ボールを{近|ちか}くに{通|とお}すと、ひるんで、しばらく{下|お}りてきません。このステージでは、まだやっつけられません。タイルを{全部|ぜんぶ}{割|わ}るとクリアです。'},
   600: {eyebrow: 'ステージ 600', title: 'ワシとたたかう',
         text: '6{周目|しゅうめ}の{最後|さいご}のステージです。{導火線|どうかせん}の{火|ひ}が{大砲|たいほう}に{届|とど}くと、{大砲|たいほう}がワシへ{弾|たま}を{撃|う}ちます。{大砲|たいほう}は3つあります。ワシに3{回|かい}{当|あ}てると、やっつけてクリアです。タイルが{残|のこ}っていてもかまいません。'},
-  601: {eyebrow: 'ステージ 601 から', title: '{夜|よる}と{灯|あか}り',
-        text: '{日|ひ}が{暮|く}れて、{夜|よる}になりました。{夜|よる}のステージは{暗|くら}くて、ボールと{板|いた}のまわりしか{見|み}えません。{灯|あか}りのタイルを{割|わ}ると、まわりがずっと{明|あか}るくなります。'},
+  601: {eyebrow: 'ステージ 601 から', title: '{夜|よる}と{夜風|よかぜ}',
+        text: '{日|ひ}が{暮|く}れて、{夜|よる}になりました。{夜|よる}のステージでは、ときどき{横|よこ}から{風|かぜ}が{吹|ふ}いて、ボールが{流|なが}されます。{吹|ふ}く{前|まえ}に{風|かぜ}の{筋|すじ}が{見|み}えたら、{板|いた}を{風下|かざしも}へ{寄|よ}せておきましょう。{窓|まど}やろうそくの{火|ひ}は、{灯|あか}りのタイルです。1{回|かい}で{割|わ}れます。'},
   609: {eyebrow: 'ステージ 609 から', title: 'ホタル',
-        text: '{夜|よる}のステージに、ホタルが{飛|と}んできました。ホタルは{残|のこ}っているタイルのあたりをただよって、まわりを{照|て}らしてくれます。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げます。ボールははね{返|かえ}しません。'},
+        text: '{夜|よる}のステージに、ホタルが{飛|と}んできました。ホタルは{残|のこ}っているタイルのあたりをただよって、ぴかぴか{光|ひか}ります。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げます。ボールははね{返|かえ}しません。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
         text: 'ステージ510までの10ステージは、ボーナスステージです。かたそうに{見|み}えても、{爆弾|ばくだん}や{鎖|くさり}、{火|ひ}のタイルがつながっていて、うまく{当|あ}てると{一気|いっき}に{割|わ}れます。どこに{当|あ}てればいいか、さがしてみてください。'},
 };
@@ -2592,7 +2591,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, fireflies: [], sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, fireflies: [], wind: null, sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -2698,6 +2697,7 @@ function sfx(name, arg){
     case 'twins':  [1047, 1319, 1568, 2093].forEach((f, i) => tone(f, 0.1, 'triangle', 0.055, null, i * 0.06)); break;
     case 'fuse':   tone(1900, 0.07, 'sawtooth', 0.012, 1300); break;
     case 'tick':   tone(1500, 0.04, 'square', 0.03, null); break;
+    case 'wind':   tone(300, 0.9, 'triangle', 0.03, 150); tone(520, 0.6, 'sine', 0.012, 260, 0.15); break;
     case 'lamp':   tone(660, 0.25, 'sine', 0.04, 990); tone(1320, 0.3, 'sine', 0.02, null, 0.08); break;
     case 'water':  tone(700, 0.3, 'sine', 0.04, 240); tone(1200, 0.12, 'sine', 0.02, 500, 0.05); break;
     case 'douse':  tone(2400, 0.16, 'sawtooth', 0.01, 900); break;
@@ -2915,7 +2915,7 @@ function buildStage(n){
   S.eagleSeen = false;
   S.shots = [];
   S.night = !!def.night;
-  S.lights = [];
+  S.wind = S.night ? makeWind() : null;
   S.fireflies = def.firefly && def.night ? makeFireflies(def.firefly) : [];
   return list;
 }
@@ -3097,7 +3097,7 @@ function bounceBug(g){
   g.vy = sy * sp * Math.sin(a);
 }
 // ホタル（609面から）：残っているタイルのどれかへ、ゆらゆらと飛んでいく。着いたら次のタイルを選ぶ
-// ほかのホタルから離れたタイルを選びやすくして、暗いところを照らしに行く。ボールが近くを通ると、少しのあいだ速く逃げる
+// ほかのホタルから離れたタイルを選びやすくして、盤面に散らばる。ボールが近くを通ると、少しのあいだ速く逃げる
 const FLY_SPEED = 40, FLY_FLEE = 120, FLY_FLEE_T = 0.7, FLY_NEAR = 44, FLY_GLOW = 2.6;
 function makeFireflies(n){
   const out = [];
@@ -4662,10 +4662,9 @@ function shatter(br){
     });
   }
 }
-// 灯り：割れたマスを、まわり LAMP_R マスまでずっと照らす（夜の面のほかは、照らしても見た目は変わらない）
+// 灯り：割れると、灯りの音を鳴らす
 function lightUp(br){
-  S.lights.push({row: br.row, col: br.col, at: S.time});
-  if (S.night) sfx('lamp');
+  sfx('lamp');
 }
 function damage(br, full, blast){
   // スズメがとまっているタイルは割れない。スズメが飛び立つ
@@ -5449,6 +5448,7 @@ function update(dt){
     if (S.mode === 'play') updateFuses(dt);
     if (S.mode === 'play') updateTimers(dt);
     if (S.mode === 'play') updateWaters(dt);
+    if (S.mode === 'play') updateWind(dt);
     // ふたごの光っている時間
     if (S.mode === 'play') for (const br of S.bricks) if (br.lit > 0) br.lit = Math.max(0, br.lit - dt);
   } else if (S.mode === 'finale') {
@@ -7628,86 +7628,70 @@ function drawDropLine(){
     ctx.restore();
   }
 }
-// 夜の面：盤面を暗くして、ボール・板・灯り・火のまわりだけを明るく抜く。タイルはふちだけうっすら描く
-// 灯りのタイルは割る前もぼんやり光り、割ると、まわり LAMP_R マス（横は列、縦は行で数える）がずっと明るくなる
-const NIGHT_BOARD = '#16202e', NIGHT_GROUT = '#1e2a3a', NIGHT_BALL = '#f4f1e4';
-const NIGHT_DARK = 'rgba(5,8,20,.94)', NIGHT_BALL_R = 72, NIGHT_PADDLE_R = 34, LAMP_R = 2.5, LAMP_FADE = 0.6;
-// ホタルが照らす広さ（マスの数。半径）
-const FLY_LIGHT = 1.7;
-const nightCanvas = document.createElement('canvas');
-function drawNight(){
-  if (!S.night) return;
-  if (nightCanvas.width !== canvas.width || nightCanvas.height !== canvas.height) {
-    nightCanvas.width = canvas.width; nightCanvas.height = canvas.height;
+// 夜風（夜の面）：静かなあいだ（WIND_CALM 秒のどこか）のあと、WIND_WARN 秒のあいだ風の筋がうっすら見えて知らせ、
+// WIND_GUST 秒のあいだ横風が吹く。吹いているあいだは、飛んでいるボールの向きを風下へ曲げる（速さは変えない）
+// 向きは吹くたびに決める（同じ向きは3回まで続く）。時止めのあいだは止む
+const WIND_FIRST = 5, WIND_CALM = [4, 6.5], WIND_WARN = 1.2, WIND_GUST = 2.6, WIND_K = 1.4;
+const WIND_LINES = 13, WIND_DRAW_V = 260;
+function makeWind(){
+  return {phase: 'calm', t: WIND_FIRST, dir: Math.random() < 0.5 ? -1 : 1, same: 0};
+}
+// 吹いている強さ（0〜1）。吹きはじめと終わりは弱い
+function windPower(){
+  const w = S.wind;
+  if (!w || w.phase !== 'gust') return 0;
+  return Math.min(1, 3 * Math.sin(Math.PI * Math.max(0, w.t) / WIND_GUST));
+}
+function updateWind(dt){
+  const w = S.wind;
+  if (!w || S.stopT > 0) return;
+  w.t -= dt;
+  if (w.t <= 0) {
+    if (w.phase === 'calm') {
+      const d = w.same >= 3 ? -w.dir : Math.random() < 0.5 ? -1 : 1;
+      w.same = d === w.dir ? w.same + 1 : 1;
+      w.dir = d; w.phase = 'warn'; w.t = WIND_WARN;
+      sfx('wind');
+    } else if (w.phase === 'warn') { w.phase = 'gust'; w.t = WIND_GUST; }
+    else { w.phase = 'calm'; w.t = WIND_CALM[0] + Math.random() * (WIND_CALM[1] - WIND_CALM[0]); }
   }
-  const g = nightCanvas.getContext('2d'), k = scale * dpr;
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.globalCompositeOperation = 'source-over';
-  g.clearRect(0, 0, nightCanvas.width, nightCanvas.height);
-  g.setTransform(k, 0, 0, k, 0, 0);
-  g.fillStyle = NIGHT_DARK;
-  g.fillRect(0, 0, W, H);
-  g.globalCompositeOperation = 'destination-out';
-  // (x, y) を中心に、横 rx・縦 ry の楕円を抜く。a は抜く濃さ
-  const hole = (x, y, rx, ry, a) => {
-    g.save();
-    g.translate(x, y);
-    g.scale(1, ry / rx);
-    const gr = g.createRadialGradient(0, 0, rx * 0.5, 0, 0, rx);
-    gr.addColorStop(0, 'rgba(0,0,0,' + a + ')');
-    gr.addColorStop(1, 'rgba(0,0,0,0)');
-    g.fillStyle = gr;
-    g.beginPath();
-    g.arc(0, 0, rx, 0, Math.PI * 2);
-    g.fill();
-    g.restore();
-  };
-  const flick = t => reduceMotion.matches ? 1 : 0.92 + 0.08 * Math.sin(S.time * 7 + t);
-  for (const q of S.lights) {
-    const a = Math.min(1, (S.time - q.at) / LAMP_FADE);
-    hole(SIDE + q.col * CELL + BRICK_W / 2, cellY(q.row) + BRICK_H / 2, CELL * (LAMP_R + 0.6), ROW_STEP * (LAMP_R + 0.6), a);
+  const k = windPower();
+  if (k <= 0) return;
+  for (const b of S.balls) {
+    if (b.hold > 0 || b.tubeT > 0) continue;
+    b.vx += w.dir * WIND_K * k * S.speed * dt;
+    if (S.heavyT > 0) { const m = S.speed / (Math.hypot(b.vx, b.vy) || 1); b.vx *= m; b.vy *= m; }
+    else normalizeBall(b);
   }
-  for (const br of S.bricks) {
-    if (br.lamp && br.hp > 0) hole(br.x + br.w / 2, br.y + br.h / 2, CELL * 0.9, CELL * 0.75, 0.85 * flick(br.col));
-  }
-  const p = S.paddle;
-  hole(p.x, PADDLE_Y + PADDLE_H / 2, p.w / 2 + NIGHT_PADDLE_R, NIGHT_PADDLE_R + 10, 1);
-  for (const b of S.balls) hole(b.x, b.y, NIGHT_BALL_R, NIGHT_BALL_R, 1);
-  for (const f of S.fires) hole(f.x, f.y, 40, 40, 0.9);
-  for (const q of S.blasts) hole(q.x, q.y, 50 + (q.size || 46), 50 + (q.size || 46), 1 - q.t / 0.35);
-  for (const it of S.items) hole(it.x, it.y, 30, 24, 0.8);
-  for (const f of S.fireflies) hole(f.x, f.y, CELL * FLY_LIGHT, CELL * FLY_LIGHT * 0.85, 0.95 * flyGlow(f));
+}
+// 風の筋：知らせのあいだはうすく、吹いているあいだは濃く。風下へ流れる（動きをへらす設定では止めて描く）
+function drawWind(){
+  const w = S.wind;
+  if (!w || w.phase === 'calm') return;
+  const a = w.phase === 'warn' ? 0.25 * Math.min(1, (WIND_WARN - w.t) / 0.4) : 0.25 + 0.4 * windPower();
+  const top = BRICK_TOP, span = PADDLE_Y - top;
   ctx.save();
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.drawImage(nightCanvas, 0, 0);
-  ctx.restore();
-  // 灯りで照らしたところは、うすく暖かい色をのせる
-  for (const q of S.lights) {
-    const x = SIDE + q.col * CELL + BRICK_W / 2, y = cellY(q.row) + BRICK_H / 2, rx = CELL * (LAMP_R + 0.6);
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.scale(1, ROW_STEP / CELL);
-    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, rx);
-    gr.addColorStop(0, 'rgba(255,196,110,.22)');
-    gr.addColorStop(1, 'rgba(255,196,110,0)');
-    ctx.fillStyle = gr;
-    ctx.globalAlpha = Math.min(1, (S.time - q.at) / LAMP_FADE);
+  ctx.strokeStyle = C['t-sora'];
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  for (let i = 0; i < WIND_LINES; i++) {
+    const y = top + span * (i + 0.5) / WIND_LINES + 6 * Math.sin(i * 2.3);
+    const len = 34 + 22 * ((i * 7) % 5) / 4;
+    const run = W + len + 40;
+    const move = reduceMotion.matches ? 0 : S.time * WIND_DRAW_V * (0.8 + 0.1 * (i % 4));
+    const x0 = (((i * 97) % run) + move) % run - len - 20;
+    const tail = w.dir > 0 ? x0 : W - x0, head = tail + w.dir * len;
+    ctx.globalAlpha = a * (0.6 + 0.4 * ((i * 5) % 3) / 2);
     ctx.beginPath();
-    ctx.arc(0, 0, rx, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-  // タイルのふち
-  ctx.save();
-  ctx.lineWidth = 1;
-  ctx.strokeStyle = 'rgba(170,190,225,.2)';
-  for (const br of S.bricks) {
-    if (br.hp <= 0 || (br.blink && !br.shown) || (br.wall && !br.shown)) continue;
-    rr(br.x + 0.5, br.y + 0.5, br.w - 1, br.h - 1, 3);
+    ctx.moveTo(tail, y);
+    ctx.lineTo(head, y);
+    ctx.moveTo(head - w.dir * 6, y - 4);
+    ctx.lineTo(head, y);
+    ctx.lineTo(head - w.dir * 6, y + 4);
     ctx.stroke();
   }
   ctx.restore();
-  drawDropLine();
 }
 function draw(){
   if (!canvas.width || !C.board) return;
@@ -7716,10 +7700,10 @@ function draw(){
   const k = scale * dpr;
   ctx.setTransform(k, 0, 0, k, 0, 0);
 
-  // 目地の入った壁（夜の面は、明るいテーマでも暗い色の壁）
-  ctx.fillStyle = S.night ? NIGHT_BOARD : C.board;
+  // 目地の入った壁
+  ctx.fillStyle = C.board;
   ctx.fillRect(0, 0, W, H);
-  ctx.strokeStyle = S.night ? NIGHT_GROUT : C.grout;
+  ctx.strokeStyle = C.grout;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
   for (let x = 50; x < W; x += 50) { ctx.moveTo(x, 0); ctx.lineTo(x, H); }
@@ -7746,8 +7730,8 @@ function draw(){
     ctx.restore();
   }
 
-  // 2周目からは、タイルが来てはいけない線を引く（夜の面は、暗くしたあとに引く）
-  if (!S.night) drawDropLine();
+  // 2周目からは、タイルが来てはいけない線を引く
+  drawDropLine();
 
   drawUzus();
   drawWarps();
@@ -7778,7 +7762,7 @@ function draw(){
   drawSparrows();
   drawCrows();
   drawEagle();
-  drawNight();
+  drawWind();
   drawFireflies();
 
   if (S.lasers.length) {
@@ -7885,7 +7869,7 @@ function draw(){
       }
       ctx.beginPath();
       ctx.arc(b.x, b.y, S.ballR, 0, Math.PI * 2);
-      ctx.fillStyle = S.night ? NIGHT_BALL : C.ball;
+      ctx.fillStyle = C.ball;
       ctx.fill();
     }
   }
