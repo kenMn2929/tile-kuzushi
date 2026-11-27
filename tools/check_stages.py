@@ -6,7 +6,7 @@
 #   - 筒と大砲の真上のマスが空いていて、動く行や動く列の動く範囲でないか（撃ち出したボールの通り道）
 #   - 割れないもの（スイッチ・壁・鉄・錠・筒・大砲）が、割るタイルのいちばん下の行より下にないか（501面からのボーナスステージは調べない）
 #   - tint の字と長さ。gold（金のタイルにするマス）の字と長さ
-#   - 夜の面（night）に、スズメ（sparrow）とカラス（crow）を書いていないか
+#   - 夜の面（night）に、スズメ（sparrow）とカラス（crow）を書いていないか。ホタル（firefly）は夜の面にだけ書いているか
 # あわせて、面ごとの割るタイルの枚数と、並べ方の型（上や下の行が横一列か、左右対称か、両端だけの行があるか）を数える
 # 下書きを調べるとき：python3 tools/check_stages.py --draft 下書き.json ...（1ファイルに1面。tools/tune.js と同じ形の JSON）
 import re, sys, os, json
@@ -68,6 +68,8 @@ for n, (rows_s, rest) in defs:
                 print(n, 'rock without still tile below', r, c); ok = False
     if re.search(r"night: true", rest) and re.search(r"(sparrow|crow): [1-9]", rest):
         print(n, 'sparrow/crow on a night stage'); ok = False
+    if re.search(r"firefly: [1-9]", rest) and not re.search(r"night: true", rest):
+        print(n, 'firefly on a day stage'); ok = False
     for ch in 'pPoO':
         k = sum(row.count(ch) for row in rows)
         if k not in (0, 2): print(n, 'pair count', ch, k); ok = False

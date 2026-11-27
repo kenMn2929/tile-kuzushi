@@ -224,6 +224,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.water{background:var(--t-mizu);border-radius:3px}
 .cap.timer{background:var(--t-toki);border-radius:3px}
 .cap.lamp{background:var(--t-akari);color:#fff;border-radius:3px}
+.cap.firefly{background:radial-gradient(circle at 50% 60%,#e9f59a 0 3px,rgba(220,240,120,.4) 5px,#0b1020 9px);border-radius:3px}
 .cap.night{background:radial-gradient(circle at 50% 50%,#f3d98a 0 3px,rgba(243,217,138,.35) 5px,#0b1020 9px);border-radius:3px}
 .cap.rock{background:var(--t-iwa);border-radius:9px 5px 8px 4px}
 .cap.tube{position:relative;background:var(--board);box-shadow:inset 0 0 0 1px var(--line);border-radius:3px}
@@ -601,6 +602,12 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">ステージ609から（{夜|よる}の{虫|むし}）</p>
+              <ul class="items one">
+                <li data-from="609"><span class="cap firefly"></span>ホタル。{夜|よる}のステージで、{残|のこ}っているタイルのあたりをただよい、まわりを{照|て}らす。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げる。ボールははね{返|かえ}さない。「{止|と}」のあいだは{止|と}まる</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">ステージ500の{虫|むし}たち</p>
               <ul class="items one">
                 <li data-from="500"><span class="cap king">王</span>{虫|むし}KING（たまごを{産|う}む）、{虫|むし}QUEEN（{逃|に}げるタイルを{投|な}げる。{下|した}に{盾|たて}がある）、{虫|むし}KINGと{虫|むし}QUEENの2{匹|ひき}いっしょ（2{匹|ひき}とも{落|お}ちるタイルを{投|な}げる）、{虫|むし}JOKERの{順|じゅん}に{出|で}てくる。どれもボールか{光|ひかり}を12{回|かい}{当|あ}てると、やっつけられる。タイルは{全部|ぜんぶ}{割|わ}らなくてよい</li>
@@ -933,6 +940,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // crow: 数  カラス（559面から）。導火線のタイルを1枚くわえて、離れた空いたマスへ運んで置く。ボールが近くを通ると逃げて、くわえた導火線を近くに落とす
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
 // night: true  夜の面（601面から）。盤面が暗く、ボール・板・灯りのまわりしか見えない。タイルはふちだけうっすら見える。スズメとカラスは出さない
+// firefly: 数  ホタル（609面から。夜の面だけ）。残っているタイルのあたりをただよって、まわりを照らす味方の虫。ボールははね返さない
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -2299,6 +2307,10 @@ const STAGES7 = [
   {rows: ['...mm.mm..','..mmm.mmm.','2222222222','11mmm.mmm.','..mm.mm...','..........','2.2..2..2.','22.2.2.22.','.2.22222.2','..g.gg.g.g'],
    tint: ['..........','..........','RRRRRRRRRR','RR........','..........','..........','Y.Y..Y..Y.','YY.Y.Y.YY.','.K.KKKKK.K','..K.KK.K.K'],
    sparrow: 3},
+  // 虫取り網と虫かご（夜の面。ホタルが3匹。かごの中の光る虫が灯り）
+  {rows: ['.2222.....','22..22....','2.22.2....','22..22....','.2222..33.','..2.333333','..2.2l2.l2','.2..2.2l.2','.2..2l2.l2','2...333333','2......g..'],
+   tint: ['.AAAA.....','AS..SA....','A.SS.A....','AS..SA....','.AAAA.....','..Y.......','..Y.G.G..G','.Y..G.G..G','.Y..G.G..G','Y.........','Y.........'],
+   night: true, firefly: 3},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -2427,6 +2439,8 @@ const INTROS = {
         text: '6{周目|しゅうめ}の{最後|さいご}のステージです。{導火線|どうかせん}の{火|ひ}が{大砲|たいほう}に{届|とど}くと、{大砲|たいほう}がワシへ{弾|たま}を{撃|う}ちます。{大砲|たいほう}は3つあります。ワシに3{回|かい}{当|あ}てると、やっつけてクリアです。タイルが{残|のこ}っていてもかまいません。'},
   601: {eyebrow: 'ステージ 601 から', title: '{夜|よる}と{灯|あか}り',
         text: '{日|ひ}が{暮|く}れて、{夜|よる}になりました。{夜|よる}のステージは{暗|くら}くて、ボールと{板|いた}のまわりしか{見|み}えません。{灯|あか}りのタイルを{割|わ}ると、まわりがずっと{明|あか}るくなります。'},
+  609: {eyebrow: 'ステージ 609 から', title: 'ホタル',
+        text: '{夜|よる}のステージに、ホタルが{飛|と}んできました。ホタルは{残|のこ}っているタイルのあたりをただよって、まわりを{照|て}らしてくれます。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げます。ボールははね{返|かえ}しません。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
         text: 'ステージ510までの10ステージは、ボーナスステージです。かたそうに{見|み}えても、{爆弾|ばくだん}や{鎖|くさり}、{火|ひ}のタイルがつながっていて、うまく{当|あ}てると{一気|いっき}に{割|わ}れます。どこに{当|あ}てればいいか、さがしてみてください。'},
 };
@@ -2550,7 +2564,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, fireflies: [], sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -2874,6 +2888,7 @@ function buildStage(n){
   S.shots = [];
   S.night = !!def.night;
   S.lights = [];
+  S.fireflies = def.firefly && def.night ? makeFireflies(def.firefly) : [];
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -3052,6 +3067,86 @@ function bounceBug(g){
   const a = clamp(Math.atan2(Math.abs(g.vy), Math.abs(g.vx)) + (Math.random() - 0.5) * 0.5, 0.45, 1.1);
   g.vx = sx * sp * Math.cos(a);
   g.vy = sy * sp * Math.sin(a);
+}
+// ホタル（609面から）：残っているタイルのどれかへ、ゆらゆらと飛んでいく。着いたら次のタイルを選ぶ
+// ほかのホタルから離れたタイルを選びやすくして、暗いところを照らしに行く。ボールが近くを通ると、少しのあいだ速く逃げる
+const FLY_SPEED = 40, FLY_FLEE = 120, FLY_FLEE_T = 0.7, FLY_NEAR = 44, FLY_GLOW = 2.6;
+function makeFireflies(n){
+  const out = [];
+  for (let i = 0; i < n; i++) {
+    const f = {x: W * (i + 0.5) / n, y: BRICK_TOP + 40 + Math.random() * 160, vx: 0, vy: 0, tx: 0, ty: 0, fleeT: 0, ax: 0, ay: 0,
+      ph: Math.random() * FLY_GLOW, seed: Math.random() * 6};
+    f.tx = f.x; f.ty = f.y;  // 行き先は、はじめに動くときに選ぶ（ここではまだタイルが並んでいない）
+    out.push(f);
+  }
+  return out;
+}
+function flyTarget(f){
+  const list = S.bricks.filter(b => needBreak(b) && b.x + b.w / 2 > 0 && b.x + b.w / 2 < W);
+  if (!list.length) { f.tx = BUG_EDGE + Math.random() * (W - BUG_EDGE * 2); f.ty = BRICK_TOP + Math.random() * 200; return; }
+  let best = null, bd = -1;
+  for (let k = 0; k < 4; k++) {
+    const b = list[Math.floor(Math.random() * list.length)];
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+    let d = Infinity;
+    for (const o of S.fireflies) if (o !== f) d = Math.min(d, Math.hypot(o.tx - cx, o.ty - cy));
+    if (d > bd) { bd = d; best = b; }
+  }
+  f.tx = best.x + best.w / 2 + (Math.random() - 0.5) * best.w;
+  f.ty = best.y + best.h / 2;
+}
+function moveFireflies(dt){
+  const bottom = S.bugZone.bottom;
+  for (const f of S.fireflies) {
+    f.ph += dt;
+    if (S.mode === 'play') {
+      for (const b of S.balls) {
+        const d = Math.hypot(f.x - b.x, f.y - b.y);
+        if (d < FLY_NEAR) { f.ax = (f.x - b.x) / (d || 1); f.ay = (f.y - b.y) / (d || 1); f.fleeT = FLY_FLEE_T; }
+      }
+    }
+    let dx, dy, sp = FLY_SPEED;
+    if (f.fleeT > 0) {
+      f.fleeT -= dt; dx = f.ax; dy = f.ay; sp = FLY_FLEE;
+      if (f.fleeT <= 0) flyTarget(f);
+    } else {
+      dx = f.tx - f.x; dy = f.ty - f.y;
+      const d = Math.hypot(dx, dy);
+      if (d < 10) { flyTarget(f); continue; }
+      dx /= d; dy /= d;
+    }
+    // まっすぐ飛ばずに、ゆらゆらさせる
+    const w = reduceMotion.matches ? 0 : Math.sin(f.ph * 2.1 + f.seed) * 0.7, c = Math.cos(w), sn = Math.sin(w);
+    const ux = dx * c - dy * sn, uy = dx * sn + dy * c, k = Math.min(1, dt * 3);
+    f.vx += (ux * sp - f.vx) * k; f.vy += (uy * sp - f.vy) * k;
+    f.x = clamp(f.x + f.vx * dt, BUG_EDGE, W - BUG_EDGE);
+    f.y = clamp(f.y + f.vy * dt, BRICK_TOP, bottom);
+  }
+}
+// ホタルの光の強さ（0〜1）。ゆっくり明るくなったり暗くなったりする
+const flyGlow = f => reduceMotion.matches ? 0.85 : 0.6 + 0.4 * Math.sin(f.ph * Math.PI * 2 / FLY_GLOW);
+function drawFireflies(){
+  for (const f of S.fireflies) {
+    const a = flyGlow(f);
+    ctx.save();
+    const gr = ctx.createRadialGradient(f.x, f.y + 2, 0, f.x, f.y + 2, 12);
+    gr.addColorStop(0, 'rgba(232,248,140,' + (0.9 * a) + ')');
+    gr.addColorStop(1, 'rgba(232,248,140,0)');
+    ctx.fillStyle = gr;
+    ctx.beginPath(); ctx.arc(f.x, f.y + 2, 12, 0, Math.PI * 2); ctx.fill();
+    // はね（はばたき）と体
+    const flap = reduceMotion.matches ? 0.5 : 0.5 + 0.5 * Math.sin(f.ph * 30);
+    ctx.fillStyle = 'rgba(200,215,235,.55)';
+    ctx.beginPath(); ctx.ellipse(f.x - 3, f.y - 3, 4, 2 + flap * 1.5, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(f.x + 3, f.y - 3, 4, 2 + flap * 1.5, 0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#3a3226';
+    ctx.beginPath(); ctx.ellipse(f.x, f.y - 2, 2.2, 3.4, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#d2523e';
+    ctx.beginPath(); ctx.arc(f.x, f.y - 5.5, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(240,252,170,' + (0.5 + 0.5 * a) + ')';
+    ctx.beginPath(); ctx.ellipse(f.x, f.y + 2.5, 2.2, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
 }
 function moveBugs(dt){
   // タイルが下りてきた分だけ、上の端も下げる（パドルに近づきすぎないよう、下の端はそのまま）
@@ -3979,7 +4074,7 @@ function renderPicker(){
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
     const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '') +
       (def.eagle === 'boss' ? '（ワシとたたかう）' : def.eagle === 'pass' || def.eagle === 'hunt' ? '（ワシが出る）' : '');
-    b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + (def.night ? '（夜）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
+    b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + (def.night ? '（夜）' : '') + (def.firefly ? '（ホタルが出る）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
 }
@@ -5305,7 +5400,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveSparrows(dt); moveCrows(dt); moveEagle(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
+    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveFireflies(dt); moveSparrows(dt); moveCrows(dt); moveEagle(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
   if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
@@ -7509,6 +7604,8 @@ function drawDropLine(){
 // 灯りのタイルは割る前もぼんやり光り、割ると、まわり LAMP_R マス（横は列、縦は行で数える）がずっと明るくなる
 const NIGHT_BOARD = '#16202e', NIGHT_GROUT = '#1e2a3a', NIGHT_BALL = '#f4f1e4';
 const NIGHT_DARK = 'rgba(5,8,20,.94)', NIGHT_BALL_R = 72, NIGHT_PADDLE_R = 34, LAMP_R = 2.5, LAMP_FADE = 0.6;
+// ホタルが照らす広さ（マスの数。半径）
+const FLY_LIGHT = 1.7;
 const nightCanvas = document.createElement('canvas');
 function drawNight(){
   if (!S.night) return;
@@ -7551,6 +7648,7 @@ function drawNight(){
   for (const f of S.fires) hole(f.x, f.y, 40, 40, 0.9);
   for (const q of S.blasts) hole(q.x, q.y, 50 + (q.size || 46), 50 + (q.size || 46), 1 - q.t / 0.35);
   for (const it of S.items) hole(it.x, it.y, 30, 24, 0.8);
+  for (const f of S.fireflies) hole(f.x, f.y, CELL * FLY_LIGHT, CELL * FLY_LIGHT * 0.85, 0.95 * flyGlow(f));
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.drawImage(nightCanvas, 0, 0);
@@ -7653,6 +7751,7 @@ function draw(){
   drawCrows();
   drawEagle();
   drawNight();
+  drawFireflies();
 
   if (S.lasers.length) {
     ctx.fillStyle = C['t-fuji'];

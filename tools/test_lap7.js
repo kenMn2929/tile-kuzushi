@@ -1,6 +1,6 @@
 // 7周目（601面から）の動きを確かめる。使い方：node tools/test_lap7.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
 // 周の決まり（601面から7周目・下りる速さ）、600面から601面へのつながりと601面の前の説明、
-// 夜の面（暗くする・スズメとカラスを出さない）と灯り（l。割るとまわりが明るくなる）を試す
+// 夜の面（暗くする・スズメとカラスを出さない）と灯り（l。割るとまわりが明るくなる）、ホタル（609面から）を試す
 // 面の形を前提にしているので、601面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -52,6 +52,37 @@ const { chromium } = require('playwright');
     ok(drew, '夜の面を描ける');
     T.startGame(601);
     ok(S.lights.length === 0, '面をやりなおすと、明かりは消える');
+    // ---- ホタル（609面から） ----
+    if (T.LAST_STAGE >= 609) {
+      T.startGame(609);
+      const n = T.stageDef(609).firefly;
+      ok(S.night && n > 0 && S.fireflies.length === n, '609面は夜の面で、ホタルが' + n + '匹出る');
+      S.mode = 'play'; away();
+      const y0 = S.fireflies.map(f => f.y);
+      for (let i = 0; i < 300; i++) T.moveFireflies(1 / 60);
+      const top = 64, low = S.bugZone.bottom;
+      ok(S.fireflies.every(f => f.x >= 0 && f.x <= T.W && f.y >= top && f.y <= low), 'ホタルは盤面の中のタイルのあたりをただよう');
+      ok(S.fireflies.some((f, i) => Math.abs(f.y - y0[i]) > 1), 'ホタルは動く');
+      const f = S.fireflies[0], b = S.balls[0];
+      b.x = f.x + 20; b.y = f.y; b.vx = -300; b.vy = 0;
+      const fx = f.x;
+      T.moveFireflies(1 / 60);
+      for (let i = 0; i < 20; i++) T.moveFireflies(1 / 60);
+      ok(f.x < fx, 'ボールが近づくと、ホタルはボールから離れる');
+      let drew = true;
+      try { T.draw(); } catch (e) { drew = false; }
+      ok(drew, 'ホタルのいる夜の面を描ける');
+      const d = T.stageDef(601); d.firefly = 2;
+      T.startGame(601);
+      ok(S.fireflies.length === 2, '夜の面なら、ほかの面にもホタルを出せる');
+      delete d.firefly;
+      const e = T.stageDef(600); e.firefly = 2;
+      T.startGame(600);
+      ok(S.fireflies.length === 0, '夜でない面には、ホタルは出ない');
+      delete e.firefly;
+      T.enterStage(609, false);
+      ok(S.mode === 'intro' && ovTitle.textContent.includes('ホタル'), '609面の前に、ホタルの説明が出る');
+    }
     return log;
   });
   // ステージ一覧の見出しと印
