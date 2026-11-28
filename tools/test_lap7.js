@@ -1,6 +1,6 @@
 // 7周目（601面から）の動きを確かめる。使い方：node tools/test_lap7.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
 // 周の決まり（601面から7周目・下りる速さ）、600面から601面へのつながりと601面の前の説明、
-// 夜の面（夜風・スズメとカラスを出さない）と灯り（l）、ホタル（609面から）、歯車（q。617面から。当てるとまわり8マスが時計回りにずれる）と風船（b。633面から。上が空くと浮いていく）を試す
+// 夜の面（夜風・スズメとカラスを出さない）と灯り（l）、ホタル（609面から）、歯車（q。617面から。当てるとまわり8マスが時計回りにずれる）と風船（b。633面から。上が空くと浮いていく）とコウモリ（641面から。タイルの下にぶら下がり、群れで飛び、飛んでいるあいだはボールをはね返す）を試す
 // 面の形を前提にしているので、601面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -199,6 +199,54 @@ const { chromium } = require('playwright');
       let drew = true;
       try { T.draw(); } catch (e) { drew = false; }
       ok(drew, '風船のある面を描ける');
+    }
+    // ---- コウモリ（641面から） ----
+    if (T.LAST_STAGE >= 641) {
+      T.enterStage(641, false);
+      const shown641 = [...document.querySelectorAll('#help [data-from]')].filter(el => !el.hidden);
+      ok(S.mode === 'intro' && ovTitle.textContent.includes('コウモリ') && ovBtn.textContent.includes('641'), '641面の前に、コウモリの説明が出る');
+      ok(shown641.length >= 1 && shown641.every(el => el.dataset.from === '641'), '説明ページの641面の項目（コウモリ）だけが出る');
+      T.startGame(641); S.mode = 'play'; away();
+      const n = T.stageDef(641).bat;
+      ok(n > 0 && S.bats.length === n, '641面にコウモリが' + n + '匹出る');
+      ok(!T.stageDef(641).night, '641面は夜の面ではない（コウモリの初登場なので分かりやすさ優先）');
+      // 群れで飛んできて、タイルの下にぶら下がる
+      for (let i = 0; i < 600 && !S.bats.every(t => t.state === 'hang'); i++) { away(); T.moveBats(1 / 60); }
+      ok(S.bats.every(t => t.state === 'hang' && t.br && t.br.hung === t), 'コウモリはタイルの下にぶら下がる');
+      ok(S.bats.every(t => Math.abs(t.y - (t.br.y + t.br.h + 9)) < 1e-9), 'コウモリはタイルの下の辺にぶら下がる');
+      // ぶら下がっているタイルは割れない（当てると群れで飛び立つ）
+      const hungBr = S.bats[0].br, hp0 = hungBr.hp;
+      T.damage(hungBr, false);
+      ok(hungBr.hp === hp0 && !hungBr.hung, 'ぶら下がっているタイルは割れず、コウモリが飛び立つ');
+      ok(S.bats.every(t => t.state !== 'hang'), '1匹が飛び立つと、群れでいっせいに飛び立つ');
+      // 飛んでいるコウモリはボールをはね返す
+      const fly = S.bats.find(t => t.state === 'fly');
+      ok(!!fly, '飛び立ったコウモリがいる');
+      if (fly) {
+        const b = S.balls[0];
+        b.hold = 0; b.tubeT = 0; b.x = fly.x; b.y = fly.y + 18; b.vx = 0; b.vy = -S.speed;
+        T.hitBats(b);
+        ok(b.vy > 0, '飛んでいるコウモリは、ボールをはね返す');
+        // ぶら下がっているコウモリは、はね返さない
+        for (let i = 0; i < 900 && !S.bats.every(t => t.state === 'hang'); i++) { away(); T.moveBats(1 / 60); }
+        const hb = S.bats[0];
+        b.x = hb.x; b.y = hb.y + 18; b.vx = 0; b.vy = -S.speed;
+        T.hitBats(b);
+        ok(b.vy < 0, 'ぶら下がっているコウモリは、ボールをはね返さない');
+      }
+      // ぶら下がってから BAT_STAY 秒たつと、自分から群れで移る
+      for (let i = 0; i < 900 && !S.bats.every(t => t.state === 'hang'); i++) { away(); T.moveBats(1 / 60); }
+      const before = S.bats.map(t => t.br);
+      for (let i = 0; i < (T.BAT_STAY + 1) * 60; i++) { away(); T.moveBats(1 / 60); if (S.bats.every(t => t.state !== 'hang')) break; }
+      ok(S.bats.every(t => t.state !== 'hang') || S.bats.some((t, i) => t.br !== before[i]), 'コウモリは、しばらくすると群れで別のタイルへ移る');
+      // 夜の面にも出る
+      const dn = T.stageDef(601); dn.bat = 2;
+      T.startGame(601);
+      ok(S.night && S.bats.length === 2, '夜の面にも、コウモリは出る');
+      delete dn.bat;
+      let drew = true;
+      try { T.startGame(641); T.draw(); } catch (e) { drew = false; }
+      ok(drew, 'コウモリのいる面を描ける');
     }
     return log;
   });

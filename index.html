@@ -229,6 +229,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.gear{background:var(--t-gear);color:#fff;border-radius:3px}
 .cap.fusen{background:var(--t-fusen);color:#fff;border-radius:50% 50% 50% 50%/60% 60% 40% 40%}
 .cap.firefly{background:radial-gradient(circle at 50% 60%,#e9f59a 0 3px,rgba(220,240,120,.4) 5px,#0b1020 9px);border-radius:3px}
+.cap.bat{background:#3a3348;color:#f2efe6;border-radius:3px}
 .cap.night{background:linear-gradient(transparent 3px,var(--t-sora) 3px 5px,transparent 5px 8px,var(--t-sora) 8px 10px,transparent 10px);border-radius:3px}
 .cap.rock{background:var(--t-iwa);border-radius:9px 5px 8px 4px}
 .cap.tube{position:relative;background:var(--board);box-shadow:inset 0 0 0 1px var(--line);border-radius:3px}
@@ -614,6 +615,12 @@ img{max-width:100%}
               </ul>
             </div>
             <div class="section group">
+              <p class="sub">ステージ641から（コウモリ）</p>
+              <ul class="items one">
+                <li data-from="641"><span class="cap bat">蝠</span>コウモリ。タイルの{下|した}にぶら{下|さ}がる。ぶら{下|さ}がっているタイルは{割|わ}れない。ボールが{近|ちか}くを{通|とお}るか、そのタイルに{何|なに}か{当|あ}たるか、しばらくすると、{群|む}れでいっせいに{飛|と}び{立|た}って{別|べつ}のタイルへ{移|うつ}る。{飛|と}んでいるあいだは、ボールをはね{返|かえ}す。{夜|よる}のステージにも{出|で}る。「{止|と}」のあいだは{止|と}まる</li>
+              </ul>
+            </div>
+            <div class="section group">
               <p class="sub">ステージ500の{虫|むし}たち</p>
               <ul class="items one">
                 <li data-from="500"><span class="cap king">王</span>{虫|むし}KING（たまごを{産|う}む）、{虫|むし}QUEEN（{逃|に}げるタイルを{投|な}げる。{下|した}に{盾|たて}がある）、{虫|むし}KINGと{虫|むし}QUEENの2{匹|ひき}いっしょ（2{匹|ひき}とも{落|お}ちるタイルを{投|な}げる）、{虫|むし}JOKERの{順|じゅん}に{出|で}てくる。どれもボールか{光|ひかり}を12{回|かい}{当|あ}てると、やっつけられる。タイルは{全部|ぜんぶ}{割|わ}らなくてよい</li>
@@ -953,6 +960,7 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // scene: 'sparrow'  面の始めに、上を歩く虫をスズメがくわえて飛んでいく（511面。見せるだけで、遊びには関わらない）
 // night: true  夜の面（601面から）。ときどき夜風（横風）が吹いて、ボールが風下へ流される（drawWind の上のコメント）。スズメとカラスは出さない
 // firefly: 数  ホタル（609面から。夜の面だけ）。残っているタイルのあたりをただよって光る、飾りの虫。ボールははね返さない
+// bat: 数  コウモリ（641面から）。タイルの下にぶら下がる。ぶら下がっているタイルは割れず、ボールが近づくか、そのタイルに何かが当たるか、ぶら下がってから BAT_STAY 秒たつと、群れでいっせいに飛び立って別のタイルへ移る。飛んでいるコウモリはボールをはね返す
 // gold: [行の字]  $ のマスのタイルを金のタイルにする（rows と同じ形で書く）。この面では、いつもの金のタイル1枚のくじは引かない
 const STAGES = [
   {rows: ['11111111','11111111','11111111','11111111']},
@@ -2447,6 +2455,38 @@ const STAGES7 = [
   {rows: ['.22222222.','.2bbbbbb2.','.2bbbbbb2.','.23222232.','.3l2222l3.','.23333332.','..g.22.g..','.2g2222g2.','.g.3333.g.'],
    tint: ['.VVVVVVVV.','.K......K.','.K......K.','.KKKKKKKK.','.K......K.','.KKKKKKKK.','..K.KK.K..','.KKKKKKKK.','..........'],
    night: true, firefly: 3},
+  // 大木（枝の下にコウモリがぶら下がる。コウモリ3匹）
+  {rows: ['...2222...','..221122..','.22122122.','2212222122','2213322122','.21222212.','....22....','....22....','...2222...','...3..3...','..g.22.g..'],
+   tint: ['...GGGG...','..GGGGGG..','.GGGGGGGG.','GGGGGGGGGG','GGG..GGGGG','.GGGGGGGG.','....KK....','....KK....','...KKKK...','...K..K...','....KK....'],
+   bat: 3},
+  // トンネル（入口の上の岩肌からコウモリがぶら下がる。コウモリ3匹）
+  {rows: ['...2222...','..222222..','.22222222.','.22222222.','222...2222','222....222','222....222','.22122122.','.22222222.','..2g22.2..'],
+   tint: ['...KKKK...','..KKKKKK..','.KK....KK.','.KKKKKKKK.','KKK...KKKK','KKK....KKK','KKK....KKK','.KKKKKKKK.','.SSSSSSSS.','..S.SS.S..'],
+   bat: 3},
+  // 洋館（夜の面。ホタル2匹。窓が灯り。コウモリ3匹）
+  {rows: ['....22....','...2222...','..222222..','.22333322.','2211111122','22l2222l22','.22111122.','.22.22.22.','.22333322.','..2....2..'],
+   tint: ['....KK....','...KKKK...','..KKKKKK..','.K......K.','RRRRRRRRRR','RR.RRRR.RR','.PPPPPPP..','.PP.PP.PP.','.K......K.','..........'],
+   night: true, firefly: 2, bat: 3},
+  // 屋根裏（梁の下にコウモリがぶら下がる。コウモリ4匹）
+  {rows: ['.22222222.','2222222222','.22222222.','..2...2...','..222222..','..2....2..','.2222222..','.2.2212.2.','.23333332.','.22111122.','..g....2..'],
+   tint: ['.KKKKKKKK.','KKKKKKKKKK','.KKKKKKKK.','..K...K...','..KKKKKK..','..K....K..','.YYYYYYY..','.Y.YYYY.Y.','.Y......Y.','.KKKKKKKK.','..........'],
+   bat: 4},
+  // ぶどう棚（ぶどうの房がふたご。棚の下にコウモリ。コウモリ3匹）
+  {rows: ['.22222222.','2222222222','.2..22...2','.2.p22p.2.','.2..22..2.','.22222222.','.2..22..2.','.2...2..2.','.23333332.','..g....g..'],
+   tint: ['.KKKKKKKK.','KKKKKKKKKK','.K..GG...K','.K..GG..K.','.K..GG..K.','.KKKKKKKK.','.K..KK..K.','.K...K..K.','.K......K.','..........'],
+   bat: 3},
+  // 神社の社殿（鈴のひもが鎖。軒下にコウモリ。コウモリ3匹）
+  {rows: ['..222222..','.22222222.','2222222222','.22111122.','..2....2..','..2.c..2..','..2.c..2..','..222222..','.22111122.','.23333332.','..g....2..'],
+   tint: ['..KKKKKK..','.KKKKKKKK.','KKKKKKKKKK','.K......K.','..R....R..','..R....R..','..R....R..','..RRRRRR..','.RRRRRRRR.','.K......K.','..........'],
+   bat: 3},
+  // 山小屋（夜の面。ホタル2匹。窓が灯り。コウモリ3匹）
+  {rows: ['....22....','...2112...','..222222..','.22222222.','2211111122','.22l22l22.','.22222222.','.22.222...','.22222222.','..3....3..'],
+   tint: ['....KK....','...K..K...','..KKKKKK..','.KKKKKKKK.','KK......KK','.KK.KK.KK.','.KKKKKKKK.','.KK.KKK...','.KKKKKKKK.','..........'],
+   night: true, firefly: 2, bat: 3},
+  // 満月と雲（夜の面。ホタル3匹。満月が灯り。コウモリ4匹）
+  {rows: ['...llll...','..llllll..','..llllll..','...llll...','2222..2222','.22222222.','..2...2...','.22222222.','2222..2222','..g....g..'],
+   tint: ['..........','..........','..........','..........','SSSS..SSSS','.SSSSSSSS.','..S...S...','.SSSSSSSS.','SSSS..SSSS','..........'],
+   night: true, firefly: 3, bat: 4},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -2581,6 +2621,8 @@ const INTROS = {
         text: '{歯車|はぐるま}は{割|わ}れません。ボールか{光|ひかり}が{当|あ}たるたびに、まわり8マスのタイルが{時計|とけい}{回|まわ}りに1つずれます。ずれるのはタイルのあるマスだけで、{鉄|てつ}や{錠|じょう}、{落|お}ちるタイルなどは{動|うご}きません。ねらったタイルを{下|した}へずらしてから{割|わ}る、といった{使|つか}い{方|かた}もできます。'},
   625: {eyebrow: 'ステージ 625 から', title: '{組|く}み{合|あ}わせ',
         text: 'ステージ632までは、{新|あたら}しいものは{出|で}てきません。{導火線|どうかせん}や{水|みず}、{時限爆弾|じげんばくだん}、カラスといった6{周目|しゅうめ}のものと、{灯|あか}りや{歯車|はぐるま}、{夜風|よかぜ}といった7{周目|しゅうめ}のものを{組|く}み{合|あ}わせたステージです。'},
+  641: {eyebrow: 'ステージ 641 から', title: 'コウモリ',
+        text: 'コウモリが{飛|と}んできて、タイルの{下|した}にぶら{下|さ}がります。ぶら{下|さ}がっているタイルは{割|わ}れません。ボールが{近|ちか}くを{通|とお}ると、{群|む}れでいっせいに{飛|と}び{立|た}って、{別|べつ}のタイルへ{移|うつ}ります。{飛|と}んでいるコウモリは、ボールをはね{返|かえ}します。'},
   633: {eyebrow: 'ステージ 633 から', title: '{風船|ふうせん}',
         text: '{風船|ふうせん}のタイルは1{回|かい}で{割|わ}れます。{上|うえ}のタイルが{割|わ}れて{上|うえ}が{空|あ}くと、{少|すこ}しゆれてから{上|うえ}へ{浮|う}いていきます。いちばん{上|うえ}の{行|ぎょう}か、{上|うえ}のタイルにつかえると{止|と}まります。ねらうタイルが{下|した}へ{下|お}りてくる{前|まえ}に、{風船|ふうせん}を{上|うえ}へ{逃|に}がしてしまうこともあるので、{割|わ}る{順番|じゅんばん}に{気|き}をつけてください。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
@@ -2605,6 +2647,7 @@ const STORY = {
   599: () => 'ワシがおこっています。{次|つぎ}は{大砲|たいほう}を{撃|う}って、ワシをやっつけましょう。',
   616: () => 'どこかで、大きな{歯車|はぐるま}が{回|まわ}る{音|おと}がしました。',
   632: () => '{空|そら}から、{風船|ふうせん}が{降|ふ}ってきました。',
+  640: () => '{暗|くら}いところで、はねの{音|おと}がしました。',
 };
 
 const $ = id => document.getElementById(id);
@@ -2708,7 +2751,7 @@ const S = {
   cleared: new Set(),
   bricks: [], rowMove: {}, colMove: {}, vband: [0, 0], particles: [], pops: [], items: [], banners: [], blasts: [],
   bugs: [], bugZone: {top: 0, bottom: 0}, thrower: null, flying: [], lasers: [], mists: [], warps: [], uzus: [], kazes: [], blinkT: 0,
-  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, fireflies: [], wind: null, sparrows: [], sparrowT: 0, crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
+  keyCells: [], keyWait: [], globs: [], fires: [], fuses: [], waters: [], scene: null, fireflies: [], wind: null, sparrows: [], sparrowT: 0, bats: [], crows: [], eagle: null, shots: [], carrier: null, wallSide: 0, switchAuto: false, switchT: 0, chaining: false,
   kings: [], kingsGone: [], wave: 0, kingFrom: 0, kingSeen: false, chicks: [], hatched: 0, finaleQ: [], finaleT: 0, finaleN: 0, confetti: [],
   giftT: 0, stuckT: 0, assisted: false, guardNext: false, drop: 0, rise: false, lift: 0,
   balls: [], speed: 280, ballR: BALL_R,
@@ -3039,6 +3082,7 @@ function buildStage(n){
   S.night = !!def.night;
   S.wind = S.night ? makeWind() : null;
   S.fireflies = def.firefly && def.night ? makeFireflies(def.firefly) : [];
+  S.bats = def.bat ? makeBats(def.bat) : [];
   return list;
 }
 // 逃げるタイル：向かってくるボールが近づいたら、ボールからいちばん遠くなる上下左右の空いたマスへ1マス逃げる
@@ -4227,7 +4271,7 @@ for (let n = 1; n <= LAST_STAGE; n++) {
   b.append(num, mark);
   const def = stageDef(n);
   const marks = (def.move ? '↔' : '') + (def.vmove ? '↕' : '') + (def.loop ? '↻' : '') +
-    (def.king === 'boss' || def.eagle === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow || (def.eagle && def.eagle !== 'boss') ? '鳥' : '') + (def.night ? '夜' : '');
+    (def.king === 'boss' || def.eagle === 'boss' ? '王' : def.bug || def.thrower || def.carry || def.king ? '虫' : '') + (def.sparrow || def.crow || (def.eagle && def.eagle !== 'boss') ? '鳥' : '') + (def.bat ? '蝙' : '') + (def.night ? '夜' : '');
   if (marks) {
     const mv = document.createElement('span'); mv.className = 'st-move';
     mv.textContent = marks;
@@ -4252,7 +4296,7 @@ function renderPicker(){
     const who = def.rush ? '虫KINGと虫QUEENと虫JOKER' : def.duo ? '虫KINGと虫QUEEN' : def.joker ? '虫JOKER' : def.queen ? '虫QUEEN' : '虫KING';
     const king = def.king === 'boss' ? '（' + who + 'とたたかう）' : def.king ? '（' + who + 'が出る）' : '';
     const birds = (def.sparrow ? '（スズメが出る）' : '') + (def.crow ? '（カラスが出る）' : '') +
-      (def.eagle === 'boss' ? '（ワシとたたかう）' : def.eagle === 'pass' || def.eagle === 'hunt' ? '（ワシが出る）' : '');
+      (def.eagle === 'boss' ? '（ワシとたたかう）' : def.eagle === 'pass' || def.eagle === 'hunt' ? '（ワシが出る）' : '') + (def.bat ? '（コウモリが出る）' : '');
     b.setAttribute('aria-label', 'ステージ' + n + (lapOf(n) > 1 ? '（' + lapOf(n) + '周目）' : '') + (def.night ? '（夜）' : '') + (def.firefly ? '（ホタルが出る）' : '') + moves + bugs + birds + king + (done ? '（クリア済み）' : ''));
   }
   if (S.mode === 'title' && !pickerEl.hidden) setText(ovBtn, 'ステージ ' + S.pick + ' から{始|はじ}める');
@@ -4852,6 +4896,8 @@ function rotateGear(br){
 function damage(br, full, blast){
   // スズメがとまっているタイルは割れない。スズメが飛び立つ
   if (br.perched) { shooSparrow(br); return; }
+  // コウモリがぶら下がっているタイルは割れない。群れで飛び立つ
+  if (br.hung) { shooBats(br); return; }
   br.flash = 0.12;
   // スイッチは当たるたびに壁を入れかえる（爆風では切りかわらない）。壁は爆風でも壊れない
   if (br.toggle) { if (!blast) flipWalls(br); else sfx('iron'); return; }
@@ -5323,6 +5369,10 @@ function stunWalker(t, sec){
   t.cool = Math.max(t.cool, 1.5);
   sfx('stun');
 }
+function hitBats(b){
+  // 飛んでいるコウモリは、ボールをはね返す（ぶら下がっているコウモリははね返さない）
+  for (const t of S.bats) if (t.state === 'fly' && bounceOffBug(b, t.x, t.y)) { sfx('bug'); return; }
+}
 function hitBugs(b){
   for (const g of S.bugs) if (bounceOffBug(b, g.x, g.y)) { sfx('bug'); return; }
   const t = S.thrower;
@@ -5422,6 +5472,7 @@ function physics(dt){
       // 筒に吸いこまれたら、このフレームはもう動かない
       if (b.tubeT > 0) break;
       hitBugs(b);
+      hitBats(b);
       if (hitKing(b) && S.mode !== 'play') return;
       warpBall(b);
       if (b.y - R > H) { lost = true; break; }
@@ -5612,7 +5663,7 @@ function update(dt){
   }
   // 時止め中は、動くタイルも虫も、まばたきタイルも止まる
   if ((S.mode === 'play' || S.mode === 'ready' || S.mode === 'title' || S.mode === 'intro') && S.stopT <= 0) {
-    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveFireflies(dt); moveSparrows(dt); moveCrows(dt); moveEagle(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
+    moveRows(dt); moveCols(dt); turnKazes(dt); moveBugs(dt); moveFireflies(dt); moveSparrows(dt); moveBats(dt); moveCrows(dt); moveEagle(dt); moveThrower(dt); moveCarrier(dt); moveKing(dt); blink(dt);
   }
   if ((S.mode === 'play' || S.mode === 'ready') && S.stopT <= 0) tickSwitch(dt);
   if (S.mode === 'play' || S.mode === 'ready') raiseWalls();
@@ -7201,6 +7252,165 @@ function drawSparrows(){
     ctx.restore();
   }
 }
+// コウモリ（641面から。面の bat に数を書く）
+// 飛んできて、タイルの下にぶら下がる。ぶら下がっているタイルは割れない（スズメと同じ。ボール・爆風・火・水・光のどれでも）
+// ボールが近く（BAT_NEAR）を通るか、ぶら下がっているタイルに何かが当たるか、ぶら下がってから BAT_STAY 秒たつと、
+// 群れでいっせいに飛び立って、別のタイルへ移る。飛んでいるあいだは、ボールをはね返す（虫と同じ当たり方）
+// 割るタイルの残りがコウモリの数より多くないときは、ぶら下がらない（残り少なくなって面が終わらなくなるのを防ぐ）
+// 夜の面でも昼の面でも出る（スズメとカラスは夜の面に出ないが、コウモリは夜の生き物なので夜も出る。昼は洞窟や屋根裏など暗いところにいる）
+// 「止」のあいだは止まる。続きから遊ぶデータには入らない。BAT_K は絵の大きさ
+const BAT_FIRST = 2, BAT_V = 260, BAT_NEAR = 22, BAT_STAY = 10, BAT_AWAY = 5, BAT_K = 0.9;
+function makeBats(n){
+  const list = [];
+  for (let i = 0; i < n; i++) {
+    const side = i % 2 ? 1 : -1;
+    list.push({x: side < 0 ? -40 : W + 40, y: 30, dir: -side, state: 'away', t: BAT_FIRST + i * 0.4, br: null, step: Math.random() * 6});
+  }
+  return list;
+}
+// ぶら下がるところ：タイルの下の辺のまん中
+const hangX = br => br.x + br.w / 2;
+const hangY = br => br.y + br.h + 9;
+function hangable(br){
+  if (!needBreak(br) || br.hung || br.perched || br.timer || br.blink || br.runner || br.push || br.faller || br.carried || br.lock) return false;
+  if (br.x < 0 || br.x + br.w > W) return false;
+  // 下のマスが空いているタイルだけ（ぶら下がる場所が要る）
+  return !S.bricks.some(o => o !== br && o.hp > 0 && Math.abs(o.x - br.x) < br.w * 0.8 && o.y > br.y && o.y < br.y + ROW_STEP * 1.2);
+}
+const batsGoHome = () => leftCount() <= S.bats.length;
+function pickHang(t){
+  if (batsGoHome()) return null;
+  const taken = new Set(S.bats.filter(o => o !== t && o.state === 'fly').map(o => o.br));
+  const all = S.bricks.filter(br => hangable(br) && !taken.has(br));
+  const far = all.filter(br => Math.hypot(hangX(br) - t.x, hangY(br) - t.y) > CELL * 2);
+  const list = far.length ? far : all;
+  return list.length ? list[Math.floor(Math.random() * list.length)] : null;
+}
+// 群れで飛び立つ。ぶら下がっているコウモリが全部、いっせいに別のタイルへ移る
+function flyOffBats(quiet){
+  let any = false;
+  for (const t of S.bats) {
+    if (t.state !== 'hang') continue;
+    if (t.br && t.br.hung === t) t.br.hung = null;
+    t.br = pickHang(t);
+    t.state = t.br ? 'fly' : 'leave';
+    any = true;
+  }
+  if (any && !quiet) {
+    S.pops.push({x: W / 2, y: BRICK_TOP + 30, text: 'ばさっ', t: 0});
+    sfx('flee');
+  }
+  return any;
+}
+// ぶら下がっているタイルに何かが当たったとき（damage から）
+function shooBats(br){
+  br.flash = 0.12;
+  flyOffBats();
+}
+function moveBats(dt){
+  if (!S.bats.length) return;
+  const goHome = batsGoHome();
+  for (const t of S.bats) {
+    t.step += dt;
+    if (goHome && (t.state === 'hang' || t.state === 'fly')) {
+      if (t.br && t.br.hung === t) t.br.hung = null;
+      t.br = null;
+      t.state = 'leave';
+      continue;
+    }
+    if (t.state === 'away') {
+      t.t -= dt;
+      if (t.t > 0) continue;
+      t.x = Math.random() < 0.5 ? -40 : W + 40;
+      t.y = 30;
+      t.br = pickHang(t);
+      if (t.br) t.state = 'fly'; else t.t = 1;
+      continue;
+    }
+    if (t.state === 'leave') {
+      const ox = t.x < W / 2 ? -50 : W + 50;
+      if (sparrowToward(t, ox, -30, BAT_V, dt)) { t.state = 'away'; t.t = BAT_AWAY; }
+      continue;
+    }
+    if (t.state === 'fly') {
+      const br = t.br;
+      if (!br || br.hp <= 0 || !hangable(br)) { t.br = pickHang(t); if (!t.br) t.state = 'leave'; continue; }
+      if (sparrowToward(t, hangX(br), hangY(br), BAT_V, dt)) {
+        t.state = 'hang';
+        t.t = BAT_STAY;
+        br.hung = t;
+      }
+      continue;
+    }
+    if (t.state === 'hang') {
+      const br = t.br;
+      if (!br || br.hp <= 0) {
+        if (br && br.hung === t) br.hung = null;
+        t.br = pickHang(t);
+        t.state = t.br ? 'fly' : 'leave';
+        continue;
+      }
+      t.x = hangX(br); t.y = hangY(br);
+      t.t -= dt;
+      if (t.t <= 0) { flyOffBats(true); continue; }
+      // ボールが近くを通ると、群れで飛び立つ
+      if (S.mode === 'play' && S.balls.some(b => !(b.hold > 0) && !(b.tubeT > 0) && Math.hypot(b.x - t.x, b.y - t.y) < BAT_NEAR + S.ballR)) { flyOffBats(); continue; }
+    }
+  }
+}
+function drawBats(){
+  for (const t of S.bats) {
+    if (t.state === 'away') continue;
+    const hang = t.state === 'hang';
+    const flap = hang || reduceMotion.matches ? 0.15 : 0.5 + 0.5 * Math.sin(t.step * 26);
+    ctx.save();
+    ctx.translate(t.x, t.y);
+    ctx.scale(BAT_K * (t.dir < 0 ? -1 : 1), BAT_K);
+    // はね（飛んでいるときは広げ、ぶら下がっているときは体に沿わせる）
+    ctx.fillStyle = '#4a3f5c';
+    for (const sg of [-1, 1]) {
+      ctx.beginPath();
+      if (hang) {
+        ctx.moveTo(0, -6);
+        ctx.quadraticCurveTo(sg * 9, -2, sg * 7, 7);
+        ctx.quadraticCurveTo(sg * 3, 4, sg * 2, 8);
+        ctx.quadraticCurveTo(sg * 1, 2, 0, 4);
+      } else {
+        const lift = -flap * 7;
+        ctx.moveTo(0, -2);
+        ctx.quadraticCurveTo(sg * 10, -8 + lift, sg * 17, -3 + lift);
+        ctx.quadraticCurveTo(sg * 12, 0 + lift * 0.5, sg * 13, 3);
+        ctx.quadraticCurveTo(sg * 7, 1, sg * 6, 5);
+        ctx.quadraticCurveTo(sg * 2, 2, 0, 3);
+      }
+      ctx.closePath(); ctx.fill();
+    }
+    // 体（ぶら下がっているときは逆さ。頭が下）
+    ctx.fillStyle = '#332b40';
+    ctx.beginPath(); ctx.ellipse(0, hang ? 1 : 0, 5.5, 7.5, 0, 0, Math.PI * 2); ctx.fill();
+    // 耳と頭
+    const hy = hang ? 8 : -6;
+    ctx.beginPath();
+    ctx.moveTo(-4, hy - 2); ctx.lineTo(-3, hy - 6); ctx.lineTo(-1, hy - 2);
+    ctx.moveTo(4, hy - 2); ctx.lineTo(3, hy - 6); ctx.lineTo(1, hy - 2);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, hy, 3.6, 0, Math.PI * 2); ctx.fill();
+    // 目
+    ctx.fillStyle = '#f2c14e';
+    ctx.beginPath(); ctx.arc(-1.4, hy, 0.8, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.arc(1.4, hy, 0.8, 0, Math.PI * 2); ctx.fill();
+    if (hang) {
+      // 足でタイルの下につかまる
+      ctx.strokeStyle = '#332b40';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(-2.5, -6); ctx.lineTo(-2.5, -10);
+      ctx.moveTo(2.5, -6); ctx.lineTo(2.5, -10);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
 // カラス（559面から。面の crow に数を書く）
 // 盤面の外から飛んできて、導火線のタイルを1枚くわえ、離れた空いたマスへ運んで置く（道が切れる。置いた先でつながることもある）
 // 置いたら盤面の外へ飛んでいき、CROW_AWAY 秒で戻ってくる。はじめは CROW_FIRST 秒（2羽目はさらに CROW_NEXT 秒あと）で来る
@@ -7962,6 +8172,7 @@ function draw(){
   for (const g of S.bugs) drawBug(g.x, g.y, {step: g.step, stun: g.stunT, eat: g.eat, munch: g.munch, paint: g.paint, windup: g.paint && g.paintT < 0.5});
   drawGlobs();
   drawSparrows();
+  drawBats();
   drawCrows();
   drawEagle();
   drawWind();
