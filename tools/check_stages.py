@@ -52,7 +52,7 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci~W@Clq' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~W@Clqb' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
@@ -62,6 +62,8 @@ for n, (rows_s, rest) in defs:
                 print(n, 'tube/cannon needs an empty still cell above', r, c); ok = False
             if ch in 'oO' and r > 4:
                 print(n, 'warp below row 4', r, c); ok = False
+            if ch == 'b' and r > 0 and rows[r - 1][c] == '.':
+                print(n, 'balloon without tile above', r, c); ok = False
             if ch == 'd' and (r + 1 >= R or rows[r + 1][c] in '.+-'):
                 print(n, 'faller without tile below', r, c); ok = False
             if ch == '@' and r + 1 < R and (rows[r + 1][c] in '.+-' or (r + 1) in moving or inv(r + 1, c)):

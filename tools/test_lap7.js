@@ -1,6 +1,6 @@
 // 7周目（601面から）の動きを確かめる。使い方：node tools/test_lap7.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
 // 周の決まり（601面から7周目・下りる速さ）、600面から601面へのつながりと601面の前の説明、
-// 夜の面（夜風・スズメとカラスを出さない）と灯り（l）、ホタル（609面から）、歯車（q。617面から。当てるとまわり8マスが時計回りにずれる）を試す
+// 夜の面（夜風・スズメとカラスを出さない）と灯り（l）、ホタル（609面から）、歯車（q。617面から。当てるとまわり8マスが時計回りにずれる）と風船（b。633面から。上が空くと浮いていく）を試す
 // 面の形を前提にしているので、601面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -159,6 +159,46 @@ const { chromium } = require('playwright');
       let drew = true;
       try { T.draw(); } catch (e) { drew = false; }
       ok(drew, '歯車のある面を描ける');
+    }
+    // ---- 風船（633面から） ----
+    if (T.LAST_STAGE >= 633) {
+      const settle = () => { for (const b of S.bricks) b.slideT = 0; };
+      const at = (r, c) => S.bricks.find(b => b.hp > 0 && b.row === r && b.col === c);
+      T.enterStage(633, false);
+      const shown633 = [...document.querySelectorAll('#help [data-from]')].filter(el => !el.hidden);
+      ok(S.mode === 'intro' && ovTitle.textContent.includes('風船') && ovBtn.textContent.includes('633'), '633面の前に、風船の説明が出る');
+      ok(shown633.length >= 1 && shown633.every(el => el.dataset.from === '633'), '説明ページの633面の項目（風船）だけが出る');
+      T.startGame(633); S.mode = 'play'; away();
+      const balloons = S.bricks.filter(b => b.balloon);
+      ok(balloons.length > 0 && balloons.every(b => b.hp === 1 && !b.iron && !b.gold), '633面に風船があって、1回で割れる（金のタイルにならない）');
+      ok(!T.stageDef(633).night, '633面は夜の面ではない（風船の初登場なので分かりやすさ優先）');
+      ok(balloons.every(b => b.row === 0 || at(b.row - 1, b.col)), '633面：風船の真上にはタイルがある（はじめから浮かない）');
+      // 上がふさがっているあいだは浮かない
+      const held = balloons[0], heldRow = held.row;
+      for (let i = 0; i < 90; i++) { settle(); T.floatBalloons(1 / 60); }
+      ok(held.row === heldRow, '風船は、上がふさがっているあいだは浮かない');
+      // 上のタイルを割ると、上へ浮いていき、つかえると止まる
+      const target = balloons.find(b => { const a = at(b.row - 1, b.col); return a && !a.iron && !a.lock && !a.gear && !a.balloon; });
+      ok(!!target, '633面：上のタイルを割れる風船がある');
+      if (target) {
+        const above = at(target.row - 1, target.col);
+        T.damage(above, true);
+        ok(above.hp === 0, '風船の上のタイルが割れた');
+        const r0 = target.row;
+        for (let i = 0; i < 300; i++) { settle(); T.floatBalloons(1 / 60); }
+        ok(target.row < r0, '上のタイルが割れると、風船は上へ浮いていく');
+        ok(target.row === 0 || !!at(target.row - 1, target.col), '風船は、いちばん上の行か、上のタイルにつかえると止まる');
+        ok(S.bricks.every(b => b.row >= 0 && b.col >= 0 && b.col < T.COLS), '浮いた風船が盤面の外へ出ない');
+      }
+      // 風船自体は、ボールでも爆風でも割れる
+      T.startGame(633); S.mode = 'play'; away();
+      const bs = S.bricks.filter(b => b.balloon);
+      T.damage(bs[0], false);
+      T.damage(bs[1], true, true);
+      ok(bs[0].hp === 0 && bs[1].hp === 0, '風船は、ボールでも爆風でも割れる');
+      let drew = true;
+      try { T.draw(); } catch (e) { drew = false; }
+      ok(drew, '風船のある面を描ける');
     }
     return log;
   });
