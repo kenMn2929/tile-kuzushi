@@ -32,9 +32,9 @@ const { chromium } = require('playwright');
         const K = (r, c) => r * 100 + c;
         const blocked = (r, c) => {
           const x = ch(r, c);
-          if (mov(r, c)) { if (x !== '.' && '#sSi+-LJ@C'.includes(x)) notes.add('動く行'); return false; }
+          if (mov(r, c)) { if (x !== '.' && '#sSi+-LJ@Cq'.includes(x)) notes.add('動く行'); return false; }
           if (x === '#') return !gone.has(K(r, c));
-          if (x === 's' || x === 'S' || x === 'i' || x === '@' || x === 'C') return true;
+          if (x === 's' || x === 'S' || x === 'i' || x === '@' || x === 'C' || x === 'q') return true;
           if (x === '+' || x === '-') return !(swReach || autoSw);
           if (x === 'L' || x === 'J') return !keysOpen;
           return false;

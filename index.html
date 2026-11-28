@@ -55,6 +55,7 @@
   --t-toki:#2e2a36;
   --t-iwa:#7a6f62;
   --t-akari:#c9741e;
+  --t-gear:#9c6b30;
   --bug:#2f5d48;
   --bad:#4b3a4f;
   --warn:#c4472f;
@@ -74,7 +75,7 @@
     --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
     --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
     --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
-    --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a;
+    --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a; --t-gear:#c9974f;
     --bad:#7a5f80; --warn:#ef7b5f;
     color-scheme:dark;
   }
@@ -88,7 +89,7 @@
   --t-iron:#6f8291; --t-rust:#b8603f; --t-mist:#4cbf9b;
   --t-sprout:#5f9e4b; --t-zap:#4a5378; --t-chest:#a8713e; --t-kon:#6f80d4;
   --t-lock:#7d6aa0; --t-botan:#cf6fbe; --t-moegi:#9aab3a; --t-hi:#8a3a26; --t-sora:#62b0e2; --t-egg:#9c8455; --t-gin:#8e8bb8;
-  --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a;
+  --t-aka:#dc5a6c; --t-ao:#5a80e0; --t-oshi:#7d9bc0; --t-nawa:#80664a; --t-mizu:#4a9ad6; --t-toki:#4f4a5c; --t-iwa:#8f8578; --t-akari:#e0973a; --t-gear:#c9974f;
   --bad:#7a5f80; --warn:#ef7b5f;
   color-scheme:dark;
 }
@@ -224,6 +225,7 @@ canvas{display:block;width:100%;height:100%;touch-action:none}
 .cap.water{background:var(--t-mizu);border-radius:3px}
 .cap.timer{background:var(--t-toki);border-radius:3px}
 .cap.lamp{background:var(--t-akari);color:#fff;border-radius:3px}
+.cap.gear{background:var(--t-gear);color:#fff;border-radius:3px}
 .cap.firefly{background:radial-gradient(circle at 50% 60%,#e9f59a 0 3px,rgba(220,240,120,.4) 5px,#0b1020 9px);border-radius:3px}
 .cap.night{background:linear-gradient(transparent 3px,var(--t-sora) 3px 5px,transparent 5px 8px,var(--t-sora) 8px 10px,transparent 10px);border-radius:3px}
 .cap.rock{background:var(--t-iwa);border-radius:9px 5px 8px 4px}
@@ -393,6 +395,7 @@ img{max-width:100%}
                 <li data-from="543"><span class="cap timer">時</span>{時限爆弾|じげんばくだん}。ボールが{当|あ}たっても、すぐには{割|わ}れない。3{秒|びょう}{数|かぞ}えてから{爆発|ばくはつ}して、まわりのタイルもいっしょに{割|わ}れる。{残|のこ}りの{秒|びょう}が{数字|すうじ}で{見|み}える。{導火線|どうかせん}の{火|ひ}が{届|とど}くか、ほかの{爆弾|ばくだん}の{爆風|ばくふう}を{受|う}けると、すぐに{爆発|ばくはつ}する</li>
                 <li data-from="551"><span class="cap rock"></span>{岩|いわ}。{割|わ}れず、{割|わ}らなくてもクリアできる。{爆弾|ばくだん}でも{壊|こわ}れない。すぐ{下|した}が{空|あ}くと、{少|すこ}しゆれてから{落|お}ちはじめ、{下|した}のタイルをつぶしながら、{鉄|てつ}などの{割|わ}れないものか、ステージのいちばん{下|した}の{行|ぎょう}まで{落|お}ちる。{水|みず}や{火|ひ}は、{岩|いわ}で{止|と}まる</li>
                 <li data-from="601"><span class="cap lamp">灯</span>{灯|あか}り。1{回|かい}で{割|わ}れる。{夜|よる}のステージで、{窓|まど}やろうそくの{火|ひ}になって{光|ひか}っている</li>
+                <li data-from="617"><span class="cap gear">歯</span>{歯車|はぐるま}。{割|わ}れず、{割|わ}らなくてもクリアできる。ボールか{光|ひかり}が{当|あ}たるたびに、まわり8マスのタイルが{時計|とけい}{回|まわ}りに1つずれる。ずれるのはタイルのあるマスだけで、{鉄|てつ}や{錠|じょう}、{落|お}ちるタイルなどは{動|うご}かない。{爆風|ばくふう}では{回|まわ}らない</li>
               </ul>
             </div>
             <div class="section group">
@@ -843,7 +846,7 @@ const TINTS = {R: 't-sango', Y: 't-yamabuki', G: 't-wakakusa', A: 't-asagi', B: 
 const POINTS = {1: 10, 2: 30, 3: 60};
 // 数字でない字のタイルの硬さ
 const TILE_HP = {'*': 1, '#': 1, r: 2, R: 3, v: 2, z: 3, t: 2, B: 3, V: 3, '?': 2, k: 1, L: 2, m: 1, J: 2, M: 2, g: 2, p: 1, P: 1, f: 1, e: 1,
-  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1, C: 1, l: 1};
+  '<': 2, '>': 2, u: 1, n: 1, '[': 3, ']': 3, N: 1, y: 2, a: 1, d: 2, s: 1, S: 1, '+': 1, '-': 1, h: 1, c: 2, i: 1, '~': 1, W: 1, T: 1, '@': 1, C: 1, l: 1, q: 1};
 const GOLD = {top: '#f6dc78', bottom: '#b8860b', ink: '#3d2b00', text: '#b07d0a'};
 // 金のタイルが続けて割れたとき、「きんの タイル」の知らせと音を次に出すまでの秒数
 const GOLD_GAP = 0.6;
@@ -906,6 +909,9 @@ const STICK_PACE = {slow: 360, normal: 480, fast: 600};
 // C: 大砲（600面。割れない。クリアの数に入らない。となりの導火線の火が届くと、ワシへ弾を1発撃つ（1つの大砲で1回だけ）。爆風・霧でも変わらない。
 //    真上のマスは空ける。動く行・動く列には置かない）
 // l: 灯り（601面から。1回。ぼんやり光って見える。割れると灯りの音が鳴る。夜の面に置く。動く行・動く列には置かない）
+// q: 歯車（617面から。割れない。クリアの数に入らない。ボールか光が当たるたびに、まわり8マスのタイルが時計回りに1つずれる。爆風では回らない。
+//    ずれるのはタイルのあるマスだけで、空きマスの位置は変わらない。鉄・壁・スイッチ・筒・岩・大砲・錠・鍵・時限爆弾・落ちるタイル・ほかの歯車と、
+//    動く行・動く列のタイルは回さない。タイルの硬さ・色・状態は、タイルといっしょに移る。動く行・動く列には置かない）
 // + / -: 赤い壁 / 青い壁（割れない。クリアの数に入らない。はじめは + が出ていて、- が引っこんでいる。出ている壁は鉄と同じくはね返し、爆風・霧でも変わらない。
 //    引っこんでいる壁は、ボール・光・火が通りぬける。スイッチのない面には置かない。動く行・動く列には置かない。
 //    壁で囲んだタイルは、スイッチを当てれば割りに行けるようにする（スイッチを壁で囲まない））
@@ -2338,6 +2344,10 @@ const STAGES7 = [
   {rows: ['...2221111','..11122.11','...2222...','..n2112n..','.nn2222nn.','.nn2112nn.','..n2222n..','...2222...','...3223...','...3223...','.g.3..3.g.'],
    tint: ['...GGGGGGG','..GGGKK.GG','...KGGK...','...KGGK...','...KGGK...','...KGGK...','...KGGK...','...KGGK...','....KK....','....KK....','..........'],
    sparrow: 2},
+  // かみ合う2つの歯車（大きい歯車と小さい歯車の軸が歯車。まわりのタイルが歯車に当てるたび時計回りにずれる。下は土台で盾と3回のタイル）
+  {rows: ['..2.2.....','.22222....','2223222...','222q222...','2212g22...','.22222....','..2.2223..','....22q22.','.....12g..','.....2.2..','..g33..g..'],
+   tint: ['..K.K.....','.KKKKK....','KKK.KKK...','KKK.KKK...','KKK.K.....','.KKKKK....','..K.KAA...','....AA.AA.','.....AA...','.....A.A..','..........'],
+   sparrow: 2},
 ];
 
 // pop は盤面に出る字。盤面にはふりがなを付けられないので ひらがなで書く
@@ -2468,6 +2478,8 @@ const INTROS = {
         text: '{日|ひ}が{暮|く}れて、{夜|よる}になりました。{夜|よる}のステージでは、ときどき{横|よこ}から{風|かぜ}が{吹|ふ}いて、ボールが{流|なが}されます。{吹|ふ}く{前|まえ}に{風|かぜ}の{筋|すじ}が{見|み}えたら、{板|いた}を{風下|かざしも}へ{寄|よ}せておきましょう。{窓|まど}やろうそくの{火|ひ}は、{灯|あか}りのタイルです。1{回|かい}で{割|わ}れます。'},
   609: {eyebrow: 'ステージ 609 から', title: 'ホタル',
         text: '{夜|よる}のステージに、ホタルが{飛|と}んできました。ホタルは{残|のこ}っているタイルのあたりをただよって、ぴかぴか{光|ひか}ります。ボールが{近|ちか}くを{通|とお}ると、よけて{逃|に}げます。ボールははね{返|かえ}しません。'},
+  617: {eyebrow: 'ステージ 617 から', title: '{歯車|はぐるま}',
+        text: '{歯車|はぐるま}は{割|わ}れません。ボールか{光|ひかり}が{当|あ}たるたびに、まわり8マスのタイルが{時計|とけい}{回|まわ}りに1つずれます。ずれるのはタイルのあるマスだけで、{鉄|てつ}や{錠|じょう}、{落|お}ちるタイルなどは{動|うご}きません。ねらったタイルを{下|した}へずらしてから{割|わ}る、といった{使|つか}い{方|かた}もできます。'},
   501: {eyebrow: 'ステージ 501 から', title: 'ボーナスステージ',
         text: 'ステージ510までの10ステージは、ボーナスステージです。かたそうに{見|み}えても、{爆弾|ばくだん}や{鎖|くさり}、{火|ひ}のタイルがつながっていて、うまく{当|あ}てると{一気|いっき}に{割|わ}れます。どこに{当|あ}てればいいか、さがしてみてください。'},
 };
@@ -2488,6 +2500,7 @@ const STORY = {
   597: () => S.eagleSeen ? 'スズメたちが、{空|そら}を{見上|みあ}げてこわがっています。いまの{大|おお}きな{影|かげ}は、{何|なん}だろう。' : 'スズメたちが、{空|そら}を{見上|みあ}げてこわがっています。{何|なに}がいるのだろう。',
   598: () => S.eagleSeen ? 'いまの{大|おお}きな{鳥|とり}が{来|く}ると、スズメたちはみんな{逃|に}げていきました。' : '',
   599: () => 'ワシがおこっています。{次|つぎ}は{大砲|たいほう}を{撃|う}って、ワシをやっつけましょう。',
+  616: () => 'どこかで、大きな{歯車|はぐるま}が{回|まわ}る{音|おと}がしました。',
 };
 
 const $ = id => document.getElementById(id);
@@ -2582,7 +2595,7 @@ const hidden = b => (b.blink || b.wall > 0) && !b.shown;
 const guards = (b, ox, oy, by) => b.shield && ox >= oy && by > b.y + b.h / 2;
 // 仕掛けのない、ふつうのタイルか（かためる虫はこれだけをかたくする）
 const plain = b => b.hp > 0 && !b.gold && !b.bomb && !b.iron && !b.rust && !b.regen && !b.sprout && !b.wither &&
-  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp;
+  !b.zap && !b.chest && !b.key && !b.lock && !b.blink && !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp && !b.gear;
 const comboBonus = c => c % 5 ? 0 : c === 5 ? 100 : c === 10 ? 300 : c === 15 ? 500 : c === 20 ? 800 : 1000;
 
 const S = {
@@ -2609,7 +2622,7 @@ function readColors(){
   const cs = getComputedStyle(document.documentElement);
   ['board','grout','ink','muted','panel','line','paddle','ball','on-tile','on-yamabuki','bad','warn',
    't-ai','t-asagi','t-yamabuki','t-sango','t-wakakusa','t-life','t-hard','t-bomb','t-fuji','t-kurumi','t-nibi','t-iron','t-rust','t-mist',
-   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','t-gin','t-aka','t-ao','t-oshi','t-nawa','t-mizu','t-toki','t-iwa','t-akari','bug']
+   't-sprout','t-zap','t-chest','t-kon','t-lock','t-botan','t-moegi','t-hi','t-sora','t-egg','t-gin','t-aka','t-ao','t-oshi','t-nawa','t-mizu','t-toki','t-iwa','t-akari','t-gear','bug']
     .forEach(k => { C[k] = cs.getPropertyValue('--' + k).trim(); });
 }
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
@@ -2699,6 +2712,7 @@ function sfx(name, arg){
     case 'tick':   tone(1500, 0.04, 'square', 0.03, null); break;
     case 'wind':   tone(300, 0.9, 'triangle', 0.03, 150); tone(520, 0.6, 'sine', 0.012, 260, 0.15); break;
     case 'lamp':   tone(660, 0.25, 'sine', 0.04, 990); tone(1320, 0.3, 'sine', 0.02, null, 0.08); break;
+    case 'gear':   tone(240, 0.08, 'square', 0.04, 160); tone(720, 0.06, 'square', 0.025, null, 0.05); tone(180, 0.07, 'square', 0.03, 120, 0.1); break;
     case 'water':  tone(700, 0.3, 'sine', 0.04, 240); tone(1200, 0.12, 'sine', 0.02, 500, 0.05); break;
     case 'douse':  tone(2400, 0.16, 'sawtooth', 0.01, 900); break;
     case 'fire':   tone(220, 0.32, 'sawtooth', 0.03, 560); tone(1600, 0.26, 'triangle', 0.02, 700, 0.03); break;
@@ -2768,7 +2782,7 @@ function makeBrick(r, c, hp, bomb){
     sprout: false, sproutT: 0, sproutN: 0, wither: false, zap: false, chest: false, big: false,
     key: false, lock: false, blink: false, shown: true,
     shield: false, twin: false, pair: 0, lit: 0, fire: false, carried: false, egg: false, eggT: 0, arrow: 0, back: false, fork: false, mesh: false, faller: false, fallT: FALL_WAIT,
-    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false, cannon: false, fired: false, lamp: false
+    runner: false, flee: 0, fleeT: 0, sx: 0, sy: 0, slideT: 0, toggle: false, wall: 0, push: false, chain: false, tube: false, fuse: false, burning: false, water: false, wet: false, timer: false, tick: 0, rock: false, rolling: false, cannon: false, fired: false, lamp: false, gear: false
   };
 }
 function buildStage(n){
@@ -2804,8 +2818,10 @@ function buildStage(n){
       b.rock = ch === '@';
       // 大砲も、鉄と同じく割れずにクリアの数に入らない（爆風で壊れないところだけ、damage で分ける）
       b.cannon = ch === 'C';
+      // 歯車も、鉄と同じく割れずにクリアの数に入らない（爆風でも回らないところだけ、damage で分ける）
+      b.gear = ch === 'q';
       b.fallT = b.rock ? ROCK_WAIT : FALL_WAIT;
-      b.iron = ch === '#' || b.toggle || b.wall > 0 || b.tube || b.rock || b.cannon;
+      b.iron = ch === '#' || b.toggle || b.wall > 0 || b.tube || b.rock || b.cannon || b.gear;
       b.shown = b.wall !== 2;
       b.regen = ch === 'r' || ch === 'R';
       b.sprout = ch === 'v' || ch === 'V';
@@ -2862,7 +2878,7 @@ function buildStage(n){
     for (const b of list) if ((def.gold[b.row] || '')[b.col] === '$') b.gold = true;
   } else if (Math.random() < 0.35) {
     const cands = list.filter(b => b.max <= 2 && !b.bomb && !b.iron && !b.regen && !b.sprout && !b.chest && !b.key && !b.lock && !b.blink &&
-      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp);
+      !b.shield && !b.twin && !b.fire && !b.egg && !b.arrow && !b.back && !b.runner && !b.fork && !b.mesh && !b.faller && !b.push && !b.chain && !b.fuse && !b.water && !b.lamp && !b.gear);
     if (cands.length) cands[Math.floor(Math.random() * cands.length)].gold = true;
   }
   S.rowMove = {};
@@ -4380,7 +4396,7 @@ function updateItems(dt){
 
 function soften(br){
   // 閉じた錠・スイッチ・壁・筒には効かない
-  if (br.lock || br.toggle || br.wall || br.tube || br.rock || br.cannon) return;
+  if (br.lock || br.toggle || br.wall || br.tube || br.rock || br.cannon || br.gear) return;
   br.regen = false;
   if (br.shield) {
     // 盾は外れるだけで、やわらかくはならない
@@ -4643,7 +4659,7 @@ function addCrack(br){
   br.cracks.push(pts);
 }
 function tileColor(br){
-  return br.gold ? GOLD.bottom : br.push ? C['t-oshi'] : br.toggle || br.tube || br.cannon ? C['t-iron'] : br.wall ? C[br.wall === 1 ? 't-aka' : 't-ao'] : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C[br.timer ? 't-toki' : 't-bomb']
+  return br.gold ? GOLD.bottom : br.gear ? C['t-gear'] : br.push ? C['t-oshi'] : br.toggle || br.tube || br.cannon ? C['t-iron'] : br.wall ? C[br.wall === 1 ? 't-aka' : 't-ao'] : br.iron ? C['t-iron'] : br.rust ? C['t-rust'] : br.bomb ? C[br.timer ? 't-toki' : 't-bomb']
     : br.sprout ? C['t-sprout'] : br.wither ? C['t-nibi'] : br.zap ? C['t-zap'] : br.chest ? C['t-chest']
     : br.lock ? C['t-lock'] : br.key ? C['t-fuji'] : br.fire ? C[br.wet ? 't-nibi' : 't-hi'] : br.twin ? C[br.pair ? 't-moegi' : 't-botan'] : br.egg ? C['t-egg']
     : br.arrow ? C['t-kon'] : br.back ? C['t-sora'] : br.runner ? C['t-life'] : br.fork ? C['t-mist'] : br.mesh ? C['t-chest'] : br.faller ? C['t-kurumi'] : br.fuse ? C[br.wet ? 't-nibi' : 't-nawa'] : br.water ? C['t-mizu'] : br.lamp ? C['t-akari'] : br.max === 3 ? C['t-hard'] : C[br.color];
@@ -4666,6 +4682,38 @@ function shatter(br){
 function lightUp(br){
   sfx('lamp');
 }
+// 歯車：当てるたびに、まわり8マスのタイルが時計回りに1つずれる。歯車自体は割れない
+// ずれるのはタイルのあるマスだけ（空きマスの位置は変わらないので、面の形は変わらない）
+// 鉄・壁・スイッチ・筒・岩・大砲・錠・鍵・時限爆弾・落ちるタイル・ほかの歯車と、動く行・動く列のタイルは回さない
+// （並べ方の決まりと、錠と鍵の組を守るため）。タイルの硬さ・色・状態は、タイルといっしょに移り、元の場所からすべって見える
+function rotateGear(br){
+  if (S.rowMove[br.row] || (S.colMove[br.col] && br.row >= S.vband[0] && br.row <= S.vband[1])) { sfx('iron'); return; }
+  const ring = [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]];
+  const rows = stageDef(S.stage).rows.length;
+  const cells = [];
+  for (const [dr, dc] of ring) {
+    const r = br.row + dr, c = br.col + dc;
+    if (r < 0 || c < 0 || c >= COLS || r >= rows) continue;
+    if (S.rowMove[r] || (S.colMove[c] && r >= S.vband[0] && r <= S.vband[1])) continue;
+    const b = S.bricks.find(o => o.hp > 0 && o.row === r && o.col === c);
+    if (!b || b.gear || b.iron || b.lock || b.key || b.timer || b.faller || b.carried || b.perched || b.slideT > 0) continue;
+    cells.push([r, c, b]);
+  }
+  if (cells.length < 2) { sfx('iron'); return; }
+  for (let i = 0; i < cells.length; i++) {
+    const b = cells[(i - 1 + cells.length) % cells.length][2];
+    const [r, c] = cells[i];
+    const ox = b.x, oy = b.y;
+    b.row = r; b.col = c;
+    b.baseX = b.x = SIDE + c * CELL;
+    b.baseY = b.y = cellY(r);
+    b.sx = ox - b.x; b.sy = oy - b.y; b.slideT = FLEE_SLIDE;
+    b.flash = 0.12;
+  }
+  br.flash = 0.12;
+  S.pops.push({x: br.x + br.w / 2, y: br.y + br.h / 2 + 20, text: 'まわった', t: 0});
+  sfx('gear');
+}
 function damage(br, full, blast){
   // スズメがとまっているタイルは割れない。スズメが飛び立つ
   if (br.perched) { shooSparrow(br); return; }
@@ -4673,6 +4721,8 @@ function damage(br, full, blast){
   // スイッチは当たるたびに壁を入れかえる（爆風では切りかわらない）。壁は爆風でも壊れない
   if (br.toggle) { if (!blast) flipWalls(br); else sfx('iron'); return; }
   if (br.wall || br.tube || br.rock || br.cannon) { sfx(br.rock ? 'rock' : 'iron'); return; }
+  // 歯車は割れない。当てるたびにまわりが回る（爆風では回らない）
+  if (br.gear) { if (!blast) rotateGear(br); else sfx('iron'); return; }
   // 閉じた錠は爆風でも壊れない。鉄は爆風でだけ壊れる
   if (br.lock) { sfx('lock'); return; }
   if (br.iron && !blast) { sfx('iron'); return; }
@@ -5884,6 +5934,14 @@ function drawTile(br){
       ctx.restore();
     }
     tileGlyph(br, '金', GOLD.ink);
+  } else if (br.gear) {
+    // 歯車の歯：まわりに8つの歯を描き、まん中に字を出す
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4 + Math.PI / 8, cx = x + w / 2 + Math.cos(a) * (w * 0.36), cy = y + h / 2 + Math.sin(a) * (h * 0.36);
+      ctx.beginPath(); ctx.arc(cx, cy, 2.4, 0, Math.PI * 2); ctx.fill();
+    }
+    tileGlyph(br, '歯', C['on-tile']);
   } else if (br.timer) {
     // 数えはじめる前は「時」、数えているあいだは残りの秒。数えているあいだは赤く点滅する
     if (br.tick > 0) {

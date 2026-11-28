@@ -52,7 +52,7 @@ for n, (rows_s, rest) in defs:
     for r, row in enumerate(rows):
         if len(row) != Cn: print(n, 'row length', r, row); ok = False
         for c, ch in enumerate(row):
-            if ch in '+-sSwoOnNdexXveLJkhci~W@Cl' and (r in moving or inv(r, c)):
+            if ch in '+-sSwoOnNdexXveLJkhci~W@Clq' and (r in moving or inv(r, c)):
                 print(n, 'fixed thing in moving row/col', r, c, ch); ok = False
             if ch in 'xX':
                 for rr in (r - 1, r + 1):
@@ -78,7 +78,7 @@ for n, (rows_s, rest) in defs:
         def reach(locked):
             def block_(r, c):
                 ch = rows[r][c]
-                if ch in '#sSi@C': return True
+                if ch in '#sSi@Cq': return True
                 if ch in 'LJ': return locked
                 if ch == '+': return side == 0
                 if ch == '-': return side == 1
@@ -128,11 +128,11 @@ for n, (rows_s, rest) in defs:
             for c, ch in enumerate(gr):
                 if ch == '.': continue
                 if ch != '$': print(n, 'bad gold letter', r, c, ch); ok = False
-                elif c < len(row) and row[c] in '.+-sS#wxXoOLJiC': print(n, 'gold on a cell without a breakable tile', r, c); ok = False
-    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOiC')
+                elif c < len(row) and row[c] in '.+-sS#wxXoOLJiCq': print(n, 'gold on a cell without a breakable tile', r, c); ok = False
+    tiles = sum(1 for row in rows for ch in row if ch not in '.+-sS#wxXoOiCq')
     # 割れないもの（スイッチ・壁・鉄・錠・筒）は、割るタイルのいちばん下の行より下に置かない
-    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJiC' for ch in row))
-    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJiC' for ch in row)] or [-1])
+    low_tile = max(r for r, row in enumerate(rows) if any(ch not in '.+-sS#wxXoOLJiCq' for ch in row))
+    low_hard = max([r for r, row in enumerate(rows) if any(ch in '+-sS#LJiCq' for ch in row)] or [-1])
     # 6周目のボーナスステージ（501〜510面）は、きっかけのタイルだけ下から当てられるように、いちばん下に鉄の机や土台を置いてよい
     if low_hard > low_tile and not (isinstance(n, int) and 501 <= n <= 510):
         print(n, 'unbreakable below lowest tile row', low_hard, '>', low_tile); ok = False

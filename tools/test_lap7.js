@@ -1,6 +1,6 @@
 // 7周目（601面から）の動きを確かめる。使い方：node tools/test_lap7.js 写しのフォルダ（tools/make_test_page.py で作ったもの）
 // 周の決まり（601面から7周目・下りる速さ）、600面から601面へのつながりと601面の前の説明、
-// 夜の面（暗くする・スズメとカラスを出さない）と灯り（l。割るとまわりが明るくなる）、ホタル（609面から）を試す
+// 夜の面（夜風・スズメとカラスを出さない）と灯り（l）、ホタル（609面から）、歯車（q。617面から。当てるとまわり8マスが時計回りにずれる）を試す
 // 面の形を前提にしているので、601面を作り直したときは、ここも合わせて直す。NG が出なければよい
 const { chromium } = require('playwright');
 (async () => {
@@ -105,6 +105,60 @@ const { chromium } = require('playwright');
       delete e.firefly;
       T.enterStage(609, false);
       ok(S.mode === 'intro' && ovTitle.textContent.includes('ホタル'), '609面の前に、ホタルの説明が出る');
+    }
+    // ---- 歯車（617面から） ----
+    if (T.LAST_STAGE >= 617) {
+      const settle = () => { for (const b of S.bricks) b.slideT = 0; };
+      const at = (r, c) => S.bricks.find(b => b.hp > 0 && b.row === r && b.col === c);
+      T.enterStage(617, false);
+      const shown617 = [...document.querySelectorAll('#help [data-from]')].filter(el => !el.hidden);
+      ok(S.mode === 'intro' && ovTitle.textContent.includes('歯車') && ovBtn.textContent.includes('617'), '617面の前に、歯車の説明が出る');
+      ok(shown617.length >= 1 && shown617.every(el => el.dataset.from === '617'), '説明ページの617面の項目（歯車）だけが出る');
+      T.startGame(617); S.mode = 'play'; away();
+      const gears = S.bricks.filter(b => b.gear);
+      ok(gears.length === 2 && gears.every(b => b.iron && b.hp > 0), '617面に歯車が2つあって、割れない（クリアの数に入らない）');
+      ok(!T.stageDef(617).night, '617面は夜の面ではない（歯車の初登場なので分かりやすさ優先）');
+      // 回る向き：まわり8マスのタイルが、時計回りに1つずれる
+      const g = gears[0];
+      const ringPos = [[-1, -1], [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1]].map(([dr, dc]) => [g.row + dr, g.col + dc]);
+      const before = ringPos.map(([r, c]) => at(r, c));
+      ok(before.every(Boolean), '617面：歯車のまわり8マスは全部タイル');
+      const hard3 = before.find(b => b.max === 3), hp3 = hard3.hp, col3 = hard3.color;
+      T.damage(g, false);
+      const after = ringPos.map(([r, c]) => at(r, c));
+      ok(after.every((b, i) => b === before[(i - 1 + before.length) % before.length]), '歯車に当てると、まわりのタイルが時計回りに1つずれる');
+      ok(hard3.hp === hp3 && hard3.color === col3 && ringPos.some(([r, c]) => hard3.row === r && hard3.col === c), 'ずれたタイルの硬さと色は、タイルといっしょに移る');
+      ok(g.hp > 0 && S.bricks.includes(g), '歯車は、当てても割れない');
+      // もう1回当てると、またずれる
+      settle();
+      const before2 = ringPos.map(([r, c]) => at(r, c));
+      T.damage(g, false);
+      const after2 = ringPos.map(([r, c]) => at(r, c));
+      ok(after2.every((b, i) => b === before2[(i - 1 + before2.length) % before2.length]), '歯車は、当てるたびに回る');
+      // 対象外：鉄にしたタイルは動かない
+      settle();
+      const fixed = at(ringPos[0][0], ringPos[0][1]);
+      fixed.iron = true;
+      const fr = fixed.row, fc = fixed.col;
+      T.damage(g, false);
+      ok(fixed.row === fr && fixed.col === fc && fixed.hp > 0, '歯車のまわりでも、鉄（割れないもの）は回らない');
+      fixed.iron = false;
+      // 爆風では回らない
+      settle();
+      const before3 = ringPos.map(([r, c]) => at(r, c));
+      T.damage(g, true, true);
+      const after3 = ringPos.map(([r, c]) => at(r, c));
+      ok(after3.every((b, i) => b === before3[i]) && g.hp > 0, '歯車は、爆風では回らないし割れない');
+      // 端のケース：歯車を左上の角へ移しても、壊れず、盤面の外へタイルが出ない
+      const g2 = gears[1];
+      g2.row = 0; g2.col = 0; g2.baseX = g2.x = 8; g2.baseY = g2.y = 64;
+      settle();
+      let threw = false;
+      try { T.damage(g2, false); } catch (e) { threw = true; }
+      ok(!threw && g2.hp > 0 && S.bricks.every(b => b.row >= 0 && b.col >= 0 && b.col < T.COLS), '角の歯車に当てても壊れず、タイルが盤面の外へ出ない');
+      let drew = true;
+      try { T.draw(); } catch (e) { drew = false; }
+      ok(drew, '歯車のある面を描ける');
     }
     return log;
   });
